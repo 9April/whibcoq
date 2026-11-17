@@ -45,8 +45,8 @@ export function InvoiceHistory({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="بحث بالاسم، التاريخ، أو رقم الفاتورة..."
-            className="w-full h-12 pr-10 pl-4 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all"
+            placeholder="بحث باسم الزبون أو التاريخ..."
+            className="w-full h-11 pr-10 pl-4 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all"
           />
           <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -66,37 +66,29 @@ export function InvoiceHistory({
                   setSelectedInvoiceForPrint(inv);
                 }
               }}
-              className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 p-3.5 shadow-sm flex items-center justify-between gap-3 cursor-pointer transition-all active:scale-[0.99]"
+              className="bg-white rounded-2xl border border-slate-200 hover:border-emerald-300 p-3 shadow-xs flex items-center justify-between gap-2 cursor-pointer transition-all active:scale-[0.99]"
             >
-              {/* Left Details */}
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-black font-mono text-sm flex-shrink-0 tabular-nums">
-                  #{inv.id}
-                </span>
-
-                <div className="min-w-0">
-                  <div className="text-base font-black text-slate-900 truncate">
-                    {inv.clientName}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold font-mono tabular-nums">
-                    <span>{inv.date}</span>
-                    <span>•</span>
-                    <span>{inv.items?.length || 0} بنود</span>
-                    <span>•</span>
-                    <span>{formatKg(inv.totalWeight)}</span>
-                  </div>
+              {/* Client Info (Name & compact sub-info, no invoice number) */}
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-black text-slate-900 truncate">
+                  {inv.clientName}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium font-mono tabular-nums mt-0.5 truncate">
+                  <span>{inv.date}</span>
+                  <span>•</span>
+                  <span>{formatKg(inv.totalWeight)}</span>
                 </div>
               </div>
 
-              {/* Right Side: Total & Actions */}
+              {/* Price & Action Buttons (Print & Edit) */}
               <div className="flex items-center gap-2 flex-shrink-0">
                 <div className="text-left font-mono">
-                  <span className="text-base sm:text-lg font-black text-emerald-700 block tabular-nums">
+                  <span className="text-sm sm:text-base font-black text-emerald-700 tabular-nums whitespace-nowrap">
                     {formatDh(inv.totalAmount)}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 border-r border-slate-100 pr-1.5 mr-1">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={(e) => handlePrint(inv, e)}
