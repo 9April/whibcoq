@@ -117,8 +117,12 @@ export const persistClientWithDb = async (client) => {
   }
   saveStoredClients(updated);
 
-  // Background MySQL sync
-  apiSaveClient(client).catch((e) => console.warn('MySQL client sync pending offline:', e));
+  // MySQL sync
+  try {
+    await apiSaveClient(client);
+  } catch (e) {
+    console.warn('MySQL client sync pending offline:', e);
+  }
   return updated;
 };
 
@@ -126,8 +130,12 @@ export const deleteClientWithDb = async (clientId) => {
   const clients = getStoredClients().filter((c) => c.id !== clientId);
   saveStoredClients(clients);
 
-  // Background MySQL delete
-  apiDeleteClient(clientId).catch((e) => console.warn('MySQL client delete pending offline:', e));
+  // MySQL delete
+  try {
+    await apiDeleteClient(clientId);
+  } catch (e) {
+    console.warn('MySQL client delete pending offline:', e);
+  }
   return clients;
 };
 
@@ -165,8 +173,12 @@ export const persistInvoiceWithDb = async (invoice) => {
   }
   saveStoredInvoices(updated);
 
-  // Background MySQL sync
-  apiSaveInvoice(invoice).catch((e) => console.warn('MySQL invoice sync pending offline:', e));
+  // MySQL sync
+  try {
+    await apiSaveInvoice(invoice);
+  } catch (e) {
+    console.warn('MySQL invoice sync pending offline:', e);
+  }
   return updated;
 };
 
@@ -174,8 +186,12 @@ export const deleteInvoiceWithDb = async (invoiceId) => {
   const invoices = getStoredInvoices().filter((inv) => inv.id !== invoiceId);
   saveStoredInvoices(invoices);
 
-  // Background MySQL delete
-  apiDeleteInvoice(invoiceId).catch((e) => console.warn('MySQL invoice delete pending offline:', e));
+  // MySQL delete
+  try {
+    await apiDeleteInvoice(invoiceId);
+  } catch (e) {
+    console.warn('MySQL invoice delete pending offline:', e);
+  }
   return invoices;
 };
 

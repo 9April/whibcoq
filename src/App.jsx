@@ -71,10 +71,37 @@ export function App() {
     }
   }, []);
 
-  // Sync on startup and listen for custom sync events
+  // Automatic real-time cross-device auto-sync (Web <-> Phone)
   useEffect(() => {
+    // 1. Initial sync immediately
     handleSync(true);
 
+    // 2. Background polling interval every 8 seconds so phone & web mirror each other live
+    const intervalId = setInterval(() => {
+      handleSync(true);
+    }, 8000);
+
+    // 3. Auto-sync immediately when phone screen unlocks or user switches back to this tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        handleSync(true);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 4. Auto-sync when window gains focus
+    const handleFocus = () => {
+      handleSync(true);
+    };
+    window.addEventListener('focus', handleFocus);
+
+    // 5. Auto-sync when device comes online
+    const handleOnline = () => {
+      handleSync(true);
+    };
+    window.addEventListener('online', handleOnline);
+
+    // 6. Listen for custom sync events
     const onSynced = (e) => {
       setClients(getStoredClients());
       setInvoices(getStoredInvoices());
@@ -82,9 +109,15 @@ export function App() {
         setLastSyncTime(new Date().toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' }));
       }
     };
-
     window.addEventListener('wahib_db_synced', onSynced);
-    return () => window.removeEventListener('wahib_db_synced', onSynced);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('wahib_db_synced', onSynced);
+    };
   }, [handleSync]);
 
   const handleLoginSuccess = () => {
@@ -104,16 +137,19 @@ export function App() {
   const handleAddClient = async (newClient) => {
     const updated = await persistClientWithDb(newClient);
     setClients(updated);
+    handleSync(true);
   };
 
   const handleUpdateClient = async (updatedClient) => {
     const updated = await persistClientWithDb(updatedClient);
     setClients(updated);
+    handleSync(true);
   };
 
   const handleDeleteClient = async (clientId) => {
     const updated = await deleteClientWithDb(clientId);
     setClients(updated);
+    handleSync(true);
   };
 
   const handleStartInvoiceForClient = (client) => {
@@ -128,11 +164,13 @@ export function App() {
     setInvoices(updated);
     setEditingInvoice(null);
     setIsBuildingInvoice(false);
+    handleSync(true);
   };
 
   const handleDeleteInvoice = async (invoiceId) => {
     const updated = await deleteInvoiceWithDb(invoiceId);
     setInvoices(updated);
+    handleSync(true);
   };
 
   const handleEditInvoice = (invoice) => {
