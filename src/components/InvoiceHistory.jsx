@@ -35,6 +35,16 @@ export function InvoiceHistory({
     onEditInvoice(inv);
   };
 
+  const handlePrint = (inv, e) => {
+    e.stopPropagation();
+    playHapticSound('tap');
+    if (onOpenPrint) {
+      onOpenPrint(inv);
+    } else {
+      setSelectedInvoiceForPrint(inv);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3 pb-24 animate-fadeIn">
       {/* Search Header */}
@@ -95,7 +105,17 @@ export function InvoiceHistory({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1 border-r border-slate-100 pr-1 mr-1">
+                <div className="flex items-center gap-1.5 border-r border-slate-100 pr-1.5 mr-1">
+                  <button
+                    type="button"
+                    onClick={(e) => handlePrint(inv, e)}
+                    className="h-8 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center gap-1 active:scale-95 transition-colors border border-emerald-200"
+                    title="طباعة ومعاينة الفاتورة"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>طباعة</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={(e) => handleEdit(inv, e)}
