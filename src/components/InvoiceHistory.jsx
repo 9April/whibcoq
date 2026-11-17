@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Printer, Edit3, ChevronLeft, Calendar, FileText } from 'lucide-react';
 import { formatDh, formatKg, playHapticSound } from '../utils/storage';
+import { INITIAL_CLIENTS } from '../data/initialData';
 import { InvoicePrintModal } from './InvoicePrintModal';
 
 export function InvoiceHistory({
@@ -15,13 +16,20 @@ export function InvoiceHistory({
   // Map clientId to category for displaying badges like "مطعم", "سناك", "شواية"
   const clientCategoryMap = useMemo(() => {
     const map = {};
+    INITIAL_CLIENTS.forEach((c) => {
+      if (c.id && c.category) map[c.id] = c.category;
+      if (c.name && c.category) {
+        map[c.name.trim()] = c.category;
+        map[c.name.trim().toLowerCase()] = c.category;
+      }
+    });
+
     if (Array.isArray(clients)) {
       clients.forEach((c) => {
-        if (c.id && c.category) {
-          map[c.id] = c.category;
-        }
+        if (c.id && c.category) map[c.id] = c.category;
         if (c.name && c.category) {
           map[c.name.trim()] = c.category;
+          map[c.name.trim().toLowerCase()] = c.category;
         }
       });
     }
@@ -73,11 +81,24 @@ export function InvoiceHistory({
       <div className="flex flex-col gap-2">
         {filtered.length > 0 ? (
           filtered.map((inv) => {
-            const category =
+            const rawName = (inv.clientName || '').trim();
+            let category =
               clientCategoryMap[inv.clientId] ||
-              clientCategoryMap[inv.clientName?.trim()] ||
+              clientCategoryMap[rawName] ||
+              clientCategoryMap[rawName.toLowerCase()] ||
               inv.clientCategory ||
               '';
+
+            if (!category) {
+              const lower = rawName.toLowerCase();
+              if (lower.includes('مطعم')) category = 'مطعم';
+              else if (lower.includes('سناك')) category = 'سناك';
+              else if (lower.includes('شواية')) category = 'شواية';
+              else if (lower.includes('جملة')) category = 'تاجر جملة';
+              else if (lower.includes('طباخ') || lower.includes('حفل')) category = 'تموين حفلات';
+              else if (lower.includes('نقدي') || lower.includes('مباشر')) category = 'مباشر';
+              else category = 'زبون تجاري';
+            }
 
             return (
               <div

@@ -399,11 +399,9 @@ export function InvoiceBuilder({
                         {c.name}
                       </div>
                       <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold">
-                        {c.category && (
-                          <span className="px-2 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[11px]">
-                            {c.category}
-                          </span>
-                        )}
+                        <span className="px-2 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[11px]">
+                          {c.category || 'زبون تجاري'}
+                        </span>
                         {c.phone && (
                           <bdi
                             dir="ltr"

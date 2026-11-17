@@ -159,11 +159,49 @@ export const playHapticSound = (type = 'tap') => {
 export const getStoredClients = () => {
   try {
     const raw = localStorage.getItem(CLIENTS_STORAGE_KEY);
+    let list;
     if (!raw) {
       localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(INITIAL_CLIENTS));
+      list = INITIAL_CLIENTS;
+    } else {
+      list = JSON.parse(raw);
+    }
+
+    if (!Array.isArray(list) || list.length === 0) {
       return INITIAL_CLIENTS;
     }
-    return JSON.parse(raw);
+
+    let needsUpdate = false;
+    const enriched = list.map((c) => {
+      let cat = c.category;
+      if (!cat || cat === 'عام') {
+        const init = INITIAL_CLIENTS.find((ic) => ic.id === c.id || ic.name?.trim() === c.name?.trim());
+        if (init?.category) {
+          cat = init.category;
+          needsUpdate = true;
+        } else {
+          const name = (c.name || '').toLowerCase();
+          if (name.includes('مطعم')) cat = 'مطعم';
+          else if (name.includes('سناك')) cat = 'سناك';
+          else if (name.includes('شواية')) cat = 'شواية';
+          else if (name.includes('جملة')) cat = 'تاجر جملة';
+          else if (name.includes('طباخ') || name.includes('حفل')) cat = 'تموين حفلات';
+          else if (name.includes('نقدي') || name.includes('مباشر')) cat = 'مباشر';
+          else cat = 'عام';
+
+          if (cat !== c.category) {
+            needsUpdate = true;
+          }
+        }
+      }
+      return { ...c, category: cat };
+    });
+
+    if (needsUpdate) {
+      localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(enriched));
+    }
+
+    return enriched;
   } catch (e) {
     return INITIAL_CLIENTS;
   }
@@ -414,7 +452,25 @@ export const performDatabaseSync = async () => {
 
     if (result && result.ok) {
       if (Array.isArray(result.clients) && result.clients.length > 0) {
-        localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(result.clients));
+        const enriched = result.clients.map((c) => {
+          let cat = c.category;
+          if (!cat || cat === 'عام') {
+            const init = INITIAL_CLIENTS.find((ic) => ic.id === c.id || ic.name?.trim() === c.name?.trim());
+            if (init?.category) cat = init.category;
+            else {
+              const name = (c.name || '').toLowerCase();
+              if (name.includes('مطعم')) cat = 'مطعم';
+              else if (name.includes('سناك')) cat = 'سناك';
+              else if (name.includes('شواية')) cat = 'شواية';
+              else if (name.includes('جملة')) cat = 'تاجر جملة';
+              else if (name.includes('طباخ') || name.includes('حفل')) cat = 'تموين حفلات';
+              else if (name.includes('نقدي') || name.includes('مباشر')) cat = 'مباشر';
+              else cat = 'عام';
+            }
+          }
+          return { ...c, category: cat };
+        });
+        localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(enriched));
       }
       if (Array.isArray(result.invoices) && result.invoices.length > 0) {
         localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(result.invoices));

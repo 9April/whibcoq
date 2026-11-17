@@ -186,6 +186,11 @@ export function InvoicePrintModal({
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-500">الزبون / Client:</span>
                   <span className="text-base font-black text-slate-900">{invoice.clientName}</span>
+                  {invoice.clientCategory && (
+                    <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-bold">
+                      {invoice.clientCategory}
+                    </span>
+                  )}
                 </div>
                 {invoice.clientPhone && (
                   <div className="text-xs font-mono font-semibold text-slate-700 flex items-center gap-1">
