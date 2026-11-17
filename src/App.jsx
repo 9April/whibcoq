@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { KeyRound, LogOut, Lock, ShieldCheck, Database, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { LogOut, Lock, ShieldCheck, Database, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { InvoiceBuilder } from './components/InvoiceBuilder';
 import { HomeDashboard } from './components/HomeDashboard';
 import { ClientsManager } from './components/ClientsManager';
@@ -8,7 +8,6 @@ import { InvoiceHistory } from './components/InvoiceHistory';
 import { BottomNav } from './components/BottomNav';
 import { InvoicePrintModal } from './components/InvoicePrintModal';
 import { AdminLogin } from './components/AdminLogin';
-import { ChangePinModal } from './components/ChangePinModal';
 import { CompanySettingsModal } from './components/CompanySettingsModal';
 import { BUSINESS_INFO } from './data/initialData';
 import {
@@ -28,7 +27,6 @@ import { checkDbConnection } from './utils/api';
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => isAdminAuthenticated());
-  const [isChangePinOpen, setIsChangePinOpen] = useState(false);
   const [isCompanySettingsOpen, setIsCompanySettingsOpen] = useState(false);
   const [businessInfo, setBusinessInfo] = useState(() => getBusinessInfo());
 
@@ -227,20 +225,6 @@ export function App() {
           </button>
 
           <div className="flex items-center gap-1.5">
-            {/* Change Password Button */}
-            <button
-              type="button"
-              onClick={() => {
-                playHapticSound('tap');
-                setIsChangePinOpen(true);
-              }}
-              className="h-8 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95"
-              title="تغيير كلمة المرور للإدارة"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">كلمة المرور</span>
-            </button>
-
             {/* Logout / Lock Button */}
             <button
               type="button"
@@ -351,12 +335,6 @@ export function App() {
           }}
         />
       )}
-
-      {/* Change Admin Password Modal */}
-      <ChangePinModal
-        isOpen={isChangePinOpen}
-        onClose={() => setIsChangePinOpen(false)}
-      />
 
       {/* Wahib Coq Info & Company Settings Modal (Opened by clicking logo) */}
       <CompanySettingsModal
