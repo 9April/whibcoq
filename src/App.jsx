@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { KeyRound, LogOut, Lock, ShieldCheck, Database, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { KeyRound, LogOut, Lock, ShieldCheck, Database, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { InvoiceBuilder } from './components/InvoiceBuilder';
 import { HomeDashboard } from './components/HomeDashboard';
 import { ClientsManager } from './components/ClientsManager';
@@ -214,22 +214,6 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Quick Sync with Hostinger MySQL Button */}
-            <button
-              type="button"
-              onClick={() => handleSync(false)}
-              disabled={isSyncing}
-              className={`h-8 px-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all active:scale-95 border ${
-                dbStatus.connected
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
-                  : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
-              }`}
-              title="مزامنة فورية مع قاعدة بيانات Hostinger MySQL"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-emerald-600' : 'text-slate-600'}`} />
-              <span className="hidden sm:inline">{isSyncing ? 'مزامنة...' : 'مزامنة'}</span>
-            </button>
-
             {/* Change Password Button */}
             <button
               type="button"
