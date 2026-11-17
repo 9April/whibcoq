@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Load single authoritative credentials
     $userStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'admin_user'");
-    $adminUser = $userStmt->fetchColumn() ?: 'mohamed';
+    $adminUser = $userStmt->fetchColumn() ?: 'wahib';
 
     $passStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'admin_password'");
     $adminPassword = $passStmt->fetchColumn();

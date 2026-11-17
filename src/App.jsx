@@ -203,12 +203,9 @@ export function App() {
               alt="WAHIB COQ"
               className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs"
             />
-            <div className="flex items-baseline gap-1.5">
+            <div className="flex items-center gap-1.5">
               <span className="text-sm font-black text-slate-900 tracking-tight">
                 {BUSINESS_INFO.name}
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                mohamed
               </span>
             </div>
           </div>

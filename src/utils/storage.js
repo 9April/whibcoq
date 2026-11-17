@@ -265,9 +265,11 @@ export const saveClientProductPrice = (clientId, productId, price) => {
   } catch (e) {}
 };
 
-// Admin Authentication & Credentials (User: mohamed | Password: 12345)
+// Admin Authentication & Credentials (User: wahib | Password: 12345)
 export const getAdminUser = () => {
-  return localStorage.getItem(ADMIN_USER_KEY) || 'mohamed';
+  const saved = localStorage.getItem(ADMIN_USER_KEY);
+  if (saved && saved !== 'mohamed') return saved;
+  return 'wahib';
 };
 
 export const setAdminUser = (username) => {
@@ -305,14 +307,14 @@ export const getAdminPin = getAdminPassword;
 export const setAdminPin = setAdminPassword;
 
 export const verifyAdminCredentials = (user, pass) => {
-  const currentU = (getAdminUser() || 'mohamed').trim().toLowerCase();
+  const currentU = (getAdminUser() || 'wahib').trim().toLowerCase();
   const currentP = String(getAdminPassword() || '12345').trim();
 
   const inputU = String(user || '').trim().toLowerCase();
   const inputP = String(pass || '').trim();
 
-  // Allow login if user matches (case-insensitive) and password matches current OR 12345
-  const userOk = inputU === currentU || inputU === 'mohamed';
+  // Allow login if user matches wahib or current, and password matches current OR 12345
+  const userOk = inputU === currentU || inputU === 'wahib' || inputU === 'mohamed';
   const passOk = inputP === currentP || inputP === '12345';
 
   return userOk && passOk;

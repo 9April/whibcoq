@@ -333,7 +333,7 @@ app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
     const pricesMap = {};
     pRows.forEach((r) => (pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price)));
 
-    const currentAdminUser = uRows[0]?.setting_value || 'mohamed';
+    const currentAdminUser = uRows[0]?.setting_value || 'wahib';
     const currentAdminPass = sRows[0]?.setting_value || '12345';
 
     res.json({

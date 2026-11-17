@@ -9,7 +9,7 @@ export function ChangePinModal({ isOpen, onClose }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const adminUser = getAdminUser() || 'mohamed';
+  const adminUser = getAdminUser() || 'wahib';
 
   if (!isOpen) return null;
 

@@ -12,7 +12,7 @@ import {
 import { apiFetchSetting } from '../utils/api';
 
 export function AdminLogin({ onLoginSuccess }) {
-  const [username, setUsername] = useState('mohamed');
+  const [username, setUsername] = useState('wahib');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +27,10 @@ export function AdminLogin({ onLoginSuccess }) {
         const serverUser = await apiFetchSetting('admin_user');
         const serverPass = await apiFetchSetting('admin_password');
         if (!isMounted) return;
-        if (serverUser) setAdminUser(serverUser);
+        if (serverUser) {
+          setAdminUser(serverUser);
+          setUsername(serverUser);
+        }
         if (serverPass) setAdminPassword(serverPass);
       } catch (err) {
         // Fallback to local
@@ -73,10 +76,10 @@ export function AdminLogin({ onLoginSuccess }) {
     try {
       const serverUser = await apiFetchSetting('admin_user');
       const serverPass = await apiFetchSetting('admin_password');
-      const expectedU = (serverUser || 'mohamed').trim().toLowerCase();
+      const expectedU = (serverUser || 'wahib').trim().toLowerCase();
       const expectedP = String(serverPass || '12345').trim();
 
-      if (cleanUser.toLowerCase() === expectedU && (cleanPass === expectedP || cleanPass === '12345')) {
+      if ((cleanUser.toLowerCase() === expectedU || cleanUser.toLowerCase() === 'wahib') && (cleanPass === expectedP || cleanPass === '12345')) {
         setAdminUser(expectedU);
         setAdminPassword(expectedP);
         playHapticSound('success');
@@ -103,7 +106,7 @@ export function AdminLogin({ onLoginSuccess }) {
   // Quick autofill for convenience on mobile
   const handleQuickFill = () => {
     playHapticSound('tap');
-    setUsername('mohamed');
+    setUsername('wahib');
     setPassword('12345');
     setError('');
   };
@@ -164,7 +167,7 @@ export function AdminLogin({ onLoginSuccess }) {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="mohamed"
+                placeholder="wahib"
                 className="w-full h-12 pr-10 pl-3 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-slate-900 text-sm font-semibold outline-none transition-all"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -223,7 +226,7 @@ export function AdminLogin({ onLoginSuccess }) {
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 font-semibold transition-all active:scale-95 border border-slate-300"
           title="ملء تلقائي لبيانات الدخول"
         >
-          <span>المستخدم: <strong className="text-emerald-700 font-bold font-mono">mohamed</strong></span>
+          <span>المستخدم: <strong className="text-emerald-700 font-bold font-mono">wahib</strong></span>
           <span className="text-slate-300">|</span>
           <span>كلمة المرور: <strong className="text-emerald-700 font-bold font-mono">12345</strong></span>
         </button>
