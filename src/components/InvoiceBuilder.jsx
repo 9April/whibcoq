@@ -27,6 +27,7 @@ export function InvoiceBuilder({
   clients,
   onAddClient,
   onSaveInvoice,
+  onOpenPrint,
   editingInvoice,
   onCancelEdit,
 }) {
@@ -183,8 +184,12 @@ export function InvoiceBuilder({
     };
 
     onSaveInvoice(invoiceObj);
-    setSavedInvoiceForPreview(invoiceObj);
-    setIsPrintModalOpen(true);
+    if (onOpenPrint) {
+      onOpenPrint(invoiceObj);
+    } else {
+      setSavedInvoiceForPreview(invoiceObj);
+      setIsPrintModalOpen(true);
+    }
   };
 
   // Products to render based on filter mode
@@ -440,15 +445,17 @@ export function InvoiceBuilder({
         }}
       />
 
-      {/* Official A4 / Receipt Print Modal */}
-      <InvoicePrintModal
-        isOpen={isPrintModalOpen}
-        onClose={() => setIsPrintModalOpen(false)}
-        invoice={savedInvoiceForPreview}
-        onNewInvoice={() => {
-          handleClearAll();
-        }}
-      />
+      {/* Official A4 / Receipt Print Modal (Fallback if not handled by root App) */}
+      {!onOpenPrint && (
+        <InvoicePrintModal
+          isOpen={isPrintModalOpen}
+          onClose={() => setIsPrintModalOpen(false)}
+          invoice={savedInvoiceForPreview}
+          onNewInvoice={() => {
+            handleClearAll();
+          }}
+        />
+      )}
     </div>
   );
 }

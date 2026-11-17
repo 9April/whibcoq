@@ -52,9 +52,9 @@ export function InvoicePrintModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/70 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto animate-fadeIn">
+    <div className="printable-invoice-modal-overlay fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/70 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto animate-fadeIn">
       <div
-        className="w-full max-w-3xl bg-white rounded-t-3xl sm:rounded-3xl border border-slate-200 overflow-hidden shadow-2xl flex flex-col max-h-[96vh]"
+        className="printable-invoice-modal-dialog w-full max-w-3xl bg-white rounded-t-3xl sm:rounded-3xl border border-slate-200 overflow-hidden shadow-2xl flex flex-col max-h-[96vh]"
         dir="rtl"
       >
         {/* Modal Action Bar (Screen Only - Hidden in Print) */}
@@ -116,7 +116,7 @@ export function InvoicePrintModal({
         </div>
 
         {/* Printable Official Receipt Body */}
-        <div className="overflow-y-auto p-3 sm:p-8 bg-slate-100/60 flex justify-center">
+        <div className="printable-invoice-area-wrapper overflow-y-auto p-3 sm:p-8 bg-slate-100/60 flex justify-center">
           <div
             ref={printAreaRef}
             className="printable-invoice-area w-full max-w-[210mm] bg-white text-slate-900 p-5 sm:p-10 rounded-2xl shadow-sm border border-slate-200"

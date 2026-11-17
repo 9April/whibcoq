@@ -3,6 +3,7 @@ import { InvoiceBuilder } from './components/InvoiceBuilder';
 import { AnalyticsReports } from './components/AnalyticsReports';
 import { InvoiceHistory } from './components/InvoiceHistory';
 import { BottomNav } from './components/BottomNav';
+import { InvoicePrintModal } from './components/InvoicePrintModal';
 import {
   getStoredClients,
   saveStoredClients,
@@ -15,6 +16,7 @@ export function App() {
   const [clients, setClients] = useState(() => getStoredClients());
   const [invoices, setInvoices] = useState(() => getStoredInvoices());
   const [editingInvoice, setEditingInvoice] = useState(null);
+  const [invoiceToPrint, setInvoiceToPrint] = useState(null);
 
   const handleAddClient = (newClient) => {
     const updated = [newClient, ...clients];
@@ -55,13 +57,14 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col selection:bg-emerald-600 selection:text-white">
-      {/* Mobile-First Container (Stacked Single Column) */}
-      <main className="flex-1 max-w-lg w-full mx-auto p-3 sm:p-4">
+      {/* Mobile-First Container (Stacked Single Column) - Hidden during print */}
+      <main className="no-print flex-1 max-w-lg w-full mx-auto p-3 sm:p-4">
         {activeTab === 'builder' && (
           <InvoiceBuilder
             clients={clients}
             onAddClient={handleAddClient}
             onSaveInvoice={handleSaveInvoice}
+            onOpenPrint={(inv) => setInvoiceToPrint(inv)}
             editingInvoice={editingInvoice}
             onCancelEdit={handleCancelEdit}
           />
@@ -79,16 +82,31 @@ export function App() {
             invoices={invoices}
             onDeleteInvoice={handleDeleteInvoice}
             onEditInvoice={handleEditInvoice}
+            onOpenPrint={(inv) => setInvoiceToPrint(inv)}
           />
         )}
       </main>
 
-      {/* Fixed Bottom Navigation (3 Large Thumb-Accessible Tabs) */}
+      {/* Fixed Bottom Navigation (3 Large Thumb-Accessible Tabs) - Hidden during print */}
       <BottomNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         invoicesCount={invoices.length}
       />
+
+      {/* Official A4 / Receipt Print Modal - Rendered outside main so print isolates this exactly */}
+      {invoiceToPrint && (
+        <InvoicePrintModal
+          isOpen={!!invoiceToPrint}
+          onClose={() => setInvoiceToPrint(null)}
+          invoice={invoiceToPrint}
+          onNewInvoice={() => {
+            setInvoiceToPrint(null);
+            setEditingInvoice(null);
+            setActiveTab('builder');
+          }}
+        />
+      )}
     </div>
   );
 }

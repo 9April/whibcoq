@@ -7,6 +7,7 @@ export function InvoiceHistory({
   invoices,
   onDeleteInvoice,
   onEditInvoice,
+  onOpenPrint,
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInvoiceForPrint, setSelectedInvoiceForPrint] = useState(null);
@@ -58,7 +59,11 @@ export function InvoiceHistory({
               key={inv.id}
               onClick={() => {
                 playHapticSound('tap');
-                setSelectedInvoiceForPrint(inv);
+                if (onOpenPrint) {
+                  onOpenPrint(inv);
+                } else {
+                  setSelectedInvoiceForPrint(inv);
+                }
               }}
               className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 p-3.5 shadow-sm flex items-center justify-between gap-3 cursor-pointer transition-all active:scale-[0.99]"
             >
@@ -119,8 +124,8 @@ export function InvoiceHistory({
         )}
       </div>
 
-      {/* Re-Print Preview Modal */}
-      {selectedInvoiceForPrint && (
+      {/* Re-Print Preview Modal (Fallback if not handled by root App) */}
+      {!onOpenPrint && selectedInvoiceForPrint && (
         <InvoicePrintModal
           isOpen={!!selectedInvoiceForPrint}
           onClose={() => setSelectedInvoiceForPrint(null)}
