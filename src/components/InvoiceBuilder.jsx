@@ -225,6 +225,25 @@ export function InvoiceBuilder({
 
   return (
     <div className="flex flex-col gap-3 pb-36 animate-fadeIn">
+      {/* Top Header with Back to Dashboard Button */}
+      <div className="flex items-center justify-between px-0.5">
+        <button
+          type="button"
+          onClick={() => {
+            playHapticSound('tap');
+            if (onCancelEdit) onCancelEdit();
+          }}
+          className="text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl shadow-xs flex items-center gap-1.5 transition-all active:scale-95"
+        >
+          <ArrowRight className="w-3.5 h-3.5" />
+          <span>رجوع للوحة التحكم</span>
+        </button>
+
+        <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+          {editingInvoice ? `تعديل الفاتورة #${editingInvoice.id}` : 'إعداد الفاتورة (4 خطوات)'}
+        </span>
+      </div>
+
       {/* 4-Step Visual Progress Stepper Bar */}
       <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-xs">
         <div className="flex items-center justify-between gap-1 sm:gap-2">

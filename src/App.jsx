@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { KeyRound, LogOut, Lock, ShieldCheck, Database, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { InvoiceBuilder } from './components/InvoiceBuilder';
+import { HomeDashboard } from './components/HomeDashboard';
 import { ClientsManager } from './components/ClientsManager';
 import { AnalyticsReports } from './components/AnalyticsReports';
 import { InvoiceHistory } from './components/InvoiceHistory';
@@ -28,6 +29,8 @@ export function App() {
   const [isChangePinOpen, setIsChangePinOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'clients' | 'history' | 'reports'
+  const [isBuildingInvoice, setIsBuildingInvoice] = useState(false); // Controls hiding steps until user clicks Add Invoice
+
   const [clients, setClients] = useState(() => getStoredClients());
   const [invoices, setInvoices] = useState(() => getStoredInvoices());
   const [editingInvoice, setEditingInvoice] = useState(null);
@@ -116,6 +119,7 @@ export function App() {
   const handleStartInvoiceForClient = (client) => {
     setPreselectedClientId(client.id);
     setEditingInvoice(null);
+    setIsBuildingInvoice(true);
     setActiveTab('builder');
   };
 
@@ -123,6 +127,7 @@ export function App() {
     const updated = await persistInvoiceWithDb(newInvoice);
     setInvoices(updated);
     setEditingInvoice(null);
+    setIsBuildingInvoice(false);
   };
 
   const handleDeleteInvoice = async (invoiceId) => {
@@ -132,11 +137,14 @@ export function App() {
 
   const handleEditInvoice = (invoice) => {
     setEditingInvoice(invoice);
+    setIsBuildingInvoice(true);
     setActiveTab('builder');
   };
 
   const handleCancelEdit = () => {
     setEditingInvoice(null);
+    setPreselectedClientId(null);
+    setIsBuildingInvoice(false);
   };
 
   // If not authenticated, show Admin Login Screen
@@ -171,17 +179,18 @@ export function App() {
               type="button"
               onClick={() => handleSync(false)}
               disabled={isSyncing}
-              className={`h-8 px-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all active:scale-95 border ${dbStatus.connected
+              className={`h-8 px-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all active:scale-95 border ${
+                dbStatus.connected
                   ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
                   : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
-                }`}
+              }`}
               title="مزامنة فورية مع قاعدة بيانات Hostinger MySQL"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-emerald-600' : 'text-slate-600'}`} />
               <span className="hidden sm:inline">{isSyncing ? 'مزامنة...' : 'مزامنة'}</span>
             </button>
 
-            {/* Change PIN Button */}
+            {/* Change Password Button */}
             <button
               type="button"
               onClick={() => {
@@ -189,7 +198,7 @@ export function App() {
                 setIsChangePinOpen(true);
               }}
               className="h-8 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95"
-              title="تغيير الرمز السري للإدارة"
+              title="تغيير كلمة المرور للإدارة"
             >
               <KeyRound className="w-3.5 h-3.5 text-slate-500" />
               <span className="hidden sm:inline">كلمة المرور</span>
@@ -212,16 +221,30 @@ export function App() {
       {/* Mobile-First Container (Stacked Single Column) - Hidden during print */}
       <main className="no-print flex-1 max-w-lg w-full mx-auto p-3 sm:p-4">
         {activeTab === 'builder' && (
-          <InvoiceBuilder
-            key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
-            clients={clients}
-            initialClientId={preselectedClientId}
-            onAddClient={handleAddClient}
-            onSaveInvoice={handleSaveInvoice}
-            onOpenPrint={(inv) => setInvoiceToPrint(inv)}
-            editingInvoice={editingInvoice}
-            onCancelEdit={handleCancelEdit}
-          />
+          isBuildingInvoice ? (
+            <InvoiceBuilder
+              key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
+              clients={clients}
+              initialClientId={preselectedClientId}
+              onAddClient={handleAddClient}
+              onSaveInvoice={handleSaveInvoice}
+              onOpenPrint={(inv) => setInvoiceToPrint(inv)}
+              editingInvoice={editingInvoice}
+              onCancelEdit={handleCancelEdit}
+            />
+          ) : (
+            <HomeDashboard
+              clients={clients}
+              invoices={invoices}
+              onStartNewInvoice={() => {
+                setPreselectedClientId(null);
+                setEditingInvoice(null);
+                setIsBuildingInvoice(true);
+              }}
+              onViewClients={() => setActiveTab('clients')}
+              onViewHistory={() => setActiveTab('history')}
+            />
+          )
         )}
 
         {activeTab === 'clients' && (
@@ -255,10 +278,20 @@ export function App() {
       {/* Fixed Bottom Navigation (4 Large Thumb-Accessible Tabs) - Hidden during print */}
       <BottomNav
         activeTab={activeTab}
+        isBuildingInvoice={isBuildingInvoice}
         setActiveTab={(tab) => {
-          if (tab === 'builder' && activeTab !== 'builder') {
-            setPreselectedClientId(null);
-            setEditingInvoice(null);
+          if (tab === 'builder') {
+            if (activeTab === 'builder' && !isBuildingInvoice) {
+              // Clicking "فاتورة جديدة" from dashboard opens the steps!
+              setIsBuildingInvoice(true);
+            } else if (activeTab !== 'builder') {
+              // Clicking from another tab opens the steps!
+              setPreselectedClientId(null);
+              setEditingInvoice(null);
+              setIsBuildingInvoice(true);
+            }
+          } else {
+            setIsBuildingInvoice(false);
           }
           setActiveTab(tab);
         }}
@@ -275,12 +308,13 @@ export function App() {
           onNewInvoice={() => {
             setInvoiceToPrint(null);
             setEditingInvoice(null);
+            setIsBuildingInvoice(true);
             setActiveTab('builder');
           }}
         />
       )}
 
-      {/* Change Admin PIN Modal */}
+      {/* Change Admin Password Modal */}
       <ChangePinModal
         isOpen={isChangePinOpen}
         onClose={() => setIsChangePinOpen(false)}

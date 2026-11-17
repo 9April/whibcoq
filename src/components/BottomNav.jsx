@@ -1,14 +1,14 @@
 import React from 'react';
-import { PlusCircle, Users, Receipt, BarChart3 } from 'lucide-react';
+import { PlusCircle, Users, Receipt, BarChart3, Layers } from 'lucide-react';
 import { playHapticSound } from '../utils/storage';
 
-export function BottomNav({ activeTab, setActiveTab, invoicesCount, clientsCount }) {
+export function BottomNav({ activeTab, setActiveTab, invoicesCount, clientsCount, isBuildingInvoice }) {
   const tabs = [
     {
       id: 'builder',
-      title: 'فاتورة جديدة',
+      title: isBuildingInvoice ? 'إعداد الفاتورة' : 'فاتورة جديدة',
       subtitle: 'Nouvelle Facture',
-      icon: PlusCircle,
+      icon: isBuildingInvoice ? Layers : PlusCircle,
     },
     {
       id: 'clients',
@@ -79,3 +79,5 @@ export function BottomNav({ activeTab, setActiveTab, invoicesCount, clientsCount
     </nav>
   );
 }
+
+export default BottomNav;
