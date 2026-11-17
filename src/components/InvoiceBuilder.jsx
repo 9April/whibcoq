@@ -207,10 +207,12 @@ export function InvoiceBuilder({
       <div className="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-sm flex flex-col gap-2.5">
         {/* Brand Bar */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-black text-sm shadow-sm">
-              W
-            </span>
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/wahibcoq.jpeg"
+              alt="WAHIB COQ"
+              className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-xs"
+            />
             <div>
               <span className="text-base font-black text-slate-900 tracking-tight">
                 {BUSINESS_INFO.name}

@@ -77,9 +77,11 @@ export function InvoicePrintModal({
         {/* Modal Action Bar (Screen Only - Hidden in Print) */}
         <div className="no-print bg-slate-900 text-white px-4 py-3 sm:px-6 sm:py-3.5 flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <FileText className="w-4 h-4" />
-            </span>
+            <img
+              src="/wahibcoq.jpeg"
+              alt="WAHIB COQ"
+              className="w-8 h-8 rounded-lg object-cover border border-slate-700"
+            />
             <div>
               <span className="text-base font-black">فاتورة بيع #{invoice.id}</span>
               <span className="text-xs text-slate-400 block">{invoice.clientName}</span>
@@ -140,20 +142,27 @@ export function InvoicePrintModal({
           >
             {/* Header matching classic WAHIB COQ invoice */}
             <div className="border-b-2 border-slate-900 pb-4 mb-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                    {BUSINESS_INFO.name}
-                  </h1>
-                  <p className="text-xs font-bold text-slate-600 mt-0.5">
-                    {BUSINESS_INFO.frenchSubtitle}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {BUSINESS_INFO.arabicTitle}
-                  </p>
-                  <p className="text-[11px] text-slate-400 font-mono mt-1">
-                    {BUSINESS_INFO.taxInfo}
-                  </p>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <img
+                    src="/wahibcoq.jpeg"
+                    alt="WAHIB COQ"
+                    className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-xl border border-slate-300 p-0.5 bg-white flex-shrink-0"
+                  />
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                      {BUSINESS_INFO.name}
+                    </h1>
+                    <p className="text-xs font-bold text-slate-600 mt-0.5">
+                      {BUSINESS_INFO.frenchSubtitle}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {BUSINESS_INFO.arabicTitle}
+                    </p>
+                    <p className="text-[11px] text-slate-400 font-mono mt-1">
+                      {BUSINESS_INFO.taxInfo}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="text-left border-2 border-slate-900 rounded-xl p-2.5 bg-slate-50 min-w-[170px]" dir="ltr">

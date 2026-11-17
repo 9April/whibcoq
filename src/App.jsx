@@ -89,9 +89,11 @@ export function App() {
       <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
         <div className="max-w-lg mx-auto px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-black text-xs">
-              W
-            </span>
+            <img
+              src="/wahibcoq.jpeg"
+              alt="WAHIB COQ"
+              className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs"
+            />
             <div className="flex items-baseline gap-1.5">
               <span className="text-sm font-black text-slate-900 tracking-tight">
                 {BUSINESS_INFO.name}

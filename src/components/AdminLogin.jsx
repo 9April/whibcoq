@@ -83,9 +83,11 @@ export function AdminLogin({ onLoginSuccess }) {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between items-center p-4 py-8 select-none" dir="rtl">
       {/* Top Branding */}
       <div className="w-full max-w-sm flex flex-col items-center text-center mt-2">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-2xl shadow-md mb-3 ring-4 ring-emerald-100">
-          W
-        </div>
+        <img
+          src="/wahibcoq.jpeg"
+          alt="WAHIB COQ"
+          className="w-20 h-20 rounded-2xl object-cover shadow-md mb-3 ring-4 ring-emerald-100 border border-slate-200"
+        />
 
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
           {BUSINESS_INFO.name}
