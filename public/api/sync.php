@@ -80,14 +80,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // 4. Sync admin PIN if sent
-    if (!empty($input['adminPin'])) {
-        $stmtPin = $pdo->prepare('
+    // 4. Sync admin credentials if sent
+    $newPass = !empty($input['adminPassword']) ? $input['adminPassword'] : (!empty($input['adminPin']) ? $input['adminPin'] : null);
+    if (!empty($newPass) && $newPass !== '1234') {
+        $stmtPass = $pdo->prepare("
             INSERT INTO settings (setting_key, setting_value)
-            VALUES (\'admin_pin\', :pin)
+            VALUES ('admin_password', :pass)
             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
-        ');
-        $stmtPin->execute([':pin' => (string)$input['adminPin']]);
+        ");
+        $stmtPass->execute([':pass' => (string)$newPass]);
+
+        $stmtPin = $pdo->prepare("
+            INSERT INTO settings (setting_key, setting_value)
+            VALUES ('admin_pin', :pin)
+            ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+        ");
+        $stmtPin->execute([':pin' => (string)$newPass]);
+    }
+
+    if (!empty($input['adminUser'])) {
+        $stmtUser = $pdo->prepare("
+            INSERT INTO settings (setting_key, setting_value)
+            VALUES ('admin_user', :user)
+            ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+        ");
+        $stmtUser->execute([':user' => (string)$input['adminUser']]);
     }
 
     // Now return full database state to synchronize the client
@@ -110,8 +127,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $prices[$pr['client_id'] . '_' . $pr['product_id']] = (float)$pr['price'];
     }
 
-    $pinStmt = $pdo->query('SELECT setting_value FROM settings WHERE setting_key = \'admin_pin\'');
-    $adminPin = $pinStmt->fetchColumn() ?: '1234';
+    // Load single authoritative credentials
+    $userStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'admin_user'");
+    $adminUser = $userStmt->fetchColumn() ?: 'mohamed';
+
+    $passStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'admin_password'");
+    $adminPassword = $passStmt->fetchColumn();
+    if (!$adminPassword) {
+        $pinStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'admin_pin'");
+        $adminPassword = $pinStmt->fetchColumn() ?: '12345';
+    }
 
     echo json_encode([
         'ok' => true,
@@ -119,7 +144,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'clients' => $clients,
         'invoices' => $invoices,
         'prices' => $prices,
-        'adminPin' => $adminPin,
+        'adminUser' => $adminUser,
+        'adminPassword' => $adminPassword,
+        'adminPin' => $adminPassword,
         'syncedAt' => time(),
     ], JSON_UNESCAPED_UNICODE);
     exit;

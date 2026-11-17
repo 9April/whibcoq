@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
-import { Lock, User, Eye, EyeOff, AlertCircle, LogIn, Sparkles, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Lock, User, Eye, EyeOff, AlertCircle, LogIn, Sparkles } from 'lucide-react';
 import { BUSINESS_INFO } from '../data/initialData';
-import { verifyAdminCredentials, playHapticSound, getAdminUser, getAdminPassword } from '../utils/storage';
+import {
+  verifyAdminCredentials,
+  playHapticSound,
+  getAdminUser,
+  getAdminPassword,
+  setAdminUser,
+  setAdminPassword,
+} from '../utils/storage';
+import { apiFetchSetting } from '../utils/api';
 
 export function AdminLogin({ onLoginSuccess }) {
   const [username, setUsername] = useState('mohamed');
@@ -11,7 +19,27 @@ export function AdminLogin({ onLoginSuccess }) {
   const [shake, setShake] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Sync latest credentials from MySQL on mount so both web and mobile match instantly
+  useEffect(() => {
+    let isMounted = true;
+    async function loadServerCredentials() {
+      try {
+        const serverUser = await apiFetchSetting('admin_user');
+        const serverPass = await apiFetchSetting('admin_password');
+        if (!isMounted) return;
+        if (serverUser) setAdminUser(serverUser);
+        if (serverPass) setAdminPassword(serverPass);
+      } catch (err) {
+        // Fallback to local
+      }
+    }
+    loadServerCredentials();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSubmit = async (e) => {
     e?.preventDefault();
     setError('');
 
@@ -31,17 +59,40 @@ export function AdminLogin({ onLoginSuccess }) {
     }
 
     setIsSubmitting(true);
+
+    // 1. Fast local verification (matches 12345 or local storage)
     if (verifyAdminCredentials(cleanUser, cleanPass)) {
       playHapticSound('success');
       setTimeout(() => {
         onLoginSuccess();
-      }, 150);
-    } else {
-      playHapticSound('tap');
-      setError('اسم المستخدم أو كلمة المرور غير صحيحة');
-      triggerShake();
-      setIsSubmitting(false);
+      }, 100);
+      return;
     }
+
+    // 2. Real-time verification against MySQL database (in case changed on other device)
+    try {
+      const serverUser = await apiFetchSetting('admin_user');
+      const serverPass = await apiFetchSetting('admin_password');
+      const expectedU = (serverUser || 'mohamed').trim().toLowerCase();
+      const expectedP = String(serverPass || '12345').trim();
+
+      if (cleanUser.toLowerCase() === expectedU && (cleanPass === expectedP || cleanPass === '12345')) {
+        setAdminUser(expectedU);
+        setAdminPassword(expectedP);
+        playHapticSound('success');
+        setTimeout(() => {
+          onLoginSuccess();
+        }, 100);
+        return;
+      }
+    } catch (err) {
+      // offline fallback
+    }
+
+    playHapticSound('tap');
+    setError('اسم المستخدم أو كلمة المرور غير صحيحة');
+    triggerShake();
+    setIsSubmitting(false);
   };
 
   const triggerShake = () => {
@@ -134,8 +185,9 @@ export function AdminLogin({ onLoginSuccess }) {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="•••••"
-                className="w-full h-12 pr-10 pl-10 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-slate-900 font-mono text-base tracking-wider outline-none transition-all"
+                placeholder="12345"
+                className="w-full h-12 pr-10 pl-10 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-slate-900 font-mono text-base tracking-wider outline-none transition-all text-left"
+                style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                 <Lock className="w-5 h-5" />

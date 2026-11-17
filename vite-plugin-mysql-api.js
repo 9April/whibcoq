@@ -272,12 +272,28 @@ export function mysqlApiPlugin() {
               }
             }
 
-            if (adminPin) {
+            const newPass = body.adminPassword || body.adminPin;
+            if (newPass && newPass !== '1234') {
+              await pool.query(
+                `INSERT INTO settings (setting_key, setting_value)
+                 VALUES ('admin_password', ?)
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+                [String(newPass)]
+              );
               await pool.query(
                 `INSERT INTO settings (setting_key, setting_value)
                  VALUES ('admin_pin', ?)
                  ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
-                [String(adminPin)]
+                [String(newPass)]
+              );
+            }
+
+            if (body.adminUser) {
+              await pool.query(
+                `INSERT INTO settings (setting_key, setting_value)
+                 VALUES ('admin_user', ?)
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+                [String(body.adminUser)]
               );
             }
 
@@ -286,7 +302,8 @@ export function mysqlApiPlugin() {
               'SELECT id, client_id as clientId, client_name as clientName, client_phone as clientPhone, date, total_weight as totalWeight, total_amount as totalAmount, items, timestamp FROM invoices ORDER BY timestamp DESC'
             );
             const [pRows] = await pool.query('SELECT client_id, product_id, price FROM client_prices');
-            const [sRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_pin'");
+            const [uRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_user'");
+            const [sRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_password'");
 
             const parsedInvoices = iRows.map((r) => ({
               ...r,
@@ -299,13 +316,18 @@ export function mysqlApiPlugin() {
             const pricesMap = {};
             pRows.forEach((r) => (pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price)));
 
+            const currentAdminUser = uRows[0]?.setting_value || 'mohamed';
+            const currentAdminPass = sRows[0]?.setting_value || '12345';
+
             return sendJson(res, 200, {
               ok: true,
               database: dbConfig.database,
               clients: cRows,
               invoices: parsedInvoices,
               prices: pricesMap,
-              adminPin: sRows[0]?.setting_value || '1234',
+              adminUser: currentAdminUser,
+              adminPassword: currentAdminPass,
+              adminPin: currentAdminPass,
               syncedAt: Date.now(),
             });
           }

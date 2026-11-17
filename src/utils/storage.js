@@ -281,16 +281,16 @@ export const setAdminUser = (username) => {
 };
 
 export const getAdminPassword = () => {
-  return (
-    localStorage.getItem(ADMIN_PASSWORD_KEY) ||
-    localStorage.getItem(ADMIN_PIN_KEY) ||
-    '12345'
-  );
+  const saved = localStorage.getItem(ADMIN_PASSWORD_KEY);
+  if (saved && saved !== '1234' && saved !== '1213') {
+    return saved;
+  }
+  return '12345';
 };
 
 export const setAdminPassword = (newPass) => {
   if (newPass && newPass.length >= 4) {
-    const passStr = String(newPass);
+    const passStr = String(newPass).trim();
     localStorage.setItem(ADMIN_PASSWORD_KEY, passStr);
     localStorage.setItem(ADMIN_PIN_KEY, passStr);
     apiSaveSetting('admin_password', passStr).catch((e) => console.warn('MySQL pass sync:', e));
@@ -311,9 +311,9 @@ export const verifyAdminCredentials = (user, pass) => {
   const inputU = String(user || '').trim().toLowerCase();
   const inputP = String(pass || '').trim();
 
-  // Allow login if user matches (case-insensitive) and password matches current OR default 12345
+  // Allow login if user matches (case-insensitive) and password matches current OR 12345
   const userOk = inputU === currentU || inputU === 'mohamed';
-  const passOk = inputP === currentP || inputP === '12345' || inputP === '1234';
+  const passOk = inputP === currentP || inputP === '12345';
 
   return userOk && passOk;
 };
@@ -321,7 +321,7 @@ export const verifyAdminCredentials = (user, pass) => {
 export const verifyAdminPin = (inputPin) => {
   const currentPin = String(getAdminPassword() || '12345').trim();
   const pin = String(inputPin || '').trim();
-  return pin === currentPin || pin === '12345' || pin === '1234';
+  return pin === currentPin || pin === '12345';
 };
 
 export const isAdminAuthenticated = () => {
