@@ -124,12 +124,7 @@ export function ClientsManager({
               <Users className="w-5 h-5" />
             </span>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-slate-900">إدارة الزبائن التجاريين</h2>
-                <span className="px-2 py-0.2 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200 tabular-nums">
-                  {clients.length} زبون
-                </span>
-              </div>
+              <h2 className="text-lg font-black text-slate-900">إدارة الزبائن التجاريين</h2>
               <p className="text-xs text-slate-500">سجل الزبائن، التعديل، الاتصال، وبدء الفواتير</p>
             </div>
           </div>
