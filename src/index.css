@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: 'Cairo', 'Tajawal', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    touch-action: manipulation;
+    background-color: #F8FAFC;
+    color: #0F172A;
+  }
+
+  input, textarea, select {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom crisp scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Safe area padding for mobile iPhones/Androids with gesture home bar */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
+}
+
+.bottom-safe {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Print specific styling for clean official WAHIB COQ A4 / Thermal receipts */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+  
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  nav,
+  header,
+  footer,
+  .no-print,
+  .bottom-nav,
+  .floating-checkout,
+  button:not(.print-include) {
+    display: none !important;
+  }
+
+  .printable-invoice-area {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .printable-invoice-area * {
+    color: #000000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .print-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #1e293b !important;
+    padding: 7px 10px !important;
+  }
+
+  .print-table th {
+    background-color: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
