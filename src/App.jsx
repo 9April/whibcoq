@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { KeyRound, LogOut, Lock, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { KeyRound, LogOut, Lock, ShieldCheck, Database, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { InvoiceBuilder } from './components/InvoiceBuilder';
 import { ClientsManager } from './components/ClientsManager';
 import { AnalyticsReports } from './components/AnalyticsReports';
@@ -11,28 +11,83 @@ import { ChangePinModal } from './components/ChangePinModal';
 import { BUSINESS_INFO } from './data/initialData';
 import {
   getStoredClients,
-  saveStoredClients,
   getStoredInvoices,
-  saveStoredInvoices,
+  persistClientWithDb,
+  deleteClientWithDb,
+  persistInvoiceWithDb,
+  deleteInvoiceWithDb,
+  performDatabaseSync,
   isAdminAuthenticated,
   setAdminAuthenticated,
   playHapticSound,
 } from './utils/storage';
+import { checkDbConnection } from './utils/api';
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => isAdminAuthenticated());
   const [isChangePinOpen, setIsChangePinOpen] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'reports' | 'history'
+  const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'clients' | 'history' | 'reports'
   const [clients, setClients] = useState(() => getStoredClients());
   const [invoices, setInvoices] = useState(() => getStoredInvoices());
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [invoiceToPrint, setInvoiceToPrint] = useState(null);
   const [preselectedClientId, setPreselectedClientId] = useState(null);
 
+  // Database Connection & Sync States
+  const [dbStatus, setDbStatus] = useState({ connected: false, checking: true, name: 'u895506237_wahib' });
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
+
+  // Trigger sync with Hostinger MySQL
+  const handleSync = useCallback(async (isSilent = false) => {
+    if (!isSilent) playHapticSound('tap');
+    setIsSyncing(true);
+    try {
+      const conn = await checkDbConnection();
+      setDbStatus({
+        connected: conn.connected,
+        checking: false,
+        name: conn.database || 'u895506237_wahib',
+      });
+
+      if (conn.connected) {
+        const syncRes = await performDatabaseSync();
+        if (syncRes && syncRes.success) {
+          setClients(getStoredClients());
+          setInvoices(getStoredInvoices());
+          setLastSyncTime(new Date().toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' }));
+          if (!isSilent) playHapticSound('success');
+        }
+      }
+    } catch (e) {
+      console.warn('Sync failed:', e);
+      setDbStatus((prev) => ({ ...prev, connected: false, checking: false }));
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  // Sync on startup and listen for custom sync events
+  useEffect(() => {
+    handleSync(true);
+
+    const onSynced = (e) => {
+      setClients(getStoredClients());
+      setInvoices(getStoredInvoices());
+      if (e.detail?.timestamp) {
+        setLastSyncTime(new Date().toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' }));
+      }
+    };
+
+    window.addEventListener('wahib_db_synced', onSynced);
+    return () => window.removeEventListener('wahib_db_synced', onSynced);
+  }, [handleSync]);
+
   const handleLoginSuccess = () => {
     setAdminAuthenticated(true);
     setIsAuthenticated(true);
+    handleSync(true);
   };
 
   const handleLogout = () => {
@@ -43,22 +98,19 @@ export function App() {
     }
   };
 
-  const handleAddClient = (newClient) => {
-    const updated = [newClient, ...clients];
+  const handleAddClient = async (newClient) => {
+    const updated = await persistClientWithDb(newClient);
     setClients(updated);
-    saveStoredClients(updated);
   };
 
-  const handleUpdateClient = (updatedClient) => {
-    const updated = clients.map((c) => (c.id === updatedClient.id ? updatedClient : c));
+  const handleUpdateClient = async (updatedClient) => {
+    const updated = await persistClientWithDb(updatedClient);
     setClients(updated);
-    saveStoredClients(updated);
   };
 
-  const handleDeleteClient = (clientId) => {
-    const updated = clients.filter((c) => c.id !== clientId);
+  const handleDeleteClient = async (clientId) => {
+    const updated = await deleteClientWithDb(clientId);
     setClients(updated);
-    saveStoredClients(updated);
   };
 
   const handleStartInvoiceForClient = (client) => {
@@ -67,26 +119,15 @@ export function App() {
     setActiveTab('builder');
   };
 
-  const handleSaveInvoice = (newInvoice) => {
-    let updated;
-    const existsIndex = invoices.findIndex((i) => i.id === newInvoice.id);
-
-    if (existsIndex >= 0) {
-      updated = [...invoices];
-      updated[existsIndex] = newInvoice;
-    } else {
-      updated = [newInvoice, ...invoices];
-    }
-
+  const handleSaveInvoice = async (newInvoice) => {
+    const updated = await persistInvoiceWithDb(newInvoice);
     setInvoices(updated);
-    saveStoredInvoices(updated);
     setEditingInvoice(null);
   };
 
-  const handleDeleteInvoice = (invoiceId) => {
-    const updated = invoices.filter((i) => i.id !== invoiceId);
+  const handleDeleteInvoice = async (invoiceId) => {
+    const updated = await deleteInvoiceWithDb(invoiceId);
     setInvoices(updated);
-    saveStoredInvoices(updated);
   };
 
   const handleEditInvoice = (invoice) => {
@@ -104,7 +145,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col selection:bg-emerald-600 selection:text-white">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col selection:bg-emerald-600 selection:text-white" dir="rtl">
       {/* Top Admin Header Bar (Hidden during print) */}
       <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
         <div className="max-w-lg mx-auto px-3 py-2 flex items-center justify-between">
@@ -114,17 +155,53 @@ export function App() {
               alt="WAHIB COQ"
               className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs"
             />
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-black text-slate-900 tracking-tight">
-                {BUSINESS_INFO.name}
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                إدارة
-              </span>
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm font-black text-slate-900 tracking-tight">
+                  {BUSINESS_INFO.name}
+                </span>
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  إدارة
+                </span>
+              </div>
+              {/* MySQL Status Pill */}
+              <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500">
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    dbStatus.connected
+                      ? 'bg-emerald-500 ring-2 ring-emerald-200'
+                      : dbStatus.checking
+                      ? 'bg-amber-400 animate-pulse'
+                      : 'bg-amber-500'
+                  }`}
+                />
+                <span className="truncate max-w-[130px]">
+                  {dbStatus.connected ? 'متصل بـ MySQL' : 'مزامنة محلية'}
+                </span>
+                {lastSyncTime && (
+                  <span className="text-slate-400 text-[9px] tabular-nums">({lastSyncTime})</span>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5">
+            {/* Quick Sync with Hostinger MySQL Button */}
+            <button
+              type="button"
+              onClick={() => handleSync(false)}
+              disabled={isSyncing}
+              className={`h-8 px-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all active:scale-95 border ${
+                dbStatus.connected
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+                  : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+              }`}
+              title="مزامنة فورية مع قاعدة بيانات Hostinger MySQL"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-emerald-600' : 'text-slate-600'}`} />
+              <span className="hidden sm:inline">{isSyncing ? 'مزامنة...' : 'مزامنة'}</span>
+            </button>
+
             {/* Change PIN Button */}
             <button
               type="button"
@@ -136,7 +213,7 @@ export function App() {
               title="تغيير الرمز السري للإدارة"
             >
               <KeyRound className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">الرمز السري</span>
+              <span className="hidden sm:inline">الرمز</span>
             </button>
 
             {/* Logout / Lock Button */}

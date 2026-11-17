@@ -1,0 +1,321 @@
+import mysql from 'mysql2/promise';
+
+export function mysqlApiPlugin() {
+  const dbConfig = {
+    host: process.env.DB_HOST || 'srv898.hstgr.io',
+    port: Number(process.env.DB_PORT) || 3306,
+    user: process.env.DB_USER || 'u895506237_wahib',
+    password: process.env.DB_PASSWORD || '9uMCumV/',
+    database: process.env.DB_NAME || 'u895506237_wahib',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+  };
+
+  let pool;
+  try {
+    pool = mysql.createPool(dbConfig);
+  } catch (e) {
+    console.error('Failed to create MySQL pool in Vite plugin:', e);
+  }
+
+  const parseJsonBody = (req) => {
+    return new Promise((resolve) => {
+      let body = '';
+      req.on('data', (chunk) => (body += chunk));
+      req.on('end', () => {
+        try {
+          resolve(body ? JSON.parse(body) : {});
+        } catch {
+          resolve({});
+        }
+      });
+    });
+  };
+
+  const sendJson = (res, statusCode, data) => {
+    res.statusCode = statusCode;
+    res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.end(JSON.stringify(data));
+  };
+
+  return {
+    name: 'vite-mysql-api',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url.startsWith('/api')) {
+          return next();
+        }
+
+        const url = new URL(req.url, 'http://localhost');
+        const pathname = url.pathname.replace(/\.php$/, ''); // normalize /api/clients.php -> /api/clients
+
+        if (!pool) {
+          return sendJson(res, 500, { ok: false, error: 'MySQL pool not initialized' });
+        }
+
+        try {
+          // Status
+          if (pathname === '/api/status') {
+            const [clients] = await pool.query('SELECT COUNT(*) as count FROM clients');
+            const [invoices] = await pool.query('SELECT COUNT(*) as count FROM invoices');
+            const [prices] = await pool.query('SELECT COUNT(*) as count FROM client_prices');
+            return sendJson(res, 200, {
+              ok: true,
+              database: dbConfig.database,
+              status: 'connected',
+              stats: {
+                clients: clients[0].count,
+                invoices: invoices[0].count,
+                prices: prices[0].count,
+              },
+              timestamp: Date.now(),
+            });
+          }
+
+          // Clients
+          if (pathname === '/api/clients') {
+            if (req.method === 'GET') {
+              const [rows] = await pool.query('SELECT id, name, phone, category FROM clients ORDER BY created_at ASC');
+              return sendJson(res, 200, rows);
+            }
+            if (req.method === 'POST') {
+              const body = await parseJsonBody(req);
+              if (!body.name) return sendJson(res, 400, { ok: false, error: 'Name is required' });
+              const clientId = body.id || `c_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+              const phone = body.phone || '';
+              const category = body.category || 'عام';
+              await pool.query(
+                `INSERT INTO clients (id, name, phone, category) 
+                 VALUES (?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE name = VALUES(name), phone = VALUES(phone), category = VALUES(category)`,
+                [clientId, body.name, phone, category]
+              );
+              return sendJson(res, 200, { ok: true, client: { id: clientId, name: body.name, phone, category } });
+            }
+            if (req.method === 'DELETE') {
+              const id = url.searchParams.get('id') || (await parseJsonBody(req)).id;
+              if (!id) return sendJson(res, 400, { ok: false, error: 'Client ID required' });
+              await pool.query('DELETE FROM clients WHERE id = ?', [id]);
+              await pool.query('DELETE FROM client_prices WHERE client_id = ?', [id]);
+              return sendJson(res, 200, { ok: true, deleted_id: id });
+            }
+          }
+
+          // Invoices
+          if (pathname === '/api/invoices') {
+            if (req.method === 'GET') {
+              const [rows] = await pool.query(
+                'SELECT id, client_id as clientId, client_name as clientName, client_phone as clientPhone, date, total_weight as totalWeight, total_amount as totalAmount, items, timestamp FROM invoices ORDER BY timestamp DESC'
+              );
+              const invoices = rows.map((r) => ({
+                ...r,
+                totalWeight: Number(r.totalWeight),
+                totalAmount: Number(r.totalAmount),
+                timestamp: Number(r.timestamp),
+                items: typeof r.items === 'string' ? JSON.parse(r.items || '[]') : r.items,
+              }));
+              return sendJson(res, 200, invoices);
+            }
+            if (req.method === 'POST') {
+              const body = await parseJsonBody(req);
+              if (!body.id) return sendJson(res, 400, { ok: false, error: 'Invoice ID is required' });
+              const itemsStr = typeof body.items === 'string' ? body.items : JSON.stringify(body.items || []);
+              const ts = body.timestamp || Date.now();
+              await pool.query(
+                `INSERT INTO invoices (id, client_id, client_name, client_phone, date, total_weight, total_amount, items, timestamp)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE 
+                   client_id = VALUES(client_id),
+                   client_name = VALUES(client_name),
+                   client_phone = VALUES(client_phone),
+                   date = VALUES(date),
+                   total_weight = VALUES(total_weight),
+                   total_amount = VALUES(total_amount),
+                   items = VALUES(items),
+                   timestamp = VALUES(timestamp)`,
+                [
+                  body.id,
+                  body.clientId || 'c_default',
+                  body.clientName || 'زبون عام',
+                  body.clientPhone || '',
+                  body.date || new Date().toISOString().split('T')[0],
+                  body.totalWeight || 0,
+                  body.totalAmount || 0,
+                  itemsStr,
+                  ts,
+                ]
+              );
+              return sendJson(res, 200, { ok: true, id: body.id });
+            }
+            if (req.method === 'DELETE') {
+              const id = url.searchParams.get('id') || (await parseJsonBody(req)).id;
+              if (!id) return sendJson(res, 400, { ok: false, error: 'Invoice ID required' });
+              await pool.query('DELETE FROM invoices WHERE id = ?', [id]);
+              return sendJson(res, 200, { ok: true, deleted_id: id });
+            }
+          }
+
+          // Custom Prices
+          if (pathname === '/api/prices') {
+            if (req.method === 'GET') {
+              const [rows] = await pool.query('SELECT client_id, product_id, price FROM client_prices');
+              const pricesMap = {};
+              rows.forEach((r) => (pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price)));
+              return sendJson(res, 200, pricesMap);
+            }
+            if (req.method === 'POST') {
+              const body = await parseJsonBody(req);
+              const { clientId, productId, price } = body;
+              if (!clientId || !productId || price === undefined) {
+                return sendJson(res, 400, { ok: false, error: 'Missing parameters' });
+              }
+              await pool.query(
+                `INSERT INTO client_prices (client_id, product_id, price)
+                 VALUES (?, ?, ?)
+                 ON DUPLICATE KEY UPDATE price = VALUES(price)`,
+                [clientId, productId, Number(price)]
+              );
+              return sendJson(res, 200, { ok: true, key: `${clientId}_${productId}`, price: Number(price) });
+            }
+          }
+
+          // Settings / PIN
+          if (pathname === '/api/settings') {
+            if (req.method === 'GET') {
+              const key = url.searchParams.get('key');
+              if (key) {
+                const [rows] = await pool.query('SELECT setting_value FROM settings WHERE setting_key = ?', [key]);
+                return sendJson(res, 200, { key, value: rows[0]?.setting_value || null });
+              }
+              const [rows] = await pool.query('SELECT setting_key, setting_value FROM settings');
+              const obj = {};
+              rows.forEach((r) => (obj[r.setting_key] = r.setting_value));
+              return sendJson(res, 200, obj);
+            }
+            if (req.method === 'POST') {
+              const body = await parseJsonBody(req);
+              const { key, value } = body;
+              if (!key) return sendJson(res, 400, { ok: false, error: 'Key is required' });
+              await pool.query(
+                `INSERT INTO settings (setting_key, setting_value)
+                 VALUES (?, ?)
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+                [key, String(value)]
+              );
+              return sendJson(res, 200, { ok: true, key, value: String(value) });
+            }
+          }
+
+          // Batch Sync
+          if (pathname === '/api/sync' && req.method === 'POST') {
+            const body = await parseJsonBody(req);
+            const { clients, invoices, prices, adminPin } = body;
+
+            if (Array.isArray(clients)) {
+              for (const c of clients) {
+                if (c.id && c.name) {
+                  await pool.query(
+                    `INSERT INTO clients (id, name, phone, category) 
+                     VALUES (?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE name = VALUES(name), phone = VALUES(phone), category = VALUES(category)`,
+                    [c.id, c.name, c.phone || '', c.category || 'عام']
+                  );
+                }
+              }
+            }
+
+            if (Array.isArray(invoices)) {
+              for (const inv of invoices) {
+                if (inv.id) {
+                  const itemsStr = typeof inv.items === 'string' ? inv.items : JSON.stringify(inv.items || []);
+                  await pool.query(
+                    `INSERT INTO invoices (id, client_id, client_name, client_phone, date, total_weight, total_amount, items, timestamp)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE 
+                       client_id = VALUES(client_id),
+                       client_name = VALUES(client_name),
+                       client_phone = VALUES(client_phone),
+                       date = VALUES(date),
+                       total_weight = VALUES(total_weight),
+                       total_amount = VALUES(total_amount),
+                       items = VALUES(items),
+                       timestamp = VALUES(timestamp)`,
+                    [
+                      inv.id,
+                      inv.clientId || 'c_default',
+                      inv.clientName || 'زبون عام',
+                      inv.clientPhone || '',
+                      inv.date || new Date().toISOString().split('T')[0],
+                      inv.totalWeight || 0,
+                      inv.totalAmount || 0,
+                      itemsStr,
+                      inv.timestamp || Date.now(),
+                    ]
+                  );
+                }
+              }
+            }
+
+            if (prices && typeof prices === 'object') {
+              for (const [key, price] of Object.entries(prices)) {
+                const parts = key.split('_');
+                if (parts.length === 2) {
+                  await pool.query(
+                    `INSERT INTO client_prices (client_id, product_id, price)
+                     VALUES (?, ?, ?)
+                     ON DUPLICATE KEY UPDATE price = VALUES(price)`,
+                    [parts[0], parts[1], Number(price)]
+                  );
+                }
+              }
+            }
+
+            if (adminPin) {
+              await pool.query(
+                `INSERT INTO settings (setting_key, setting_value)
+                 VALUES ('admin_pin', ?)
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+                [String(adminPin)]
+              );
+            }
+
+            const [cRows] = await pool.query('SELECT id, name, phone, category FROM clients ORDER BY created_at ASC');
+            const [iRows] = await pool.query(
+              'SELECT id, client_id as clientId, client_name as clientName, client_phone as clientPhone, date, total_weight as totalWeight, total_amount as totalAmount, items, timestamp FROM invoices ORDER BY timestamp DESC'
+            );
+            const [pRows] = await pool.query('SELECT client_id, product_id, price FROM client_prices');
+            const [sRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_pin'");
+
+            const parsedInvoices = iRows.map((r) => ({
+              ...r,
+              totalWeight: Number(r.totalWeight),
+              totalAmount: Number(r.totalAmount),
+              timestamp: Number(r.timestamp),
+              items: typeof r.items === 'string' ? JSON.parse(r.items || '[]') : r.items,
+            }));
+
+            const pricesMap = {};
+            pRows.forEach((r) => (pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price)));
+
+            return sendJson(res, 200, {
+              ok: true,
+              database: dbConfig.database,
+              clients: cRows,
+              invoices: parsedInvoices,
+              prices: pricesMap,
+              adminPin: sRows[0]?.setting_value || '1234',
+              syncedAt: Date.now(),
+            });
+          }
+
+          next();
+        } catch (err) {
+          console.error('API Error:', err);
+          return sendJson(res, 500, { ok: false, error: err.message });
+        }
+      });
+    },
+  };
+}

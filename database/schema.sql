@@ -1,0 +1,41 @@
+-- WAHIB COQ Database Schema
+-- Database: u895506237_wahib
+-- Hostinger MySQL
+
+CREATE TABLE IF NOT EXISTS `clients` (
+  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(64) DEFAULT '',
+  `category` VARCHAR(100) DEFAULT '',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `client_prices` (
+  `client_id` VARCHAR(64) NOT NULL,
+  `product_id` VARCHAR(64) NOT NULL,
+  `price` DECIMAL(10,2) NOT NULL,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`client_id`, `product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `invoices` (
+  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
+  `client_id` VARCHAR(64) NOT NULL,
+  `client_name` VARCHAR(255) NOT NULL,
+  `client_phone` VARCHAR(64) DEFAULT '',
+  `date` VARCHAR(32) NOT NULL,
+  `total_weight` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `total_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `items` LONGTEXT NOT NULL,
+  `timestamp` BIGINT NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `settings` (
+  `setting_key` VARCHAR(64) NOT NULL PRIMARY KEY,
+  `setting_value` TEXT NOT NULL,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `settings` (`setting_key`, `setting_value`) VALUES ('admin_pin', '1234');

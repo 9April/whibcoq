@@ -1,8 +1,20 @@
 import { INITIAL_PRODUCTS, INITIAL_CLIENTS, generateSampleInvoices } from '../data/initialData';
+import {
+  checkDbConnection,
+  apiSaveClient,
+  apiDeleteClient,
+  apiSaveInvoice,
+  apiDeleteInvoice,
+  apiSavePrice,
+  apiSaveAdminPin,
+  apiSyncAll,
+} from './api';
 
 const CLIENTS_STORAGE_KEY = 'wahib_coq_clients_v2';
 const INVOICES_STORAGE_KEY = 'wahib_coq_invoices_v2';
 const CLIENT_PRICES_KEY = 'wahib_coq_client_prices_v2';
+const ADMIN_PIN_KEY = 'wahib_coq_admin_pin_v2';
+const ADMIN_AUTH_STATE_KEY = 'wahib_coq_admin_auth_state_v2';
 
 // Format Moroccan Dirham (e.g., "1 240,00 Dh")
 export const formatDh = (num) => {
@@ -89,6 +101,33 @@ export const saveStoredClients = (clients) => {
   } catch (e) {}
 };
 
+// Save a single client with background MySQL sync
+export const persistClientWithDb = async (client) => {
+  const clients = getStoredClients();
+  const index = clients.findIndex((c) => c.id === client.id);
+  let updated;
+  if (index >= 0) {
+    updated = [...clients];
+    updated[index] = client;
+  } else {
+    updated = [client, ...clients];
+  }
+  saveStoredClients(updated);
+
+  // Background MySQL sync
+  apiSaveClient(client).catch((e) => console.warn('MySQL client sync pending offline:', e));
+  return updated;
+};
+
+export const deleteClientWithDb = async (clientId) => {
+  const clients = getStoredClients().filter((c) => c.id !== clientId);
+  saveStoredClients(clients);
+
+  // Background MySQL delete
+  apiDeleteClient(clientId).catch((e) => console.warn('MySQL client delete pending offline:', e));
+  return clients;
+};
+
 // Persistent Invoices
 export const getStoredInvoices = () => {
   try {
@@ -108,6 +147,33 @@ export const saveStoredInvoices = (invoices) => {
   try {
     localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(invoices));
   } catch (e) {}
+};
+
+// Save a single invoice with background MySQL sync
+export const persistInvoiceWithDb = async (invoice) => {
+  const invoices = getStoredInvoices();
+  const index = invoices.findIndex((inv) => inv.id === invoice.id);
+  let updated;
+  if (index >= 0) {
+    updated = [...invoices];
+    updated[index] = invoice;
+  } else {
+    updated = [invoice, ...invoices];
+  }
+  saveStoredInvoices(updated);
+
+  // Background MySQL sync
+  apiSaveInvoice(invoice).catch((e) => console.warn('MySQL invoice sync pending offline:', e));
+  return updated;
+};
+
+export const deleteInvoiceWithDb = async (invoiceId) => {
+  const invoices = getStoredInvoices().filter((inv) => inv.id !== invoiceId);
+  saveStoredInvoices(invoices);
+
+  // Background MySQL delete
+  apiDeleteInvoice(invoiceId).catch((e) => console.warn('MySQL invoice delete pending offline:', e));
+  return invoices;
 };
 
 // Remember custom price per client/product
@@ -130,13 +196,15 @@ export const saveClientProductPrice = (clientId, productId, price) => {
     const key = `${clientId || 'default'}_${productId}`;
     prices[key] = Number(price);
     localStorage.setItem(CLIENT_PRICES_KEY, JSON.stringify(prices));
+
+    // Background MySQL sync
+    apiSavePrice(clientId || 'default', productId, price).catch((e) =>
+      console.warn('MySQL price sync pending offline:', e)
+    );
   } catch (e) {}
 };
 
 // Admin Layer Authentication & PIN
-const ADMIN_PIN_KEY = 'wahib_coq_admin_pin_v2';
-const ADMIN_AUTH_STATE_KEY = 'wahib_coq_admin_auth_state_v2';
-
 export const getAdminPin = () => {
   return localStorage.getItem(ADMIN_PIN_KEY) || '1234';
 };
@@ -144,6 +212,8 @@ export const getAdminPin = () => {
 export const setAdminPin = (newPin) => {
   if (newPin && newPin.length >= 4) {
     localStorage.setItem(ADMIN_PIN_KEY, String(newPin));
+    // Background MySQL sync
+    apiSaveAdminPin(String(newPin)).catch((e) => console.warn('MySQL PIN sync pending offline:', e));
     return true;
   }
   return false;
@@ -166,3 +236,62 @@ export const setAdminAuthenticated = (status) => {
   }
 };
 
+// Full Bidirectional Database Synchronization
+export const performDatabaseSync = async () => {
+  try {
+    const localClients = getStoredClients();
+    const localInvoices = getStoredInvoices();
+    const localPricesRaw = localStorage.getItem(CLIENT_PRICES_KEY);
+    const localPrices = localPricesRaw ? JSON.parse(localPricesRaw) : {};
+    const localPin = getAdminPin();
+
+    const result = await apiSyncAll({
+      clients: localClients,
+      invoices: localInvoices,
+      prices: localPrices,
+      adminPin: localPin,
+    });
+
+    if (result && result.ok) {
+      if (Array.isArray(result.clients) && result.clients.length > 0) {
+        localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(result.clients));
+      }
+      if (Array.isArray(result.invoices) && result.invoices.length > 0) {
+        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(result.invoices));
+      }
+      if (result.prices && typeof result.prices === 'object') {
+        localStorage.setItem(CLIENT_PRICES_KEY, JSON.stringify(result.prices));
+      }
+      if (result.adminPin) {
+        localStorage.setItem(ADMIN_PIN_KEY, String(result.adminPin));
+      }
+
+      // Notify window listeners
+      window.dispatchEvent(
+        new CustomEvent('wahib_db_synced', {
+          detail: {
+            success: true,
+            database: result.database || 'u895506237_wahib',
+            timestamp: result.syncedAt || Date.now(),
+          },
+        })
+      );
+
+      return {
+        success: true,
+        database: result.database || 'u895506237_wahib',
+        clients: result.clients,
+        invoices: result.invoices,
+      };
+    }
+  } catch (err) {
+    console.warn('Sync failed (offline mode active):', err);
+    window.dispatchEvent(
+      new CustomEvent('wahib_db_synced', {
+        detail: { success: false, error: err.message },
+      })
+    );
+    return { success: false, error: err.message };
+  }
+  return { success: false };
+};
