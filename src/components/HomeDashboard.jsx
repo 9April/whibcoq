@@ -13,7 +13,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { INITIAL_PRODUCTS, BUSINESS_INFO } from '../data/initialData';
-import { formatDh, formatKg, playHapticSound } from '../utils/storage';
+import { formatDh, formatKg, playHapticSound, getBusinessInfo } from '../utils/storage';
 
 export function HomeDashboard({
   clients,
@@ -22,6 +22,7 @@ export function HomeDashboard({
   onViewClients,
   onViewHistory,
 }) {
+  const businessInfo = getBusinessInfo();
   // Compute Products Sales Analytics
   const analytics = useMemo(() => {
     const productStats = {};
@@ -114,7 +115,7 @@ export function HomeDashboard({
 
           <div>
             <h1 className="text-xl font-black tracking-tight text-white">
-              مرحباً بك في {BUSINESS_INFO.name}
+              مرحباً بك في {businessInfo.name || BUSINESS_INFO.name}
             </h1>
             <p className="text-xs text-emerald-100 font-medium mt-0.5">
               تجارة وتوزيع الدواجن بالجملة والتفصيل

@@ -9,6 +9,7 @@ import { BottomNav } from './components/BottomNav';
 import { InvoicePrintModal } from './components/InvoicePrintModal';
 import { AdminLogin } from './components/AdminLogin';
 import { ChangePinModal } from './components/ChangePinModal';
+import { CompanySettingsModal } from './components/CompanySettingsModal';
 import { BUSINESS_INFO } from './data/initialData';
 import {
   getStoredClients,
@@ -20,6 +21,7 @@ import {
   performDatabaseSync,
   isAdminAuthenticated,
   setAdminAuthenticated,
+  getBusinessInfo,
   playHapticSound,
 } from './utils/storage';
 import { checkDbConnection } from './utils/api';
@@ -27,6 +29,8 @@ import { checkDbConnection } from './utils/api';
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => isAdminAuthenticated());
   const [isChangePinOpen, setIsChangePinOpen] = useState(false);
+  const [isCompanySettingsOpen, setIsCompanySettingsOpen] = useState(false);
+  const [businessInfo, setBusinessInfo] = useState(() => getBusinessInfo());
 
   const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'clients' | 'history' | 'reports'
   const [isBuildingInvoice, setIsBuildingInvoice] = useState(false); // Controls hiding steps until user clicks Add Invoice
@@ -197,18 +201,30 @@ export function App() {
       {/* Top Admin Header Bar (Hidden during print) */}
       <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
         <div className="max-w-lg mx-auto px-3 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img
-              src="/wahibcoq.jpeg"
-              alt="WAHIB COQ"
-              className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs"
-            />
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-black text-slate-900 tracking-tight">
-                {BUSINESS_INFO.name}
+          {/* Clickable Logo & Company Title to open Company/Account Settings */}
+          <button
+            type="button"
+            onClick={() => {
+              playHapticSound('tap');
+              setIsCompanySettingsOpen(true);
+            }}
+            className="flex items-center gap-2 group p-1 -mr-1 rounded-xl hover:bg-slate-100/80 active:scale-95 transition-all text-right cursor-pointer"
+            title="إعدادات وهيب كوك (المستخدم، كلمة المرور، وبيانات الشركة)"
+          >
+            <div className="relative">
+              <img
+                src="/wahibcoq.jpeg"
+                alt={businessInfo.name || BUSINESS_INFO.name}
+                className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs group-hover:border-emerald-500 group-hover:ring-2 group-hover:ring-emerald-200 transition-all"
+              />
+              <span className="w-2 h-2 bg-emerald-500 border border-white rounded-full absolute -top-0.5 -left-0.5" />
+            </div>
+            <div className="flex flex-col text-right">
+              <span className="text-sm font-black text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors">
+                {businessInfo.name || BUSINESS_INFO.name}
               </span>
             </div>
-          </div>
+          </button>
 
           <div className="flex items-center gap-1.5">
             {/* Change Password Button */}
@@ -340,6 +356,15 @@ export function App() {
       <ChangePinModal
         isOpen={isChangePinOpen}
         onClose={() => setIsChangePinOpen(false)}
+      />
+
+      {/* Wahib Coq Info & Company Settings Modal (Opened by clicking logo) */}
+      <CompanySettingsModal
+        isOpen={isCompanySettingsOpen}
+        onClose={() => setIsCompanySettingsOpen(false)}
+        onUpdated={({ businessInfo: newB }) => {
+          if (newB) setBusinessInfo(newB);
+        }}
       />
     </div>
   );

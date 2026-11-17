@@ -1,4 +1,4 @@
-import { INITIAL_PRODUCTS, INITIAL_CLIENTS, generateSampleInvoices } from '../data/initialData';
+import { INITIAL_PRODUCTS, INITIAL_CLIENTS, generateSampleInvoices, BUSINESS_INFO } from '../data/initialData';
 import {
   checkDbConnection,
   apiSaveClient,
@@ -18,6 +18,7 @@ const ADMIN_USER_KEY = 'wahib_coq_admin_user_v2';
 const ADMIN_PASSWORD_KEY = 'wahib_coq_admin_password_v2';
 const ADMIN_PIN_KEY = 'wahib_coq_admin_pin_v2';
 const ADMIN_AUTH_STATE_KEY = 'wahib_coq_admin_auth_state_v2';
+const BUSINESS_INFO_KEY = 'wahib_coq_business_info_v2';
 
 // Format Moroccan Dirham (e.g., "1 240,00 درهم")
 export const formatDh = (num) => {
@@ -335,6 +336,32 @@ export const setAdminAuthenticated = (status) => {
     sessionStorage.setItem(ADMIN_AUTH_STATE_KEY, 'true');
   } else {
     sessionStorage.removeItem(ADMIN_AUTH_STATE_KEY);
+  }
+};
+
+// Company & Business Information Management
+export const getBusinessInfo = () => {
+  try {
+    const saved = localStorage.getItem(BUSINESS_INFO_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { ...BUSINESS_INFO, ...parsed };
+    }
+  } catch (e) {}
+  return BUSINESS_INFO;
+};
+
+export const saveBusinessInfo = (newInfo) => {
+  try {
+    const current = getBusinessInfo();
+    const merged = { ...current, ...newInfo };
+    localStorage.setItem(BUSINESS_INFO_KEY, JSON.stringify(merged));
+    apiSaveSetting('business_info', JSON.stringify(merged)).catch((e) =>
+      console.warn('MySQL business_info sync:', e)
+    );
+    return merged;
+  } catch (e) {
+    return BUSINESS_INFO;
   }
 };
 

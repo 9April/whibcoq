@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { Printer, PlusCircle, X, Share2, Copy, FileText, Check } from 'lucide-react';
-import { formatDh, formatKg, formatPhone, playHapticSound } from '../utils/storage';
-import { BUSINESS_INFO } from '../data/initialData';
+import { formatDh, formatKg, formatPhone, playHapticSound, getBusinessInfo } from '../utils/storage';
 
 export function InvoicePrintModal({
   isOpen,
@@ -10,6 +9,7 @@ export function InvoicePrintModal({
   onNewInvoice,
 }) {
   const printAreaRef = useRef(null);
+  const businessInfo = getBusinessInfo();
 
   if (!isOpen || !invoice) return null;
 
@@ -151,16 +151,16 @@ export function InvoicePrintModal({
                   />
                   <div>
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      {BUSINESS_INFO.name}
+                      {businessInfo.name}
                     </h1>
                     <p className="text-xs font-bold text-slate-600 mt-0.5">
-                      {BUSINESS_INFO.frenchSubtitle}
+                      {businessInfo.frenchSubtitle}
                     </p>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {BUSINESS_INFO.arabicTitle}
+                      {businessInfo.arabicTitle}
                     </p>
                     <p className="text-[11px] text-slate-400 font-mono mt-1">
-                      {BUSINESS_INFO.taxInfo}
+                      {businessInfo.taxInfo}
                     </p>
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export function InvoicePrintModal({
 
             {/* Footer */}
             <div className="border-t border-slate-200 pt-3 mt-auto text-center text-xs text-slate-400 font-semibold">
-              {BUSINESS_INFO.name} • {BUSINESS_INFO.address} • Tél: {BUSINESS_INFO.phone}
+              {businessInfo.name} • {businessInfo.address} • Tél: {businessInfo.phone}
             </div>
           </div>
         </div>
