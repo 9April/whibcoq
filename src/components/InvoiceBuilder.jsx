@@ -17,6 +17,7 @@ import { InvoicePrintModal } from './InvoicePrintModal';
 import {
   formatDh,
   formatKg,
+  formatArabicDate,
   getClientProductPrice,
   saveClientProductPrice,
   playHapticSound,
@@ -140,13 +141,6 @@ export function InvoiceBuilder({
   const setToday = () => {
     playHapticSound('tap');
     setInvoiceDate(new Date().toISOString().split('T')[0]);
-  };
-
-  const setYesterday = () => {
-    playHapticSound('tap');
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    setInvoiceDate(d.toISOString().split('T')[0]);
   };
 
   const handleClearAll = () => {
@@ -276,36 +270,46 @@ export function InvoiceBuilder({
           </button>
         </div>
 
-        {/* 2. Date Bar (Today, Yesterday, Native Picker) */}
+        {/* 2. Expanded Arabic Date Bar */}
         <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
-          <div className="relative flex-1">
+          {/* Expanded Arabic Date Button with overlaid native date picker */}
+          <div className="relative flex-1 group">
+            <div className="w-full h-12 pr-10 pl-3 bg-slate-50 hover:bg-slate-100 border border-slate-300 focus-within:border-emerald-600 rounded-xl flex items-center justify-between transition-all cursor-pointer">
+              <div className="flex items-center gap-2 min-w-0">
+                <Calendar className="w-4 h-4 text-emerald-600 absolute right-3 pointer-events-none" />
+                <span className="text-sm font-black text-slate-900 truncate">
+                  {formatArabicDate(invoiceDate)}
+                </span>
+                <span className="text-xs text-slate-400 font-mono hidden sm:inline tabular-nums">
+                  ({invoiceDate.split('-').reverse().join('/')})
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-500 font-bold bg-white px-2 py-0.5 rounded-md border border-slate-200 flex-shrink-0">
+                تغيير 📅
+              </span>
+            </div>
+
+            {/* Invisible native input over the entire card to trigger device date picker */}
             <input
               type="date"
               value={invoiceDate}
               onChange={(e) => setInvoiceDate(e.target.value)}
-              className="w-full h-11 pr-9 pl-3 bg-slate-50 border border-slate-300 focus:border-emerald-600 rounded-xl text-sm font-bold text-slate-900 outline-none cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              aria-label="تحديد تاريخ الفاتورة"
             />
-            <Calendar className="w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
+          {/* Quick Today Button */}
           <button
             type="button"
             onClick={setToday}
-            className={`h-11 px-3 rounded-xl text-xs font-bold transition-all border active:scale-95 ${
+            className={`h-12 px-4 rounded-xl text-xs font-bold transition-all border active:scale-95 flex-shrink-0 ${
               invoiceDate === new Date().toISOString().split('T')[0]
                 ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
                 : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
             }`}
           >
             اليوم
-          </button>
-
-          <button
-            type="button"
-            onClick={setYesterday}
-            className="h-11 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition-all active:scale-95"
-          >
-            أمس
           </button>
         </div>
       </div>

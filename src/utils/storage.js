@@ -22,6 +22,22 @@ export const formatKg = (num) => {
   return `${integerPart},${parts[1]} Kg`;
 };
 
+// Format Date in Clear Moroccan Arabic (e.g., "الثلاثاء، 17 نونبر 2026")
+export const formatArabicDate = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('ar-MA-u-nu-latn', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  } catch (e) {
+    return dateStr;
+  }
+};
+
 // Subtitle sound feedback (haptic-like click)
 export const playHapticSound = (type = 'tap') => {
   try {
