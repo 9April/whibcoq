@@ -48,6 +48,17 @@
   bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Shake animation for wrong PIN entry */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
 /* Print specific styling for clean official WAHIB COQ A4 / Thermal receipts */
 @media print {
   @page {

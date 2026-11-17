@@ -132,3 +132,37 @@ export const saveClientProductPrice = (clientId, productId, price) => {
     localStorage.setItem(CLIENT_PRICES_KEY, JSON.stringify(prices));
   } catch (e) {}
 };
+
+// Admin Layer Authentication & PIN
+const ADMIN_PIN_KEY = 'wahib_coq_admin_pin_v2';
+const ADMIN_AUTH_STATE_KEY = 'wahib_coq_admin_auth_state_v2';
+
+export const getAdminPin = () => {
+  return localStorage.getItem(ADMIN_PIN_KEY) || '1234';
+};
+
+export const setAdminPin = (newPin) => {
+  if (newPin && newPin.length >= 4) {
+    localStorage.setItem(ADMIN_PIN_KEY, String(newPin));
+    return true;
+  }
+  return false;
+};
+
+export const verifyAdminPin = (inputPin) => {
+  const currentPin = getAdminPin();
+  return String(inputPin) === currentPin;
+};
+
+export const isAdminAuthenticated = () => {
+  return sessionStorage.getItem(ADMIN_AUTH_STATE_KEY) === 'true';
+};
+
+export const setAdminAuthenticated = (status) => {
+  if (status) {
+    sessionStorage.setItem(ADMIN_AUTH_STATE_KEY, 'true');
+  } else {
+    sessionStorage.removeItem(ADMIN_AUTH_STATE_KEY);
+  }
+};
+
