@@ -204,9 +204,9 @@ export function InvoicePrintModal({
                 <tr className="bg-slate-100 text-slate-900 border-b-2 border-slate-900 text-xs sm:text-sm font-black">
                   <th className="py-2 px-2.5 border-l-2 border-slate-900 text-center w-10">#</th>
                   <th className="py-2 px-3 border-l-2 border-slate-900">المنتوج / Désignation</th>
-                  <th className="py-2 px-3 border-l-2 border-slate-900 text-center w-28">العدد بـ Kg</th>
-                  <th className="py-2 px-3 border-l-2 border-slate-900 text-center w-24">الثمن (Dh)</th>
-                  <th className="py-2 px-3 text-left w-32">المجموع (Dh)</th>
+                  <th className="py-2 px-3 border-l-2 border-slate-900 text-center w-28">الوزن (ك غ)</th>
+                  <th className="py-2 px-3 border-l-2 border-slate-900 text-center w-24">الثمن (درهم)</th>
+                  <th className="py-2 px-3 text-left w-32">المجموع (درهم)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-300 text-xs sm:text-sm">

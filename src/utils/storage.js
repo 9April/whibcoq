@@ -19,22 +19,22 @@ const ADMIN_PASSWORD_KEY = 'wahib_coq_admin_password_v2';
 const ADMIN_PIN_KEY = 'wahib_coq_admin_pin_v2';
 const ADMIN_AUTH_STATE_KEY = 'wahib_coq_admin_auth_state_v2';
 
-// Format Moroccan Dirham (e.g., "1 240,00 Dh")
+// Format Moroccan Dirham (e.g., "1 240,00 درهم")
 export const formatDh = (num) => {
-  if (num === null || num === undefined || isNaN(num)) return '0,00 Dh';
+  if (num === null || num === undefined || isNaN(num)) return '0,00 درهم';
   const val = Number(num);
   const parts = val.toFixed(2).split('.');
   const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return `${integerPart},${parts[1]} Dh`;
+  return `${integerPart},${parts[1]} درهم`;
 };
 
-// Format Weight in Kg (e.g., "45,5 Kg")
+// Format Weight in Kg (e.g., "45,5 ك غ")
 export const formatKg = (num) => {
-  if (num === null || num === undefined || isNaN(num)) return '0,0 Kg';
+  if (num === null || num === undefined || isNaN(num)) return '0,0 ك غ';
   const val = Number(num);
   const parts = val.toFixed(1).split('.');
   const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return `${integerPart},${parts[1]} Kg`;
+  return `${integerPart},${parts[1]} ك غ`;
 };
 
 // Format Date in Clear Moroccan Arabic (e.g., "الثلاثاء، 17 نونبر 2026")
