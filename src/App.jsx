@@ -165,6 +165,8 @@ export function App() {
     setEditingInvoice(null);
     setIsBuildingInvoice(false);
     handleSync(true);
+    setIsBuildingInvoice(false);
+    handleSync(true);
   };
 
   const handleDeleteInvoice = async (invoiceId) => {
@@ -257,7 +259,7 @@ export function App() {
       </header>
 
       {/* Mobile-First Container (Stacked Single Column) - Hidden during print */}
-      <main className="no-print flex-1 max-w-lg w-full mx-auto p-3 sm:p-4">
+      <main className="no-print flex-1 max-w-lg w-full mx-auto p-3 sm:p-4 pb-24 sm:pb-28">
         {activeTab === 'builder' && (
           isBuildingInvoice ? (
             <InvoiceBuilder

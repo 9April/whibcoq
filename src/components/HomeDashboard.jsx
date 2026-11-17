@@ -94,7 +94,7 @@ export function HomeDashboard({
   const { mostSoldProduct, sortedProducts } = analytics;
 
   return (
-    <div className="flex flex-col gap-4 animate-fadeIn" dir="rtl">
+    <div className="flex flex-col gap-4 pb-28 sm:pb-32 animate-fadeIn" dir="rtl">
       {/* Welcome Banner & Quick Start Button */}
       <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-5 text-white shadow-lg shadow-emerald-700/15 relative overflow-hidden">
         {/* Subtle decorative circles */}
