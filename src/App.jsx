@@ -155,33 +155,13 @@ export function App() {
               alt="WAHIB COQ"
               className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs"
             />
-            <div className="flex flex-col">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-sm font-black text-slate-900 tracking-tight">
-                  {BUSINESS_INFO.name}
-                </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  mohamed
-                </span>
-              </div>
-              {/* MySQL Status Pill */}
-              <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500">
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    dbStatus.connected
-                      ? 'bg-emerald-500 ring-2 ring-emerald-200'
-                      : dbStatus.checking
-                      ? 'bg-amber-400 animate-pulse'
-                      : 'bg-amber-500'
-                  }`}
-                />
-                <span className="truncate max-w-[130px]">
-                  {dbStatus.connected ? 'متصل بـ MySQL' : 'مزامنة محلية'}
-                </span>
-                {lastSyncTime && (
-                  <span className="text-slate-400 text-[9px] tabular-nums">({lastSyncTime})</span>
-                )}
-              </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-black text-slate-900 tracking-tight">
+                {BUSINESS_INFO.name}
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                mohamed
+              </span>
             </div>
           </div>
 
@@ -191,11 +171,10 @@ export function App() {
               type="button"
               onClick={() => handleSync(false)}
               disabled={isSyncing}
-              className={`h-8 px-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all active:scale-95 border ${
-                dbStatus.connected
+              className={`h-8 px-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all active:scale-95 border ${dbStatus.connected
                   ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
                   : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
-              }`}
+                }`}
               title="مزامنة فورية مع قاعدة بيانات Hostinger MySQL"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-emerald-600' : 'text-slate-600'}`} />
