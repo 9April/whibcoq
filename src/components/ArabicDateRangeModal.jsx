@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Calendar, ChevronRight, ChevronLeft, X, Check, RotateCcw, Clock } from 'lucide-react';
 import { playHapticSound } from '../utils/storage';
 
@@ -59,6 +59,17 @@ export function ArabicDateRangeModal({
     const d = initialFrom ? new Date(initialFrom) : new Date();
     return d.getMonth(); // 0 - 11
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFromDate(initialFrom);
+      setToDate(initialTo || todayStr);
+      setIsAll(initialIsAll);
+      const d = initialFrom ? new Date(initialFrom) : new Date();
+      setViewYear(d.getFullYear());
+      setViewMonth(d.getMonth());
+    }
+  }, [isOpen, initialFrom, initialTo, initialIsAll, todayStr]);
 
   if (!isOpen) return null;
 

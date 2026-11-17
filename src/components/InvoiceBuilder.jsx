@@ -20,6 +20,7 @@ import { INITIAL_PRODUCTS, BUSINESS_INFO } from '../data/initialData';
 import { ProductRow } from './ProductRow';
 import { ClientModal } from './ClientModal';
 import { InvoicePrintModal } from './InvoicePrintModal';
+import { ArabicSingleDatePickerModal } from './ArabicSingleDatePickerModal';
 import {
   formatDh,
   formatKg,
@@ -57,6 +58,7 @@ export function InvoiceBuilder({
   // Modals
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isArabicDatePickerOpen, setIsArabicDatePickerOpen] = useState(false);
   const [savedInvoiceForPreview, setSavedInvoiceForPreview] = useState(null);
 
   // Set default client on load
@@ -493,33 +495,29 @@ export function InvoiceBuilder({
               </div>
             </div>
 
-            {/* Expanded Arabic Date Selector */}
-            <div className="relative group">
-              <div className="w-full h-14 pr-11 pl-4 bg-slate-50 hover:bg-slate-100 border-2 border-slate-300 focus-within:border-emerald-600 rounded-xl flex items-center justify-between transition-all cursor-pointer">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Calendar className="w-5 h-5 text-emerald-600 absolute right-3.5 pointer-events-none" />
-                  <span className="text-base font-black text-slate-900 truncate">
-                    {formatArabicDate(invoiceDate)}
-                  </span>
-                  <span className="text-xs text-slate-400 font-mono hidden sm:inline tabular-nums">
-                    ({invoiceDate.split('-').reverse().join('/')})
-                  </span>
-                </div>
-
-                <span className="text-xs text-slate-600 font-bold bg-white px-2.5 py-1 rounded-lg border border-slate-200 flex-shrink-0">
-                  تغيير 📅
+            {/* Expanded Arabic Date Selector Button */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsArabicDatePickerOpen(true);
+              }}
+              className="w-full h-14 pr-11 pl-4 bg-slate-50 hover:bg-slate-100 border-2 border-slate-300 hover:border-emerald-600 rounded-xl flex items-center justify-between transition-all cursor-pointer text-right group relative"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Calendar className="w-5 h-5 text-emerald-600 absolute right-3.5 pointer-events-none" />
+                <span className="text-base font-black text-slate-900 truncate">
+                  {formatArabicDate(invoiceDate)}
+                </span>
+                <span className="text-xs text-slate-400 font-mono hidden sm:inline tabular-nums">
+                  ({invoiceDate.split('-').reverse().join('/')})
                 </span>
               </div>
 
-              {/* Native Date Input Overlay */}
-              <input
-                type="date"
-                value={invoiceDate}
-                onChange={(e) => setInvoiceDate(e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                aria-label="تحديد تاريخ الفاتورة"
-              />
-            </div>
+              <span className="text-xs text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex-shrink-0 group-hover:bg-emerald-100 transition-colors">
+                تغيير 📅
+              </span>
+            </button>
 
             {/* Quick Set Today Button */}
             <div className="flex items-center justify-between pt-1">
@@ -746,6 +744,16 @@ export function InvoiceBuilder({
         onAddClient={(newClient) => {
           onAddClient(newClient);
           setSelectedClientId(newClient.id);
+        }}
+      />
+
+      {/* Moroccan Arabic Single Date Picker Modal */}
+      <ArabicSingleDatePickerModal
+        isOpen={isArabicDatePickerOpen}
+        onClose={() => setIsArabicDatePickerOpen(false)}
+        currentDate={invoiceDate}
+        onSelectDate={(newDate) => {
+          setInvoiceDate(newDate);
         }}
       />
 

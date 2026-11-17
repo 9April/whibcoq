@@ -38,20 +38,48 @@ export const formatKg = (num) => {
   return `${integerPart},${parts[1]} ك غ`;
 };
 
+const MOROCCAN_MONTHS = [
+  'يناير',
+  'فبراير',
+  'مارس',
+  'أبريل',
+  'ماي',
+  'يونيو',
+  'يوليوز',
+  'غشت',
+  'شتنبر',
+  'أكتوبر',
+  'نونبر',
+  'دجنبر',
+];
+
+const ARABIC_WEEKDAYS_MAP = [
+  'الأحد',
+  'الإثنين',
+  'الثلاثاء',
+  'الأربعاء',
+  'الخميس',
+  'الجمعة',
+  'السبت',
+];
+
 // Format Date in Clear Moroccan Arabic (e.g., "الثلاثاء، 17 نونبر 2026")
 export const formatArabicDate = (dateStr) => {
   if (!dateStr) return '';
   try {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('ar-MA-u-nu-latn', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  } catch (e) {
-    return dateStr;
-  }
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const year = parts[0];
+      const mIdx = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const d = new Date(dateStr + 'T00:00:00');
+      const weekday = ARABIC_WEEKDAYS_MAP[d.getDay()] || '';
+      if (mIdx >= 0 && mIdx < 12) {
+        return `${weekday}، ${day} ${MOROCCAN_MONTHS[mIdx]} ${year}`;
+      }
+    }
+  } catch (e) {}
+  return dateStr;
 };
 
 // Format Phone Number (Ensures Moroccan 06 XX XX XX XX format with strict Left-to-Right protection)
