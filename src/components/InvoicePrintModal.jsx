@@ -135,22 +135,22 @@ export function InvoicePrintModal({
         </div>
 
         {/* Printable Official Receipt Body */}
-        <div className="printable-invoice-area-wrapper overflow-y-auto p-3 sm:p-8 bg-slate-100/60 flex justify-center">
+        <div className="printable-invoice-area-wrapper overflow-y-auto p-2 sm:p-6 bg-slate-100/60 flex justify-center">
           <div
             ref={printAreaRef}
-            className="printable-invoice-area w-full max-w-[210mm] bg-white text-slate-900 p-5 sm:p-10 rounded-2xl shadow-sm border border-slate-200"
+            className="printable-invoice-area w-full max-w-[210mm] bg-white text-slate-900 p-4 sm:p-8 rounded-2xl shadow-sm border border-slate-200"
           >
             {/* Header matching classic WAHIB COQ invoice */}
-            <div className="border-b-2 border-slate-900 pb-4 mb-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3.5">
+            <div className="border-b-2 border-slate-900 pb-3 mb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
                   <img
                     src="/wahibcoq.jpeg"
                     alt="WAHIB COQ"
-                    className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-xl border border-slate-300 p-0.5 bg-white flex-shrink-0"
+                    className="w-14 h-14 sm:w-16 sm:h-16 object-contain rounded-xl border border-slate-300 p-0.5 bg-white flex-shrink-0"
                   />
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                       {businessInfo.name}
                     </h1>
                     <p className="text-xs font-bold text-slate-600 mt-0.5">
@@ -159,18 +159,18 @@ export function InvoicePrintModal({
                     <p className="text-xs text-slate-500 mt-0.5">
                       {businessInfo.arabicTitle}
                     </p>
-                    <p className="text-[11px] text-slate-400 font-mono mt-1">
+                    <p className="text-[10px] text-slate-400 font-mono mt-0.5">
                       {businessInfo.taxInfo}
                     </p>
                   </div>
                 </div>
 
-                <div className="text-left border-2 border-slate-900 rounded-xl p-2.5 bg-slate-50 min-w-[170px]" dir="ltr">
+                <div className="text-left border-2 border-slate-900 rounded-xl p-2 bg-slate-50 min-w-[160px]" dir="ltr">
                   <div className="text-right" dir="rtl">
-                    <span className="block text-[11px] font-bold text-slate-500 uppercase">
+                    <span className="block text-[10px] font-bold text-slate-500 uppercase">
                       FACTURE / وصل بيع
                     </span>
-                    <span className="block text-xl font-black text-slate-900 font-mono tabular-nums">
+                    <span className="block text-lg font-black text-slate-900 font-mono tabular-nums">
                       N° {invoice.id}
                     </span>
                     <div className="mt-1 pt-1 border-t border-slate-300 flex items-center justify-between text-xs font-bold text-slate-700">
@@ -182,10 +182,10 @@ export function InvoicePrintModal({
               </div>
 
               {/* Client Info Bar */}
-              <div className="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <div className="mt-2.5 pt-2.5 border-t border-slate-200 flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-200">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-500">الزبون / Client:</span>
-                  <span className="text-base font-black text-slate-900">{invoice.clientName}</span>
+                  <span className="text-sm font-black text-slate-900">{invoice.clientName}</span>
                   {invoice.clientCategory && (
                     <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-bold">
                       {invoice.clientCategory}
@@ -204,40 +204,40 @@ export function InvoicePrintModal({
             </div>
 
             {/* 4-Column Official Poultry Table */}
-            <table className="print-table w-full text-right border-2 border-slate-900 mb-4">
+            <table className="print-table w-full text-right border-2 border-slate-900 mb-3">
               <thead>
-                <tr className="bg-slate-100 text-slate-900 border-b-2 border-slate-900 text-xs sm:text-sm font-black">
-                  <th className="py-2 px-2.5 border-l-2 border-slate-900 text-center w-10">#</th>
-                  <th className="py-2 px-3 border-l-2 border-slate-900">المنتوج / Désignation</th>
-                  <th className="py-2 px-3 border-l-2 border-slate-900 text-center w-28">الوزن (ك غ)</th>
-                  <th className="py-2 px-3 border-l-2 border-slate-900 text-center w-24">الثمن (درهم)</th>
-                  <th className="py-2 px-3 text-left w-32">المجموع (درهم)</th>
+                <tr className="bg-slate-100 text-slate-900 border-b-2 border-slate-900 text-xs font-black">
+                  <th className="py-1.5 px-2 border-l-2 border-slate-900 text-center w-9">#</th>
+                  <th className="py-1.5 px-2.5 border-l-2 border-slate-900">المنتوج / Désignation</th>
+                  <th className="py-1.5 px-2.5 border-l-2 border-slate-900 text-center w-28">الوزن (ك غ)</th>
+                  <th className="py-1.5 px-2.5 border-l-2 border-slate-900 text-center w-24">الثمن (درهم)</th>
+                  <th className="py-1.5 px-2.5 text-left w-32">المجموع (درهم)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-300 text-xs sm:text-sm">
+              <tbody className="divide-y divide-slate-300 text-xs">
                 {invoice.items && invoice.items.length > 0 ? (
                   invoice.items.map((item, index) => (
                     <tr key={item.productId || index} className="hover:bg-slate-50">
-                      <td className="py-2 px-2.5 border-l-2 border-slate-900 text-center font-bold text-slate-600 tabular-nums">
+                      <td className="py-1 px-2 border-l-2 border-slate-900 text-center font-bold text-slate-600 tabular-nums">
                         {index + 1}
                       </td>
-                      <td className="py-2 px-3 border-l-2 border-slate-900 font-bold text-slate-900">
+                      <td className="py-1 px-2.5 border-l-2 border-slate-900 font-bold text-slate-900">
                         {item.productName}
                       </td>
-                      <td className="py-2 px-3 border-l-2 border-slate-900 text-center font-mono font-bold text-sm tabular-nums">
+                      <td className="py-1 px-2.5 border-l-2 border-slate-900 text-center font-mono font-bold text-xs tabular-nums">
                         {item.weight}
                       </td>
-                      <td className="py-2 px-3 border-l-2 border-slate-900 text-center font-mono font-bold text-sm tabular-nums">
+                      <td className="py-1 px-2.5 border-l-2 border-slate-900 text-center font-mono font-bold text-xs tabular-nums">
                         {Number(item.price).toFixed(2)}
                       </td>
-                      <td className="py-2 px-3 text-left font-mono font-black text-sm text-slate-900 tabular-nums">
+                      <td className="py-1 px-2.5 text-left font-mono font-black text-xs text-slate-900 tabular-nums">
                         {formatDh(item.total)}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="py-4 text-center text-slate-400">
+                    <td colSpan="5" className="py-3 text-center text-slate-400">
                       لا توجد بنود
                     </td>
                   </tr>
@@ -246,17 +246,17 @@ export function InvoicePrintModal({
             </table>
 
             {/* Total Summary Box */}
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-end mb-3">
               <div className="w-full sm:w-72 border-2 border-slate-900 rounded-xl overflow-hidden">
-                <div className="flex items-center justify-between p-2 bg-slate-100 border-b border-slate-300 text-xs font-bold text-slate-700">
+                <div className="flex items-center justify-between p-1.5 bg-slate-100 border-b border-slate-300 text-xs font-bold text-slate-700">
                   <span>مجموع الوزن (Poids Total):</span>
-                  <span className="font-mono text-sm font-black text-slate-900 tabular-nums">
+                  <span className="font-mono text-xs font-black text-slate-900 tabular-nums">
                     {formatKg(invoice.totalWeight)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-2.5 bg-slate-900 text-white">
-                  <span className="font-black text-sm">المجموع الكلي (TOTAL):</span>
-                  <span className="font-mono text-xl font-black text-emerald-400 tabular-nums">
+                <div className="flex items-center justify-between p-2 bg-slate-900 text-white">
+                  <span className="font-black text-xs">المجموع الكلي (TOTAL):</span>
+                  <span className="font-mono text-lg font-black text-emerald-400 tabular-nums">
                     {formatDh(invoice.totalAmount)}
                   </span>
                 </div>
@@ -264,7 +264,7 @@ export function InvoicePrintModal({
             </div>
 
             {/* Footer */}
-            <div className="border-t border-slate-200 pt-3 mt-auto text-center text-xs text-slate-400 font-semibold">
+            <div className="border-t border-slate-200 pt-2 mt-auto text-center text-[10px] text-slate-500 font-semibold">
               {businessInfo.name} • {businessInfo.address} • Tél: {businessInfo.phone}
             </div>
           </div>
