@@ -161,7 +161,7 @@ export function App() {
                   {BUSINESS_INFO.name}
                 </span>
                 <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  إدارة
+                  mohamed
                 </span>
               </div>
               {/* MySQL Status Pill */}
@@ -213,7 +213,7 @@ export function App() {
               title="تغيير الرمز السري للإدارة"
             >
               <KeyRound className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">الرمز</span>
+              <span className="hidden sm:inline">كلمة المرور</span>
             </button>
 
             {/* Logout / Lock Button */}

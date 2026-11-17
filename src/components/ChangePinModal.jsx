@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, KeyRound, Check, AlertCircle } from 'lucide-react';
-import { verifyAdminPin, setAdminPin, playHapticSound } from '../utils/storage';
+import { X, KeyRound, Check, AlertCircle, User, Lock } from 'lucide-react';
+import { verifyAdminPin, setAdminPassword, playHapticSound, getAdminUser } from '../utils/storage';
 
 export function ChangePinModal({ isOpen, onClose }) {
   const [oldPin, setOldPin] = useState('');
@@ -9,6 +9,8 @@ export function ChangePinModal({ isOpen, onClose }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const adminUser = getAdminUser() || 'mohamed';
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
@@ -16,24 +18,24 @@ export function ChangePinModal({ isOpen, onClose }) {
     setError('');
 
     if (!verifyAdminPin(oldPin)) {
-      setError('الرمز السري الحالي غير صحيح');
+      setError('كلمة المرور الحالية غير صحيحة');
       playHapticSound('tap');
       return;
     }
 
     if (newPin.length < 4) {
-      setError('الرمز الجديد يجب أن يتكون من 4 أرقام على الأقل');
+      setError('كلمة المرور الجديدة يجب أن تتكون من 4 خانات على الأقل');
       playHapticSound('tap');
       return;
     }
 
     if (newPin !== confirmPin) {
-      setError('الرمز الجديد وتأكيده غير متطابقين');
+      setError('كلمة المرور الجديدة وتأكيدها غير متطابقين');
       playHapticSound('tap');
       return;
     }
 
-    setAdminPin(newPin);
+    setAdminPassword(newPin);
     setSuccess(true);
     playHapticSound('success');
 
@@ -55,8 +57,8 @@ export function ChangePinModal({ isOpen, onClose }) {
               <KeyRound className="w-5 h-5 text-emerald-600" />
             </span>
             <div>
-              <h2 className="text-lg font-black text-slate-900">تغيير الرمز السري</h2>
-              <p className="text-xs text-slate-500">حماية الدخول الإداري للتطبيق</p>
+              <h2 className="text-lg font-black text-slate-900">تغيير كلمة المرور</h2>
+              <p className="text-xs text-slate-500">حساب المسؤول: <strong className="text-emerald-700 font-mono">{adminUser}</strong></p>
             </div>
           </div>
 
@@ -77,7 +79,7 @@ export function ChangePinModal({ isOpen, onClose }) {
             <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
               <Check className="w-6 h-6 stroke-[3]" />
             </div>
-            <span>تم تغيير الرمز السري بنجاح!</span>
+            <span>تم تغيير كلمة المرور بنجاح!</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -89,43 +91,37 @@ export function ChangePinModal({ isOpen, onClose }) {
             )}
 
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">الرمز الحالي:</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1">كلمة المرور الحالية:</label>
               <input
                 type="password"
-                inputMode="numeric"
-                maxLength={6}
                 required
                 value={oldPin}
                 onChange={(e) => setOldPin(e.target.value)}
-                placeholder="****"
+                placeholder="•••••"
                 className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-center text-lg tracking-widest outline-none focus:border-emerald-600"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">الرمز الجديد (4 أرقام):</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1">كلمة المرور الجديدة (12345 أو أكثر):</label>
               <input
                 type="password"
-                inputMode="numeric"
-                maxLength={6}
                 required
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value)}
-                placeholder="****"
+                placeholder="•••••"
                 className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-center text-lg tracking-widest outline-none focus:border-emerald-600"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">تأكيد الرمز الجديد:</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1">تأكيد كلمة المرور الجديدة:</label>
               <input
                 type="password"
-                inputMode="numeric"
-                maxLength={6}
                 required
                 value={confirmPin}
                 onChange={(e) => setConfirmPin(e.target.value)}
-                placeholder="****"
+                placeholder="•••••"
                 className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-center text-lg tracking-widest outline-none focus:border-emerald-600"
               />
             </div>
@@ -135,7 +131,7 @@ export function ChangePinModal({ isOpen, onClose }) {
               className="w-full h-12 mt-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
               <Check className="w-4 h-4" />
-              <span>تحديث الرمز السري</span>
+              <span>تحديث كلمة المرور</span>
             </button>
           </form>
         )}
@@ -143,3 +139,5 @@ export function ChangePinModal({ isOpen, onClose }) {
     </div>
   );
 }
+
+export default ChangePinModal;

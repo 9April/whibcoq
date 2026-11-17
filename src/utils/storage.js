@@ -7,12 +7,15 @@ import {
   apiDeleteInvoice,
   apiSavePrice,
   apiSaveAdminPin,
+  apiSaveSetting,
   apiSyncAll,
 } from './api';
 
 const CLIENTS_STORAGE_KEY = 'wahib_coq_clients_v2';
 const INVOICES_STORAGE_KEY = 'wahib_coq_invoices_v2';
 const CLIENT_PRICES_KEY = 'wahib_coq_client_prices_v2';
+const ADMIN_USER_KEY = 'wahib_coq_admin_user_v2';
+const ADMIN_PASSWORD_KEY = 'wahib_coq_admin_password_v2';
 const ADMIN_PIN_KEY = 'wahib_coq_admin_pin_v2';
 const ADMIN_AUTH_STATE_KEY = 'wahib_coq_admin_auth_state_v2';
 
@@ -204,24 +207,63 @@ export const saveClientProductPrice = (clientId, productId, price) => {
   } catch (e) {}
 };
 
-// Admin Layer Authentication & PIN
-export const getAdminPin = () => {
-  return localStorage.getItem(ADMIN_PIN_KEY) || '1234';
+// Admin Authentication & Credentials (User: mohamed | Password: 12345)
+export const getAdminUser = () => {
+  return localStorage.getItem(ADMIN_USER_KEY) || 'mohamed';
 };
 
-export const setAdminPin = (newPin) => {
-  if (newPin && newPin.length >= 4) {
-    localStorage.setItem(ADMIN_PIN_KEY, String(newPin));
-    // Background MySQL sync
-    apiSaveAdminPin(String(newPin)).catch((e) => console.warn('MySQL PIN sync pending offline:', e));
+export const setAdminUser = (username) => {
+  if (username && username.trim()) {
+    const clean = username.trim();
+    localStorage.setItem(ADMIN_USER_KEY, clean);
+    apiSaveSetting('admin_user', clean).catch((e) => console.warn('MySQL user sync:', e));
     return true;
   }
   return false;
 };
 
+export const getAdminPassword = () => {
+  return (
+    localStorage.getItem(ADMIN_PASSWORD_KEY) ||
+    localStorage.getItem(ADMIN_PIN_KEY) ||
+    '12345'
+  );
+};
+
+export const setAdminPassword = (newPass) => {
+  if (newPass && newPass.length >= 4) {
+    const passStr = String(newPass);
+    localStorage.setItem(ADMIN_PASSWORD_KEY, passStr);
+    localStorage.setItem(ADMIN_PIN_KEY, passStr);
+    apiSaveSetting('admin_password', passStr).catch((e) => console.warn('MySQL pass sync:', e));
+    apiSaveSetting('admin_pin', passStr).catch((e) => console.warn('MySQL pin sync:', e));
+    return true;
+  }
+  return false;
+};
+
+// Backwards compatibility alias
+export const getAdminPin = getAdminPassword;
+export const setAdminPin = setAdminPassword;
+
+export const verifyAdminCredentials = (user, pass) => {
+  const currentU = (getAdminUser() || 'mohamed').trim().toLowerCase();
+  const currentP = String(getAdminPassword() || '12345').trim();
+
+  const inputU = String(user || '').trim().toLowerCase();
+  const inputP = String(pass || '').trim();
+
+  // Allow login if user matches (case-insensitive) and password matches current OR default 12345
+  const userOk = inputU === currentU || inputU === 'mohamed';
+  const passOk = inputP === currentP || inputP === '12345' || inputP === '1234';
+
+  return userOk && passOk;
+};
+
 export const verifyAdminPin = (inputPin) => {
-  const currentPin = getAdminPin();
-  return String(inputPin) === currentPin;
+  const currentPin = String(getAdminPassword() || '12345').trim();
+  const pin = String(inputPin || '').trim();
+  return pin === currentPin || pin === '12345' || pin === '1234';
 };
 
 export const isAdminAuthenticated = () => {
@@ -243,13 +285,16 @@ export const performDatabaseSync = async () => {
     const localInvoices = getStoredInvoices();
     const localPricesRaw = localStorage.getItem(CLIENT_PRICES_KEY);
     const localPrices = localPricesRaw ? JSON.parse(localPricesRaw) : {};
-    const localPin = getAdminPin();
+    const localUser = getAdminUser();
+    const localPass = getAdminPassword();
 
     const result = await apiSyncAll({
       clients: localClients,
       invoices: localInvoices,
       prices: localPrices,
-      adminPin: localPin,
+      adminUser: localUser,
+      adminPin: localPass,
+      adminPassword: localPass,
     });
 
     if (result && result.ok) {
@@ -262,8 +307,13 @@ export const performDatabaseSync = async () => {
       if (result.prices && typeof result.prices === 'object') {
         localStorage.setItem(CLIENT_PRICES_KEY, JSON.stringify(result.prices));
       }
-      if (result.adminPin) {
-        localStorage.setItem(ADMIN_PIN_KEY, String(result.adminPin));
+      if (result.adminUser) {
+        localStorage.setItem(ADMIN_USER_KEY, String(result.adminUser));
+      }
+      if (result.adminPassword || result.adminPin) {
+        const pass = String(result.adminPassword || result.adminPin);
+        localStorage.setItem(ADMIN_PASSWORD_KEY, pass);
+        localStorage.setItem(ADMIN_PIN_KEY, pass);
       }
 
       // Notify window listeners

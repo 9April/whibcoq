@@ -96,15 +96,27 @@ export const apiSavePrice = async (clientId, productId, price) => {
 };
 
 export const apiFetchAdminPin = async () => {
-  const data = await fetchWithFallback('/api/settings?key=admin_pin');
+  const data = await fetchWithFallback('/api/settings?key=admin_password');
   return data?.value || null;
 };
 
 export const apiSaveAdminPin = async (pin) => {
   return await fetchWithFallback('/api/settings', {
     method: 'POST',
-    body: JSON.stringify({ key: 'admin_pin', value: pin }),
+    body: JSON.stringify({ key: 'admin_password', value: pin }),
   });
+};
+
+export const apiSaveSetting = async (key, value) => {
+  return await fetchWithFallback('/api/settings', {
+    method: 'POST',
+    body: JSON.stringify({ key, value }),
+  });
+};
+
+export const apiFetchSetting = async (key) => {
+  const data = await fetchWithFallback(`/api/settings?key=${encodeURIComponent(key)}`);
+  return data?.value || null;
 };
 
 export const apiSyncAll = async (payload) => {
