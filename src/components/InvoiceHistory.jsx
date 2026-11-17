@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Printer, Trash2, Edit3, ChevronLeft, Calendar, FileText } from 'lucide-react';
+import { Search, Printer, Edit3, ChevronLeft, Calendar, FileText } from 'lucide-react';
 import { formatDh, formatKg, playHapticSound } from '../utils/storage';
 import { InvoicePrintModal } from './InvoicePrintModal';
 
 export function InvoiceHistory({
   invoices,
-  onDeleteInvoice,
   onEditInvoice,
   onOpenPrint,
 }) {
@@ -20,14 +19,6 @@ export function InvoiceHistory({
     const dateMatch = inv.date?.includes(term);
     return nameMatch || idMatch || dateMatch;
   });
-
-  const handleDelete = (inv, e) => {
-    e.stopPropagation();
-    playHapticSound('tap');
-    if (window.confirm(`هل أنت متأكد من حذف الفاتورة #${inv.id} الخاصة بـ ${inv.clientName}؟`)) {
-      onDeleteInvoice(inv.id);
-    }
-  };
 
   const handleEdit = (inv, e) => {
     e.stopPropagation();
@@ -119,19 +110,10 @@ export function InvoiceHistory({
                   <button
                     type="button"
                     onClick={(e) => handleEdit(inv, e)}
-                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center active:scale-95"
+                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center active:scale-95 border border-slate-200"
                     title="تعديل الفاتورة"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={(e) => handleDelete(inv, e)}
-                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center active:scale-95"
-                    title="حذف الفاتورة"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
