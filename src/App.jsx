@@ -137,6 +137,7 @@ export function App() {
       <main className="no-print flex-1 max-w-lg w-full mx-auto p-3 sm:p-4">
         {activeTab === 'builder' && (
           <InvoiceBuilder
+            key={editingInvoice ? editingInvoice.id : 'new-invoice-builder'}
             clients={clients}
             onAddClient={handleAddClient}
             onSaveInvoice={handleSaveInvoice}
