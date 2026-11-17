@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
-import { X, UserPlus, Phone, User, Check } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, UserPlus, Phone, User, Check, Tag } from 'lucide-react';
 import { playHapticSound } from '../utils/storage';
 
 export function ClientModal({ isOpen, onClose, onAddClient }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [category, setCategory] = useState('مطعم');
+  const customInputRef = useRef(null);
 
   if (!isOpen) return null;
 
-  const categories = [
+  const presetCategories = [
     'مطعم',
     'سناك',
     'شواية',
@@ -27,7 +28,7 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
       id: 'c_' + Date.now(),
       name: name.trim(),
       phone: phone.trim(),
-      category: category,
+      category: category.trim() || 'عام',
     };
 
     onAddClient(newClient);
@@ -35,6 +36,19 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
     setPhone('');
     setCategory('مطعم');
     onClose();
+  };
+
+  const handleSelectPreset = (cat) => {
+    playHapticSound('tap');
+    setCategory(cat);
+  };
+
+  const handleSelectOther = () => {
+    playHapticSound('tap');
+    setCategory('');
+    setTimeout(() => {
+      customInputRef.current?.focus();
+    }, 50);
   };
 
   return (
@@ -69,7 +83,7 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Name */}
+          {/* Client Name */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-slate-500" />
@@ -102,27 +116,62 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
             />
           </div>
 
-          {/* Category */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">نوع النشاط:</label>
-            <div className="grid grid-cols-3 gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => {
-                    playHapticSound('tap');
-                    setCategory(cat);
-                  }}
-                  className={`h-11 rounded-xl border text-xs font-bold transition-all active:scale-95 ${
-                    category === cat
-                      ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+          {/* Activity Type with Blank Input to Add Another Manually */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-slate-500" />
+                <span>نوع النشاط التجاري:</span>
+              </span>
+              <span className="text-[11px] font-normal text-slate-400">
+                (اختر أو اكتب نشاطاً يدوياً)
+              </span>
+            </label>
+
+            {/* Blank/Editable Input for Activity Type */}
+            <div className="relative">
+              <input
+                ref={customInputRef}
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="اكتب نوع النشاط هنا (مثال: فندق، مقهى، جزار، مخبزة...)"
+                className="w-full h-12 pr-10 pl-3 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all"
+              />
+              <Tag className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            {/* Quick preset pills + "آخر" option */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              {presetCategories.map((cat) => {
+                const isSelected = category.trim() === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => handleSelectPreset(cat)}
+                    className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 ${
+                      isSelected
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                        : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={handleSelectOther}
+                className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 ${
+                  !presetCategories.includes(category.trim()) && category.trim() !== ''
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                    : 'bg-slate-100 text-emerald-800 border-dashed border-emerald-300 hover:bg-emerald-50'
+                }`}
+              >
+                + نشاط يدوي آخر
+              </button>
             </div>
           </div>
 
