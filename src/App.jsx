@@ -301,6 +301,7 @@ export function App() {
         {activeTab === 'history' && (
           <InvoiceHistory
             invoices={invoices}
+            clients={clients}
             onDeleteInvoice={handleDeleteInvoice}
             onEditInvoice={handleEditInvoice}
             onOpenPrint={(inv) => setInvoiceToPrint(inv)}

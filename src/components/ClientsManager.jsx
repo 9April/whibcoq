@@ -217,12 +217,12 @@ export function ClientsManager({
                     </div>
 
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base font-black text-slate-900 truncate">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h3 className="text-sm font-bold text-slate-900 truncate">
                           {client.name}
                         </h3>
                         {client.category && (
-                          <span className="px-2 py-0.2 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-bold">
+                          <span className="px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-bold">
                             {client.category}
                           </span>
                         )}
