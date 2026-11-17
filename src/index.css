@@ -65,7 +65,14 @@
     size: A4 portrait;
     margin: 8mm 10mm;
   }
-  
+
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
   html, body {
     background: #ffffff !important;
     color: #000000 !important;
@@ -73,119 +80,82 @@
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
+    min-height: 100% !important;
     height: auto !important;
     overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Force hide all standard UI elements marked as no-print */
-  .no-print,
-  .no-print *,
-  header,
-  main,
-  nav,
-  .bottom-nav,
-  button {
-    display: none !important;
+  /* 1. Hide everything on screen by default without breaking DOM hierarchy */
+  body * {
     visibility: hidden !important;
   }
 
-  /* Ensure root and app wrapper are visible and neutral */
-  #root,
-  #root > div {
-    display: block !important;
-    background: transparent !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
-    position: static !important;
+  /* 2. Make ONLY the printable invoice and its children visible */
+  #printable-invoice,
+  #printable-invoice * {
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
-  /* Reset modal overlay so it flows naturally in print document */
-  .printable-invoice-modal-overlay {
-    position: static !important;
-    display: block !important;
-    inset: auto !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
-    box-shadow: none !important;
-  }
-
-  .printable-invoice-modal-dialog {
-    position: static !important;
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    overflow: visible !important;
-  }
-
-  .printable-invoice-area-wrapper {
-    position: static !important;
-    display: block !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-    overflow: visible !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  /* The actual invoice sheet */
-  .printable-invoice-area {
-    position: static !important;
-    display: block !important;
+  /* 3. Pull printable invoice to the absolute top of the physical page */
+  #printable-invoice {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     max-height: 278mm !important;
     margin: 0 !important;
     padding: 0 !important;
-    box-shadow: none !important;
     border: none !important;
+    box-shadow: none !important;
     background: #ffffff !important;
     color: #0f172a !important;
+    display: block !important;
+    overflow: visible !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
+    break-after: avoid !important;
     break-inside: avoid !important;
   }
 
-  .print-table {
+  /* Force hide any buttons or screen-only controls inside the printable area */
+  #printable-invoice .no-print,
+  #printable-invoice button {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 4. Table Styling */
+  #printable-invoice .print-table {
     border-collapse: collapse !important;
     width: 100% !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  .print-table th,
-  .print-table td {
+  #printable-invoice .print-table th,
+  #printable-invoice .print-table td {
     border: 1.5px solid #0f172a !important;
     padding: 3.5px 7px !important;
     color: #0f172a !important;
     line-height: 1.25 !important;
   }
 
-  .print-table th {
+  #printable-invoice .print-table th {
     background-color: #f1f5f9 !important;
     font-weight: 800 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Prevent any internal breaks on table rows or boxes */
-  tr, td, th, div {
+  /* Prevent page breaks across elements */
+  #printable-invoice tr,
+  #printable-invoice td,
+  #printable-invoice th,
+  #printable-invoice div {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }

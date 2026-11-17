@@ -15,7 +15,12 @@ export function InvoicePrintModal({
 
   const handlePrint = () => {
     playHapticSound('success');
-    window.print();
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+    setTimeout(() => {
+      window.print();
+    }, 150);
   };
 
   const handleNewInvoiceClick = () => {
@@ -138,6 +143,7 @@ export function InvoicePrintModal({
         <div className="printable-invoice-area-wrapper overflow-y-auto p-2 sm:p-6 bg-slate-100/60 flex justify-center">
           <div
             ref={printAreaRef}
+            id="printable-invoice"
             className="printable-invoice-area w-full max-w-[210mm] bg-white text-slate-900 p-4 sm:p-8 rounded-2xl shadow-sm border border-slate-200"
           >
             {/* Header matching classic WAHIB COQ invoice */}
