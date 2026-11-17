@@ -14,7 +14,7 @@ import {
   User
 } from 'lucide-react';
 import { ClientModal } from './ClientModal';
-import { formatDh, formatKg, playHapticSound } from '../utils/storage';
+import { formatDh, formatKg, formatPhone, playHapticSound } from '../utils/storage';
 
 export function ClientsManager({
   clients,
@@ -230,13 +230,19 @@ export function ClientsManager({
 
                       {client.phone ? (
                         <a
-                          href={`tel:${client.phone}`}
+                          href={`tel:${client.phone.replace(/\D/g, '')}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="text-xs font-mono font-semibold text-emerald-700 hover:underline flex items-center gap-1 mt-0.5 tabular-nums"
-                          dir="ltr"
+                          className="text-xs font-mono font-bold text-emerald-700 hover:underline inline-flex items-center gap-1.5 mt-0.5"
+                          title="اتصال هاتفي"
                         >
-                          <Phone className="w-3 h-3 text-emerald-600" />
-                          <span>{client.phone}</span>
+                          <Phone className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                          <bdi
+                            dir="ltr"
+                            className="font-mono tabular-nums tracking-wide inline-block"
+                            style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
+                          >
+                            {formatPhone(client.phone)}
+                          </bdi>
                         </a>
                       ) : (
                         <span className="text-[11px] text-slate-400 mt-0.5 block">
@@ -354,7 +360,8 @@ export function ClientsManager({
                   onChange={(e) => setEditPhone(e.target.value)}
                   placeholder="06 XX XX XX XX"
                   dir="ltr"
-                  className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm text-right outline-none focus:border-emerald-600 tabular-nums"
+                  className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm text-left outline-none focus:border-emerald-600 tabular-nums"
+                  style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
                 />
               </div>
 

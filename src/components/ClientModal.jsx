@@ -112,7 +112,8 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="06 XX XX XX XX"
               dir="ltr"
-              className="w-full h-[52px] px-4 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-lg font-bold font-mono text-slate-900 outline-none text-right transition-all tabular-nums"
+              className="w-full h-[52px] px-4 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-lg font-bold font-mono text-slate-900 outline-none text-left transition-all tabular-nums"
+              style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
             />
           </div>
 

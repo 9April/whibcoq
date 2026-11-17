@@ -53,6 +53,48 @@ export const formatArabicDate = (dateStr) => {
   }
 };
 
+// Format Phone Number (Ensures Moroccan 06 XX XX XX XX format with strict Left-to-Right protection)
+export const formatPhone = (phoneStr) => {
+  if (!phoneStr) return '';
+  let str = String(phoneStr).trim();
+  let digits = str.replace(/\D/g, '');
+
+  // Auto-correct RTL inverted prefix: e.g. 6072118844 -> 0672118844
+  if (
+    digits.length === 10 &&
+    (digits.startsWith('60') || digits.startsWith('70') || digits.startsWith('50'))
+  ) {
+    digits = '0' + digits[0] + digits.slice(2);
+  }
+
+  // 9 digits without leading 0 (e.g. 672118844 -> 0672118844)
+  if (
+    digits.length === 9 &&
+    (digits.startsWith('6') || digits.startsWith('7') || digits.startsWith('5'))
+  ) {
+    digits = '0' + digits;
+  }
+
+  // Format 10-digit Moroccan number: 06 XX XX XX XX with Unicode LTR mark
+  if (digits.length === 10) {
+    return (
+      '\u200E' +
+      digits.slice(0, 2) +
+      ' ' +
+      digits.slice(2, 4) +
+      ' ' +
+      digits.slice(4, 6) +
+      ' ' +
+      digits.slice(6, 8) +
+      ' ' +
+      digits.slice(8, 10) +
+      '\u200E'
+    );
+  }
+
+  return '\u200E' + str + '\u200E';
+};
+
 // Subtitle sound feedback (haptic-like click)
 export const playHapticSound = (type = 'tap') => {
   try {

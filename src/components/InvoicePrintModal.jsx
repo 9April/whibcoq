@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Printer, PlusCircle, X, Share2, Copy, FileText, Check } from 'lucide-react';
-import { formatDh, formatKg, playHapticSound } from '../utils/storage';
+import { formatDh, formatKg, formatPhone, playHapticSound } from '../utils/storage';
 import { BUSINESS_INFO } from '../data/initialData';
 
 export function InvoicePrintModal({
@@ -188,8 +188,11 @@ export function InvoicePrintModal({
                   <span className="text-base font-black text-slate-900">{invoice.clientName}</span>
                 </div>
                 {invoice.clientPhone && (
-                  <div className="text-xs font-mono font-semibold text-slate-700" dir="ltr">
-                    Tél: {invoice.clientPhone}
+                  <div className="text-xs font-mono font-semibold text-slate-700 flex items-center gap-1">
+                    <span>Tél:</span>
+                    <bdi dir="ltr" className="font-mono tabular-nums tracking-wide inline-block" style={{ unicodeBidi: 'isolate', direction: 'ltr' }}>
+                      {formatPhone(invoice.clientPhone)}
+                    </bdi>
                   </div>
                 )}
               </div>

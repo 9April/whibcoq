@@ -24,6 +24,7 @@ import {
   formatDh,
   formatKg,
   formatArabicDate,
+  formatPhone,
   getClientProductPrice,
   saveClientProductPrice,
   playHapticSound,
@@ -402,7 +403,13 @@ export function InvoiceBuilder({
                           </span>
                         )}
                         {c.phone && (
-                          <span className="font-mono tabular-nums">{c.phone}</span>
+                          <bdi
+                            dir="ltr"
+                            className="font-mono tabular-nums tracking-wide inline-block text-slate-500"
+                            style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
+                          >
+                            {formatPhone(c.phone)}
+                          </bdi>
                         )}
                       </div>
                     </div>
