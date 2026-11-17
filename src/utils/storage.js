@@ -78,7 +78,7 @@ export const formatArabicDate = (dateStr) => {
         return `${weekday}، ${day} ${MOROCCAN_MONTHS[mIdx]} ${year}`;
       }
     }
-  } catch (e) {}
+  } catch (e) { }
   return dateStr;
 };
 
@@ -210,7 +210,7 @@ export const getStoredClients = () => {
 export const saveStoredClients = (clients) => {
   try {
     localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(clients));
-  } catch (e) {}
+  } catch (e) { }
 };
 
 // Save a single client with background MySQL sync
@@ -266,7 +266,7 @@ export const getStoredInvoices = () => {
 export const saveStoredInvoices = (invoices) => {
   try {
     localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(invoices));
-  } catch (e) {}
+  } catch (e) { }
 };
 
 // Save a single invoice with background MySQL sync
@@ -329,7 +329,7 @@ export const saveClientProductPrice = (clientId, productId, price) => {
     apiSavePrice(clientId || 'default', productId, price).catch((e) =>
       console.warn('MySQL price sync pending offline:', e)
     );
-  } catch (e) {}
+  } catch (e) { }
 };
 
 // Admin Authentication & Credentials (User: wahib | Password: 12345)
@@ -413,7 +413,7 @@ export const getBusinessInfo = () => {
       const parsed = JSON.parse(saved);
       return { ...BUSINESS_INFO, ...parsed };
     }
-  } catch (e) {}
+  } catch (e) { }
   return BUSINESS_INFO;
 };
 

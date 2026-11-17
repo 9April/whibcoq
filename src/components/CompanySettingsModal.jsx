@@ -138,7 +138,7 @@ export function CompanySettingsModal({ isOpen, onClose, onUpdated }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-2 sm:p-4 animate-fadeIn select-none"
+      className="no-print fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-xs p-2 sm:p-4 animate-fadeIn select-none"
       dir="rtl"
     >
       <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-slate-900 max-h-[92vh] overflow-y-auto">
