@@ -35,20 +35,37 @@ export function InvoicePrintModal({
 
   const copySummaryText = () => {
     playHapticSound('tap');
-    let text = `*فاتورة ${BUSINESS_INFO.name}*\n`;
-    text += `رقم الفاتورة: #${invoice.id}\n`;
+
+    const formatAmountArabic = (num) => {
+      if (num === null || num === undefined || isNaN(num)) return '0,00 درهم';
+      const val = Number(num);
+      const parts = val.toFixed(2).split('.');
+      const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      return `${integerPart},${parts[1]} درهم`;
+    };
+
+    const formatWeightArabic = (num) => {
+      if (num === null || num === undefined || isNaN(num)) return '0,0 ك غ';
+      const val = Number(num);
+      const parts = val.toFixed(1).split('.');
+      const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      return `${integerPart},${parts[1]} ك غ`;
+    };
+
+    let text = `*فاتورة وهيب كوك*\n`;
+    text += `رقم الفاتورة: ${invoice.id}\n`;
     text += `الزبون: ${invoice.clientName}\n`;
     text += `التاريخ: ${displayDate()}\n`;
     text += `------------------------\n`;
     invoice.items.forEach((item, idx) => {
-      text += `${idx + 1}. ${item.productName}: ${item.weight} كغ × ${item.price} د.م = ${formatDh(item.total)}\n`;
+      text += `${idx + 1}. ${item.productName}: ${item.weight} ك غ × ${item.price} درهم = ${formatAmountArabic(item.total)}\n`;
     });
     text += `------------------------\n`;
-    text += `*الوزن الإجمالي: ${formatKg(invoice.totalWeight)}*\n`;
-    text += `*المجموع الصافي: ${formatDh(invoice.totalAmount)}*\n`;
+    text += `*الوزن الإجمالي: ${formatWeightArabic(invoice.totalWeight)}*\n`;
+    text += `*المجموع الصافي: ${formatAmountArabic(invoice.totalAmount)}*\n`;
 
     navigator.clipboard.writeText(text);
-    alert('تم نسخ ملخص الفاتورة بنجاح لمشاركته!');
+    alert('تم نسخ تفاصيل الفاتورة بنجاح!');
   };
 
   return (
