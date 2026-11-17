@@ -1,8 +1,8 @@
 import React from 'react';
-import { PlusCircle, BarChart3, Receipt } from 'lucide-react';
+import { PlusCircle, Users, Receipt, BarChart3 } from 'lucide-react';
 import { playHapticSound } from '../utils/storage';
 
-export function BottomNav({ activeTab, setActiveTab, invoicesCount }) {
+export function BottomNav({ activeTab, setActiveTab, invoicesCount, clientsCount }) {
   const tabs = [
     {
       id: 'builder',
@@ -11,10 +11,11 @@ export function BottomNav({ activeTab, setActiveTab, invoicesCount }) {
       icon: PlusCircle,
     },
     {
-      id: 'reports',
-      title: 'التقارير',
-      subtitle: 'Statistiques',
-      icon: BarChart3,
+      id: 'clients',
+      title: 'الزبائن',
+      subtitle: 'Clients',
+      icon: Users,
+      badge: clientsCount,
     },
     {
       id: 'history',
@@ -23,11 +24,17 @@ export function BottomNav({ activeTab, setActiveTab, invoicesCount }) {
       icon: Receipt,
       badge: invoicesCount,
     },
+    {
+      id: 'reports',
+      title: 'التقارير',
+      subtitle: 'Statistiques',
+      icon: BarChart3,
+    },
   ];
 
   return (
     <nav className="bottom-nav fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-lg safe-area-bottom">
-      <div className="max-w-lg mx-auto grid grid-cols-3 h-16 sm:h-18 px-2">
+      <div className="max-w-lg mx-auto grid grid-cols-4 h-16 sm:h-18 px-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

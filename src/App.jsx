@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { KeyRound, LogOut, Lock, ShieldCheck } from 'lucide-react';
 import { InvoiceBuilder } from './components/InvoiceBuilder';
+import { ClientsManager } from './components/ClientsManager';
 import { AnalyticsReports } from './components/AnalyticsReports';
 import { InvoiceHistory } from './components/InvoiceHistory';
 import { BottomNav } from './components/BottomNav';
@@ -27,6 +28,7 @@ export function App() {
   const [invoices, setInvoices] = useState(() => getStoredInvoices());
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [invoiceToPrint, setInvoiceToPrint] = useState(null);
+  const [preselectedClientId, setPreselectedClientId] = useState(null);
 
   const handleLoginSuccess = () => {
     setAdminAuthenticated(true);
@@ -45,6 +47,24 @@ export function App() {
     const updated = [newClient, ...clients];
     setClients(updated);
     saveStoredClients(updated);
+  };
+
+  const handleUpdateClient = (updatedClient) => {
+    const updated = clients.map((c) => (c.id === updatedClient.id ? updatedClient : c));
+    setClients(updated);
+    saveStoredClients(updated);
+  };
+
+  const handleDeleteClient = (clientId) => {
+    const updated = clients.filter((c) => c.id !== clientId);
+    setClients(updated);
+    saveStoredClients(updated);
+  };
+
+  const handleStartInvoiceForClient = (client) => {
+    setPreselectedClientId(client.id);
+    setEditingInvoice(null);
+    setActiveTab('builder');
   };
 
   const handleSaveInvoice = (newInvoice) => {
@@ -137,8 +157,9 @@ export function App() {
       <main className="no-print flex-1 max-w-lg w-full mx-auto p-3 sm:p-4">
         {activeTab === 'builder' && (
           <InvoiceBuilder
-            key={editingInvoice ? editingInvoice.id : 'new-invoice-builder'}
+            key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
             clients={clients}
+            initialClientId={preselectedClientId}
             onAddClient={handleAddClient}
             onSaveInvoice={handleSaveInvoice}
             onOpenPrint={(inv) => setInvoiceToPrint(inv)}
@@ -147,10 +168,14 @@ export function App() {
           />
         )}
 
-        {activeTab === 'reports' && (
-          <AnalyticsReports
-            invoices={invoices}
+        {activeTab === 'clients' && (
+          <ClientsManager
             clients={clients}
+            invoices={invoices}
+            onAddClient={handleAddClient}
+            onUpdateClient={handleUpdateClient}
+            onDeleteClient={handleDeleteClient}
+            onStartInvoiceForClient={handleStartInvoiceForClient}
           />
         )}
 
@@ -162,13 +187,27 @@ export function App() {
             onOpenPrint={(inv) => setInvoiceToPrint(inv)}
           />
         )}
+
+        {activeTab === 'reports' && (
+          <AnalyticsReports
+            invoices={invoices}
+            clients={clients}
+          />
+        )}
       </main>
 
-      {/* Fixed Bottom Navigation (3 Large Thumb-Accessible Tabs) - Hidden during print */}
+      {/* Fixed Bottom Navigation (4 Large Thumb-Accessible Tabs) - Hidden during print */}
       <BottomNav
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => {
+          if (tab === 'builder' && activeTab !== 'builder') {
+            setPreselectedClientId(null);
+            setEditingInvoice(null);
+          }
+          setActiveTab(tab);
+        }}
         invoicesCount={invoices.length}
+        clientsCount={clients.length}
       />
 
       {/* Official A4 / Receipt Print Modal - Rendered outside main so print isolates this exactly */}

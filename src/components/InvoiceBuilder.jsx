@@ -31,6 +31,7 @@ import {
 
 export function InvoiceBuilder({
   clients,
+  initialClientId,
   onAddClient,
   onSaveInvoice,
   onOpenPrint,
@@ -38,9 +39,9 @@ export function InvoiceBuilder({
   onCancelEdit,
 }) {
   // Step State: 1 = Choose Client, 2 = Choose Date, 3 = Choose Products
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialClientId ? 2 : 1);
 
-  const [selectedClientId, setSelectedClientId] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState(initialClientId || '');
   const [clientSearch, setClientSearch] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
