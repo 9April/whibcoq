@@ -246,20 +246,9 @@ export function InvoicePrintModal({
               </div>
             </div>
 
-            {/* Signature Area */}
-            <div className="border-t border-slate-300 pt-4 mt-auto">
-              <div className="grid grid-cols-2 gap-6 text-center text-xs">
-                <div className="border border-slate-300 rounded-xl p-3 h-20 flex flex-col justify-between">
-                  <span className="font-bold text-slate-600">توقيع واستلام الزبون</span>
-                </div>
-                <div className="border border-slate-300 rounded-xl p-3 h-20 flex flex-col justify-between">
-                  <span className="font-bold text-slate-600">خاتم وتوقيع المحل ({BUSINESS_INFO.name})</span>
-                </div>
-              </div>
-
-              <div className="text-center text-[10px] text-slate-400 mt-3 font-semibold">
-                {BUSINESS_INFO.name} • {BUSINESS_INFO.address} • Tél: {BUSINESS_INFO.phone}
-              </div>
+            {/* Footer */}
+            <div className="border-t border-slate-200 pt-3 mt-auto text-center text-xs text-slate-400 font-semibold">
+              {BUSINESS_INFO.name} • {BUSINESS_INFO.address} • Tél: {BUSINESS_INFO.phone}
             </div>
           </div>
         </div>
