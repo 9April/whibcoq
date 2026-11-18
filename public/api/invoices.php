@@ -10,12 +10,27 @@ if ($method === 'GET') {
     
     // Parse items JSON safely
     $invoices = array_map(function($row) {
-        $row['totalWeight'] = (float)$row['totalWeight'];
-        $row['totalAmount'] = (float)$row['totalAmount'];
-        $row['timestamp'] = (int)$row['timestamp'];
-        if (is_string($row['items'])) {
-            $row['items'] = json_decode($row['items'], true) ?: [];
+        $rawItems = is_string($row['items']) ? json_decode($row['items'], true) : $row['items'];
+        $items = [];
+        $computedWeight = 0.0;
+        $computedAmount = 0.0;
+        if (is_array($rawItems)) {
+            foreach ($rawItems as $it) {
+                $w = (float)($it['weight'] ?? 0);
+                $p = (float)($it['price'] ?? 0);
+                $t = isset($it['total']) && $it['total'] !== '' ? (float)$it['total'] : ($w * $p);
+                $computedWeight += $w;
+                $computedAmount += $t;
+                $it['weight'] = $w;
+                $it['price'] = $p;
+                $it['total'] = $t;
+                $items[] = $it;
+            }
         }
+        $row['totalWeight'] = count($items) > 0 ? $computedWeight : (float)$row['totalWeight'];
+        $row['totalAmount'] = count($items) > 0 ? $computedAmount : (float)$row['totalAmount'];
+        $row['timestamp'] = (int)$row['timestamp'];
+        $row['items'] = $items;
         return $row;
     }, $rows);
 

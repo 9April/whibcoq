@@ -54,12 +54,22 @@ export function AnalyticsReports({ invoices, clients }) {
     let totalKg = 0;
 
     filteredInvoices.forEach((inv) => {
-      inv.items?.forEach((item) => {
-        if (selectedProductId === 'all' || item.productId === selectedProductId) {
-          totalDh += item.total || 0;
-          totalKg += item.weight || 0;
-        }
-      });
+      if (Array.isArray(inv.items) && inv.items.length > 0) {
+        inv.items.forEach((item) => {
+          if (selectedProductId === 'all' || item.productId === selectedProductId) {
+            const w = Number(item.weight) || 0;
+            const t =
+              item.total !== undefined && !isNaN(Number(item.total)) && Number(item.total) !== 0
+                ? Number(item.total)
+                : w * (Number(item.price) || 0);
+            totalKg += w;
+            totalDh += t;
+          }
+        });
+      } else if (selectedProductId === 'all') {
+        totalKg += Number(inv.totalWeight) || 0;
+        totalDh += Number(inv.totalAmount) || 0;
+      }
     });
 
     return {
@@ -79,8 +89,13 @@ export function AnalyticsReports({ invoices, clients }) {
     filteredInvoices.forEach((inv) => {
       inv.items?.forEach((it) => {
         if (map[it.productId]) {
-          map[it.productId].totalWeight += it.weight || 0;
-          map[it.productId].totalAmount += it.total || 0;
+          const w = Number(it.weight) || 0;
+          const t =
+            it.total !== undefined && !isNaN(Number(it.total)) && Number(it.total) !== 0
+              ? Number(it.total)
+              : w * (Number(it.price) || 0);
+          map[it.productId].totalWeight += w;
+          map[it.productId].totalAmount += t;
           map[it.productId].orderCount += 1;
         }
       });
@@ -114,22 +129,32 @@ export function AnalyticsReports({ invoices, clients }) {
 
       map[cid].invoiceCount += 1;
 
-      inv.items?.forEach((it) => {
-        if (selectedProductId === 'all' || it.productId === selectedProductId) {
-          map[cid].totalAmount += it.total || 0;
-          map[cid].totalWeight += it.weight || 0;
+      if (Array.isArray(inv.items) && inv.items.length > 0) {
+        inv.items.forEach((it) => {
+          if (selectedProductId === 'all' || it.productId === selectedProductId) {
+            const w = Number(it.weight) || 0;
+            const t =
+              it.total !== undefined && !isNaN(Number(it.total)) && Number(it.total) !== 0
+                ? Number(it.total)
+                : w * (Number(it.price) || 0);
+            map[cid].totalAmount += t;
+            map[cid].totalWeight += w;
 
-          if (!map[cid].productsBought[it.productId]) {
-            map[cid].productsBought[it.productId] = {
-              productName: it.productName,
-              weight: 0,
-              amount: 0,
-            };
+            if (!map[cid].productsBought[it.productId]) {
+              map[cid].productsBought[it.productId] = {
+                productName: it.productName,
+                weight: 0,
+                amount: 0,
+              };
+            }
+            map[cid].productsBought[it.productId].weight += w;
+            map[cid].productsBought[it.productId].amount += t;
           }
-          map[cid].productsBought[it.productId].weight += it.weight || 0;
-          map[cid].productsBought[it.productId].amount += it.total || 0;
-        }
-      });
+        });
+      } else if (selectedProductId === 'all') {
+        map[cid].totalAmount += Number(inv.totalAmount) || 0;
+        map[cid].totalWeight += Number(inv.totalWeight) || 0;
+      }
     });
 
     return Object.values(map).sort((a, b) => b.totalAmount - a.totalAmount);

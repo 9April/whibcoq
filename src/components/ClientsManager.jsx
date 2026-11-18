@@ -44,8 +44,8 @@ export function ClientsManager({
     invoices.forEach((inv) => {
       if (inv.clientId && stats[inv.clientId]) {
         stats[inv.clientId].invoiceCount += 1;
-        stats[inv.clientId].totalAmount += inv.totalAmount || 0;
-        stats[inv.clientId].totalWeight += inv.totalWeight || 0;
+        stats[inv.clientId].totalAmount += Number(inv.totalAmount) || 0;
+        stats[inv.clientId].totalWeight += Number(inv.totalWeight) || 0;
       }
     });
     return stats;

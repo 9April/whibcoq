@@ -100,13 +100,30 @@ app.get(['/api/invoices', '/api/invoices.php'], async (req, res) => {
       'SELECT id, client_id as clientId, client_name as clientName, client_phone as clientPhone, date, total_weight as totalWeight, total_amount as totalAmount, items, timestamp FROM invoices ORDER BY timestamp DESC'
     );
 
-    const invoices = rows.map((r) => ({
-      ...r,
-      totalWeight: Number(r.totalWeight),
-      totalAmount: Number(r.totalAmount),
-      timestamp: Number(r.timestamp),
-      items: typeof r.items === 'string' ? JSON.parse(r.items || '[]') : r.items,
-    }));
+    const invoices = rows.map((r) => {
+      const rawItems = typeof r.items === 'string' ? JSON.parse(r.items || '[]') : (r.items || []);
+      const parsedItems = Array.isArray(rawItems)
+        ? rawItems.map((it) => ({
+            ...it,
+            weight: Number(it.weight) || 0,
+            price: Number(it.price) || 0,
+            total:
+              it.total !== undefined && !isNaN(Number(it.total))
+                ? Number(it.total)
+                : (Number(it.weight) || 0) * (Number(it.price) || 0),
+          }))
+        : [];
+      const computedWeight = parsedItems.reduce((sum, it) => sum + it.weight, 0);
+      const computedAmount = parsedItems.reduce((sum, it) => sum + it.total, 0);
+
+      return {
+        ...r,
+        totalWeight: parsedItems.length > 0 ? computedWeight : Number(r.totalWeight) || 0,
+        totalAmount: parsedItems.length > 0 ? computedAmount : Number(r.totalAmount) || 0,
+        timestamp: Number(r.timestamp) || Date.now(),
+        items: parsedItems,
+      };
+    });
 
     res.json(invoices);
   } catch (err) {
@@ -322,13 +339,30 @@ app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
     const [uRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_user'");
     const [sRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_password'");
 
-    const parsedInvoices = iRows.map((r) => ({
-      ...r,
-      totalWeight: Number(r.totalWeight),
-      totalAmount: Number(r.totalAmount),
-      timestamp: Number(r.timestamp),
-      items: typeof r.items === 'string' ? JSON.parse(r.items || '[]') : r.items,
-    }));
+    const parsedInvoices = iRows.map((r) => {
+      const rawItems = typeof r.items === 'string' ? JSON.parse(r.items || '[]') : (r.items || []);
+      const parsedItems = Array.isArray(rawItems)
+        ? rawItems.map((it) => ({
+            ...it,
+            weight: Number(it.weight) || 0,
+            price: Number(it.price) || 0,
+            total:
+              it.total !== undefined && !isNaN(Number(it.total))
+                ? Number(it.total)
+                : (Number(it.weight) || 0) * (Number(it.price) || 0),
+          }))
+        : [];
+      const computedWeight = parsedItems.reduce((sum, it) => sum + it.weight, 0);
+      const computedAmount = parsedItems.reduce((sum, it) => sum + it.total, 0);
+
+      return {
+        ...r,
+        totalWeight: parsedItems.length > 0 ? computedWeight : Number(r.totalWeight) || 0,
+        totalAmount: parsedItems.length > 0 ? computedAmount : Number(r.totalAmount) || 0,
+        timestamp: Number(r.timestamp) || Date.now(),
+        items: parsedItems,
+      };
+    });
 
     const pricesMap = {};
     pRows.forEach((r) => (pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price)));

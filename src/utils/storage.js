@@ -22,8 +22,9 @@ const BUSINESS_INFO_KEY = 'wahib_coq_business_info_v2';
 
 // Format Moroccan Dirham (e.g., "1 240,00 درهم")
 export const formatDh = (num) => {
-  if (num === null || num === undefined || isNaN(num)) return '0,00 درهم';
+  if (num === null || num === undefined) return '0,00 درهم';
   const val = Number(num);
+  if (isNaN(val)) return '0,00 درهم';
   const parts = val.toFixed(2).split('.');
   const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   return `${integerPart},${parts[1]} درهم`;
@@ -31,8 +32,9 @@ export const formatDh = (num) => {
 
 // Format Weight in Kg (e.g., "45,5 ك غ")
 export const formatKg = (num) => {
-  if (num === null || num === undefined || isNaN(num)) return '0,0 ك غ';
+  if (num === null || num === undefined) return '0,0 ك غ';
   const val = Number(num);
+  if (isNaN(val)) return '0,0 ك غ';
   const parts = val.toFixed(1).split('.');
   const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   return `${integerPart},${parts[1]} ك غ`;
@@ -248,16 +250,51 @@ export const deleteClientWithDb = async (clientId) => {
   return clients;
 };
 
+export const normalizeInvoiceData = (inv) => {
+  if (!inv || typeof inv !== 'object') return null;
+  const items = Array.isArray(inv.items)
+    ? inv.items.map((it) => {
+        const w = Number(it.weight) || 0;
+        const p = Number(it.price) || 0;
+        const t =
+          it.total !== undefined && !isNaN(Number(it.total)) && Number(it.total) !== 0
+            ? Number(it.total)
+            : w * p;
+        return {
+          ...it,
+          weight: w,
+          price: p,
+          total: t,
+        };
+      })
+    : [];
+
+  const computedWeight = items.reduce((sum, it) => sum + it.weight, 0);
+  const computedAmount = items.reduce((sum, it) => sum + it.total, 0);
+
+  return {
+    ...inv,
+    totalWeight: items.length > 0 ? computedWeight : Number(inv.totalWeight) || 0,
+    totalAmount: items.length > 0 ? computedAmount : Number(inv.totalAmount) || 0,
+    timestamp: Number(inv.timestamp) || Date.now(),
+    items,
+  };
+};
+
 // Persistent Invoices
 export const getStoredInvoices = () => {
   try {
     const raw = localStorage.getItem(INVOICES_STORAGE_KEY);
+    let list;
     if (!raw) {
       const sample = generateSampleInvoices();
-      localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(sample));
-      return sample;
+      const normalizedSample = sample.map(normalizeInvoiceData).filter(Boolean);
+      localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(normalizedSample));
+      return normalizedSample;
     }
-    return JSON.parse(raw);
+    list = JSON.parse(raw);
+    if (!Array.isArray(list)) return [];
+    return list.map(normalizeInvoiceData).filter(Boolean);
   } catch (e) {
     return [];
   }
@@ -473,7 +510,8 @@ export const performDatabaseSync = async () => {
         localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(enriched));
       }
       if (Array.isArray(result.invoices) && result.invoices.length > 0) {
-        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(result.invoices));
+        const normalizedInvoices = result.invoices.map(normalizeInvoiceData).filter(Boolean);
+        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(normalizedInvoices));
       }
       if (result.prices && typeof result.prices === 'object') {
         localStorage.setItem(CLIENT_PRICES_KEY, JSON.stringify(result.prices));
