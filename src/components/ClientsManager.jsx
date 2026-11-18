@@ -193,8 +193,8 @@ export function ClientsManager({
         )}
       </div>
 
-      {/* Clients Cards List */}
-      <div className="flex flex-col gap-2.5">
+      {/* Clients Cards List (1 col on mobile, 2 or 3 cols on desktop) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredClients.length > 0 ? (
           filteredClients.map((client) => {
             const stats = clientStats[client.id] || { invoiceCount: 0, totalAmount: 0 };

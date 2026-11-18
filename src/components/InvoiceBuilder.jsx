@@ -370,8 +370,8 @@ export function InvoiceBuilder({
             </div>
           </div>
 
-          {/* Clients List Cards */}
-          <div className="flex flex-col gap-2">
+          {/* Clients List Cards (1 col on mobile, 2 or 3 cols on desktop) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredClients.map((c) => {
               const isSelected = c.id === selectedClientId;
               return (
@@ -427,8 +427,8 @@ export function InvoiceBuilder({
           </div>
 
           {/* Step 1 Bottom Action Bar */}
-          <div className="fixed bottom-16 sm:bottom-18 left-0 right-0 z-30 bg-white border-t border-slate-200 shadow-xl p-3">
-            <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+          <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 md:py-4">
+            <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               <div className="text-right min-w-0">
                 <span className="text-[11px] font-bold text-slate-400 block">الزبون المختار:</span>
                 <span className="text-base font-black text-slate-900 truncate block">
@@ -535,8 +535,8 @@ export function InvoiceBuilder({
           </div>
 
           {/* Step 2 Bottom Action Bar */}
-          <div className="fixed bottom-16 sm:bottom-18 left-0 right-0 z-30 bg-white border-t border-slate-200 shadow-xl p-3">
-            <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+          <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 md:py-4">
+            <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => {
@@ -668,8 +668,8 @@ export function InvoiceBuilder({
             )}
           </div>
 
-          {/* 12 Poultry Products List */}
-          <div className="flex flex-col gap-2.5">
+          {/* 12 Poultry Products List (1 col on mobile, 2 cols on desktop) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
             {displayedProducts.length > 0 ? (
               displayedProducts.map((product) => {
                 const currentItem = itemsState[product.id] || { weight: '', price: product.defaultPrice };
@@ -685,7 +685,7 @@ export function InvoiceBuilder({
                 );
               })
             ) : (
-              <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 text-sm font-bold flex flex-col items-center gap-2">
+              <div className="col-span-full bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 text-sm font-bold flex flex-col items-center gap-2">
                 <span>لم يتم إدخال وزن أي منتوج بعد</span>
                 <button
                   type="button"
@@ -698,9 +698,9 @@ export function InvoiceBuilder({
             )}
           </div>
 
-          {/* Floating Bottom Checkout Bar (Above Nav) */}
-          <div className="floating-checkout fixed bottom-16 sm:bottom-18 left-0 right-0 z-30 bg-slate-900 text-white border-t border-slate-800 shadow-2xl p-3 sm:p-4">
-            <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+          {/* Floating Bottom Checkout Bar (Above Nav on mobile, docked on desktop) */}
+          <div className="floating-checkout fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-800 shadow-2xl p-3 sm:p-4 md:py-4">
+            <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               {/* Grand Total */}
               <div className="text-right">
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold">

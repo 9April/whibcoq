@@ -77,8 +77,8 @@ export function InvoiceHistory({
         </div>
       </div>
 
-      {/* Invoices List */}
-      <div className="flex flex-col gap-2">
+      {/* Invoices List (1 col on mobile, 2 or 3 cols on desktop) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filtered.length > 0 ? (
           filtered.map((inv) => {
             const rawName = (inv.clientName || '').trim();

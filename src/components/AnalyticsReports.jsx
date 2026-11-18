@@ -369,11 +369,11 @@ export function AnalyticsReports({ invoices, clients }) {
             <span className="text-xs text-slate-400 font-semibold">مرتب حسب المداخيل</span>
           </div>
 
-          <div className="flex flex-col gap-2.5 divide-y divide-slate-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {productStats.map((item, idx) => {
               const pct = (item.totalAmount / maxProductRevenue) * 100;
               return (
-                <div key={item.id} className="pt-2 first:pt-0 flex flex-col gap-1.5">
+                <div key={item.id} className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 flex flex-col gap-1.5">
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-slate-400 font-bold w-4">{idx + 1}</span>
@@ -389,7 +389,7 @@ export function AnalyticsReports({ invoices, clients }) {
                   </div>
 
                   {/* Clean Horizontal Progress Bar */}
-                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-slate-200/70 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-emerald-600 rounded-full transition-all duration-300"
                       style={{ width: `${Math.max(pct, 1)}%` }}
@@ -410,7 +410,8 @@ export function AnalyticsReports({ invoices, clients }) {
             <span className="text-xs text-slate-400 font-semibold">انقر لعرض الأصناف</span>
           </div>
 
-          <div className="flex flex-col gap-2">
+          {/* Clients Cards Grid (1 col on mobile, 2 cols on desktop) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {clientStats.length > 0 ? (
               clientStats.map((c, idx) => {
                 const isExpanded = expandedClientId === c.clientId;

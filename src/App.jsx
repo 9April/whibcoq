@@ -1,5 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LogOut, Lock, ShieldCheck, Database, CheckCircle2, AlertTriangle } from 'lucide-react';
+import {
+  LogOut,
+  Lock,
+  ShieldCheck,
+  Database,
+  CheckCircle2,
+  AlertTriangle,
+  PlusCircle,
+  Users,
+  Receipt,
+  BarChart3,
+  Layers,
+} from 'lucide-react';
 import { InvoiceBuilder } from './components/InvoiceBuilder';
 import { HomeDashboard } from './components/HomeDashboard';
 import { ClientsManager } from './components/ClientsManager';
@@ -197,8 +209,8 @@ export function App() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col selection:bg-emerald-600 selection:text-white" dir="rtl">
       {/* Top Admin Header Bar (Hidden during print) */}
-      <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
-        <div className="max-w-lg mx-auto px-3 py-2 flex items-center justify-between">
+      <header className="no-print bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-4">
           {/* Clickable Logo & Company Title to open Company/Account Settings */}
           <button
             type="button"
@@ -206,7 +218,7 @@ export function App() {
               playHapticSound('tap');
               setIsCompanySettingsOpen(true);
             }}
-            className="flex items-center gap-2 group p-1 -mr-1 rounded-xl hover:bg-slate-100/80 active:scale-95 transition-all text-right cursor-pointer"
+            className="flex items-center gap-2.5 group p-1 -mr-1 rounded-xl hover:bg-slate-100/80 active:scale-95 transition-all text-right cursor-pointer shrink-0"
             title="إعدادات وهيب كوك (المستخدم، كلمة المرور، وبيانات الشركة)"
           >
             <div className="relative">
@@ -221,10 +233,104 @@ export function App() {
               <span className="text-sm font-black text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors">
                 {businessInfo.name || BUSINESS_INFO.name}
               </span>
+              <span className="text-[10px] text-slate-400 font-bold hidden sm:inline">
+                منصة الفوترة والتوزيع
+              </span>
             </div>
           </button>
 
-          <div className="flex items-center gap-1.5">
+          {/* Desktop Navigation Tabs (Visible on tablet/desktop, hidden on mobile) */}
+          <nav className="hidden md:flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/80 shadow-xs">
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                if (activeTab === 'builder' && !isBuildingInvoice) {
+                  setIsBuildingInvoice(true);
+                } else if (activeTab !== 'builder') {
+                  setPreselectedClientId(null);
+                  setEditingInvoice(null);
+                  setIsBuildingInvoice(true);
+                }
+                setActiveTab('builder');
+              }}
+              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
+                activeTab === 'builder'
+                  ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+              }`}
+            >
+              {isBuildingInvoice ? (
+                <Layers className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+              ) : (
+                <PlusCircle className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+              )}
+              <span>{isBuildingInvoice ? 'إعداد الفاتورة' : 'فاتورة جديدة'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsBuildingInvoice(false);
+                setActiveTab('clients');
+              }}
+              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
+                activeTab === 'clients'
+                  ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+              }`}
+            >
+              <Users className={`w-4 h-4 ${activeTab === 'clients' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
+              <span>الزبائن</span>
+              {clients.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono bg-slate-900 text-white tabular-nums">
+                  {clients.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsBuildingInvoice(false);
+                setActiveTab('history');
+              }}
+              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
+                activeTab === 'history'
+                  ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+              }`}
+            >
+              <Receipt className={`w-4 h-4 ${activeTab === 'history' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
+              <span>السجل</span>
+              {invoices.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono bg-slate-900 text-white tabular-nums">
+                  {invoices.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsBuildingInvoice(false);
+                setActiveTab('reports');
+              }}
+              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
+                activeTab === 'reports'
+                  ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+              }`}
+            >
+              <BarChart3 className={`w-4 h-4 ${activeTab === 'reports' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
+              <span>التقارير</span>
+            </button>
+          </nav>
+
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Logout / Lock Button */}
             <button
               type="button"
@@ -239,8 +345,8 @@ export function App() {
         </div>
       </header>
 
-      {/* Mobile-First Container (Stacked Single Column) - Hidden during print */}
-      <main className="no-print flex-1 max-w-lg w-full mx-auto p-3 sm:p-4 pb-24 sm:pb-28">
+      {/* Responsive Main Container (Full-fit on desktop, mobile-first column on phone) - Hidden during print */}
+      <main className="no-print flex-1 max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl w-full mx-auto p-3 sm:p-5 lg:p-6 pb-24 md:pb-12">
         {activeTab === 'builder' && (
           isBuildingInvoice ? (
             <InvoiceBuilder
