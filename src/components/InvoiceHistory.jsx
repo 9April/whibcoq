@@ -128,7 +128,7 @@ export function InvoiceHistory({
                   <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-slate-400 font-medium font-mono tabular-nums mt-0.5 truncate">
                     <span>{inv.date}</span>
                     <span>•</span>
-                    <span>{formatKg(inv.totalWeight)}</span>
+                    <bdi dir="ltr">{formatKg(inv.totalWeight)}</bdi>
                   </div>
                 </div>
 

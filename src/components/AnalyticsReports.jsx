@@ -310,7 +310,7 @@ export function AnalyticsReports({ invoices, clients }) {
             <span>إجمالي الوزن</span>
           </span>
           <div className="text-2xl font-black font-mono text-slate-900 tracking-tight mt-1.5 tabular-nums">
-            {formatKg(kpis.weight)}
+            <bdi dir="ltr">{formatKg(kpis.weight)}</bdi>
           </div>
           <span className="text-[11px] text-slate-400 mt-1">السلع المسلمة</span>
         </div>
@@ -336,11 +336,10 @@ export function AnalyticsReports({ invoices, clients }) {
             playHapticSound('tap');
             setBreakdownView('products');
           }}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            breakdownView === 'products'
-              ? 'bg-white text-slate-900 shadow-sm font-black'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${breakdownView === 'products'
+            ? 'bg-white text-slate-900 shadow-sm font-black'
+            : 'text-slate-600 hover:text-slate-900'
+            }`}
         >
           تحليل المنتوجات
         </button>
@@ -351,11 +350,10 @@ export function AnalyticsReports({ invoices, clients }) {
             playHapticSound('tap');
             setBreakdownView('clients');
           }}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            breakdownView === 'clients'
-              ? 'bg-white text-slate-900 shadow-sm font-black'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${breakdownView === 'clients'
+            ? 'bg-white text-slate-900 shadow-sm font-black'
+            : 'text-slate-600 hover:text-slate-900'
+            }`}
         >
           تحليل الزبائن
         </button>
@@ -378,9 +376,9 @@ export function AnalyticsReports({ invoices, clients }) {
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-slate-400 font-bold w-4">{idx + 1}</span>
                       <span className="font-black text-slate-900 text-sm">{item.name}</span>
-                      <span className="text-slate-400 font-mono text-[11px] tabular-nums">
+                      <bdi dir="ltr" className="text-slate-400 font-mono text-[11px] tabular-nums">
                         ({formatKg(item.totalWeight)})
-                      </span>
+                      </bdi>
                     </div>
 
                     <span className="font-mono font-black text-slate-900 text-sm tabular-nums">
@@ -438,7 +436,7 @@ export function AnalyticsReports({ invoices, clients }) {
                             {c.clientName}
                           </span>
                           <span className="text-[11px] text-slate-500 font-mono tabular-nums">
-                            {c.invoiceCount} فواتير • {formatKg(c.totalWeight)}
+                            {c.invoiceCount} فواتير • <bdi dir="ltr">{formatKg(c.totalWeight)}</bdi>
                           </span>
                         </div>
                       </div>
@@ -448,9 +446,8 @@ export function AnalyticsReports({ invoices, clients }) {
                           {formatDh(c.totalAmount)}
                         </span>
                         <ChevronDown
-                          className={`w-4 h-4 text-slate-400 transition-transform ${
-                            isExpanded ? 'rotate-180 text-emerald-600' : ''
-                          }`}
+                          className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180 text-emerald-600' : ''
+                            }`}
                         />
                       </div>
                     </div>
@@ -469,9 +466,9 @@ export function AnalyticsReports({ invoices, clients }) {
                             >
                               <span className="font-bold text-slate-800">{p.productName}</span>
                               <div className="text-left font-mono tabular-nums">
-                                <span className="font-bold text-slate-900 block text-[11px]">
+                                <bdi dir="ltr" className="font-bold text-slate-900 block text-[11px]">
                                   {formatKg(p.weight)}
-                                </span>
+                                </bdi>
                                 <span className="text-emerald-700 text-[10px] font-semibold block">
                                   {formatDh(p.amount)}
                                 </span>

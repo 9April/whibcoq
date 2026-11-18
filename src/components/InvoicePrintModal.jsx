@@ -50,11 +50,11 @@ export function InvoicePrintModal({
     };
 
     const formatWeightArabic = (num) => {
-      if (num === null || num === undefined || isNaN(num)) return '0,0 ك غ';
+      if (num === null || num === undefined || isNaN(num)) return '\u200E0.0 kg\u200E';
       const val = Number(num);
       const parts = val.toFixed(1).split('.');
       const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-      return `${integerPart},${parts[1]} ك غ`;
+      return `\u200E${integerPart}.${parts[1]} kg\u200E`;
     };
 
     let text = `*فاتورة وهيب كوك*\n`;
@@ -63,7 +63,7 @@ export function InvoicePrintModal({
     text += `التاريخ: ${displayDate()}\n`;
     text += `------------------------\n`;
     invoice.items.forEach((item, idx) => {
-      text += `${idx + 1}. ${item.productName}: ${item.weight} ك غ × ${item.price} درهم = ${formatAmountArabic(item.total)}\n`;
+      text += `${idx + 1}. ${item.productName}: ${item.weight} kg × ${item.price} درهم = ${formatAmountArabic(item.total)}\n`;
     });
     text += `------------------------\n`;
     text += `*الوزن الإجمالي: ${formatWeightArabic(invoice.totalWeight)}*\n`;
@@ -215,7 +215,7 @@ export function InvoicePrintModal({
                 <tr className="bg-slate-100 text-slate-900 border-b-2 border-slate-900 text-xs font-black">
                   <th className="py-1.5 px-2 border-l-2 border-slate-900 text-center w-9">#</th>
                   <th className="py-1.5 px-2.5 border-l-2 border-slate-900">المنتوج / Désignation</th>
-                  <th className="py-1.5 px-2.5 border-l-2 border-slate-900 text-center w-28">الوزن (ك غ)</th>
+                  <th className="py-1.5 px-2.5 border-l-2 border-slate-900 text-center w-28">الوزن (kg)</th>
                   <th className="py-1.5 px-2.5 border-l-2 border-slate-900 text-center w-24">الثمن (درهم)</th>
                   <th className="py-1.5 px-2.5 text-left w-32">المجموع (درهم)</th>
                 </tr>
@@ -256,7 +256,7 @@ export function InvoicePrintModal({
               <div className="w-full sm:w-72 border-2 border-slate-900 rounded-xl overflow-hidden">
                 <div className="flex items-center justify-between p-1.5 bg-slate-100 border-b border-slate-300 text-xs font-bold text-slate-700">
                   <span>مجموع الوزن (Poids Total):</span>
-                  <span className="font-mono text-xs font-black text-slate-900 tabular-nums">
+                  <span className="font-mono text-xs font-black text-slate-900 tabular-nums" dir="ltr">
                     {formatKg(invoice.totalWeight)}
                   </span>
                 </div>

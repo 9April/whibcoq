@@ -89,10 +89,10 @@ export function ProductRow({
         {/* 1. Weight Input (الوزن بالكيلوغرام) */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-0.5">
-            <span>الوزن (ك غ)</span>
+            <span>الوزن (kg)</span>
             {numWeight > 0 && (
-              <span className="text-emerald-700 text-[11px] font-mono font-bold tabular-nums">
-                {numWeight} ك غ
+              <span className="text-emerald-700 text-[11px] font-mono font-bold tabular-nums" dir="ltr">
+                {numWeight} kg
               </span>
             )}
           </div>
@@ -103,7 +103,7 @@ export function ProductRow({
               type="button"
               onClick={() => handleWeightStep(-1)}
               className="absolute right-1 w-9 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10"
-              aria-label="إنقاص 1 ك غ"
+              aria-label="إنقاص 1 kg"
             >
               <Minus className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -135,7 +135,7 @@ export function ProductRow({
               type="button"
               onClick={() => handleWeightStep(1)}
               className="absolute left-1 w-9 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10"
-              aria-label="زيادة 1 ك غ"
+              aria-label="زيادة 1 kg"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -145,8 +145,8 @@ export function ProductRow({
         {/* 2. Price Input (الثمن بالدرهم) */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-0.5">
-            <span>الثمن (درهم/ك غ)</span>
-            <span className="text-slate-400 text-[11px] font-mono">درهم/ك غ</span>
+            <span>الثمن (درهم/kg)</span>
+            <span className="text-slate-400 text-[11px] font-mono" dir="ltr">درهم/kg</span>
           </div>
 
           <div className="relative flex items-center">

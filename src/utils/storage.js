@@ -30,14 +30,14 @@ export const formatDh = (num) => {
   return `${integerPart},${parts[1]} درهم`;
 };
 
-// Format Weight in Kg (e.g., "45,5 ك غ")
+// Format Weight in Kg (Strict Left-to-Right protection: e.g., "45.5 kg")
 export const formatKg = (num) => {
-  if (num === null || num === undefined) return '0,0 ك غ';
+  if (num === null || num === undefined) return '\u200E0.0 kg\u200E';
   const val = Number(num);
-  if (isNaN(val)) return '0,0 ك غ';
+  if (isNaN(val)) return '\u200E0.0 kg\u200E';
   const parts = val.toFixed(1).split('.');
   const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return `${integerPart},${parts[1]} ك غ`;
+  return `\u200E${integerPart}.${parts[1]} kg\u200E`;
 };
 
 const MOROCCAN_MONTHS = [

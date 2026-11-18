@@ -706,9 +706,9 @@ export function InvoiceBuilder({
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold">
                   <span>المجموع الكلي</span>
                   {activeItems.length > 0 && (
-                    <span className="font-mono text-slate-300 tabular-nums">
+                    <bdi dir="ltr" className="font-mono text-slate-300 tabular-nums">
                       ({formatKg(totalWeight)})
-                    </span>
+                    </bdi>
                   )}
                 </div>
                 <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 tracking-tight tabular-nums">
