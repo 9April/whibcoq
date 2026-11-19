@@ -321,8 +321,8 @@ export function ClientsManager({
         )}
       </div>
 
-      {/* Clients Cards List (1 col on mobile, 2 or 3 cols on desktop) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* Clients Cards List (Full-width vertical list, one under one) */}
+      <div className="flex flex-col gap-2.5 w-full">
         {filteredClients.length > 0 ? (
           filteredClients.map((client) => {
             const stats = clientStats[client.id] || { invoiceCount: 0, totalAmount: 0 };
@@ -330,99 +330,99 @@ export function ClientsManager({
             return (
               <div
                 key={client.id}
-                className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 p-3.5 shadow-sm flex flex-col gap-3 transition-all"
+                className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 p-3.5 sm:px-5 sm:py-3.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all w-full"
               >
-                {/* Top: Info & Actions */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold flex-shrink-0">
-                      <User className="w-5 h-5 text-slate-600" />
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className="text-sm font-bold text-slate-900 truncate">
-                          {client.name}
-                        </h3>
-                        <span className="px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-bold">
-                          {client.category || 'زبون تجاري'}
-                        </span>
-                      </div>
-
-                      {client.phone ? (
-                        <a
-                          href={`tel:${client.phone.replace(/\D/g, '')}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-xs font-mono font-bold text-emerald-700 hover:underline inline-flex items-center gap-1.5 mt-0.5"
-                          title="اتصال هاتفي"
-                        >
-                          <Phone className="w-3 h-3 text-emerald-600 flex-shrink-0" />
-                          <bdi
-                            dir="ltr"
-                            className="font-mono tabular-nums tracking-wide inline-block"
-                            style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
-                          >
-                            {formatPhone(client.phone)}
-                          </bdi>
-                        </a>
-                      ) : (
-                        <span className="text-[11px] text-slate-400 mt-0.5 block">
-                          بدون هاتف
-                        </span>
-                      )}
-                    </div>
+                {/* Info */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold flex-shrink-0">
+                    <User className="w-5 h-5 text-slate-600" />
                   </div>
 
-                  {/* Quick Action Icons */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    {/* Start Invoice for this Client */}
-                    <button
-                      type="button"
-                      onClick={(e) => handleStartInvoice(client, e)}
-                      className="h-8 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1 border border-emerald-200 active:scale-95 transition-all"
-                      title="إنشاء فاتورة جديدة لهذا الزبون"
-                    >
-                      <FilePlus className="w-3.5 h-3.5" />
-                      <span>فاتورة</span>
-                    </button>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-bold text-slate-900 truncate">
+                        {client.name}
+                      </h3>
+                      <span className="px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-bold">
+                        {client.category || 'زبون تجاري'}
+                      </span>
+                    </div>
 
-                    {/* Edit Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => handleOpenEdit(client, e)}
-                      className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors"
-                      title="تعديل بيانات الزبون"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-
-                    {/* Delete Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => handleDelete(client, e)}
-                      className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors"
-                      title="حذف الزبون"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {client.phone ? (
+                      <a
+                        href={`tel:${client.phone.replace(/\D/g, '')}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs font-mono font-bold text-emerald-700 hover:underline inline-flex items-center gap-1.5 mt-0.5"
+                        title="اتصال هاتفي"
+                      >
+                        <Phone className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                        <bdi
+                          dir="ltr"
+                          className="font-mono tabular-nums tracking-wide inline-block"
+                          style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
+                        >
+                          {formatPhone(client.phone)}
+                        </bdi>
+                      </a>
+                    ) : (
+                      <span className="text-[11px] text-slate-400 mt-0.5 block">
+                        بدون هاتف
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {/* Bottom: Invoices Summary */}
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-semibold">
-                  <span className="text-slate-500">
+                {/* Center / Stats (Horizontally aligned on desktop) */}
+                <div className="flex items-center gap-4 text-xs font-semibold py-2 md:py-0 border-t md:border-t-0 border-slate-100 md:px-4">
+                  <span className="text-slate-500 whitespace-nowrap">
                     عدد الفواتير:{' '}
                     <strong className="text-slate-900 font-mono tabular-nums">
                       {stats.invoiceCount}
                     </strong>
                   </span>
 
-                  <span className="text-slate-500">
+                  <span className="text-slate-300 hidden sm:inline">•</span>
+
+                  <span className="text-slate-500 whitespace-nowrap">
                     مجموع المشتريات:{' '}
                     <strong className="text-emerald-700 font-mono font-bold tabular-nums">
                       {formatDh(stats.totalAmount)}
                     </strong>
                   </span>
+                </div>
+
+                {/* Quick Action Icons */}
+                <div className="flex items-center gap-1.5 flex-shrink-0 justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-100">
+                  {/* Start Invoice for this Client */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleStartInvoice(client, e)}
+                    className="h-8 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1 border border-emerald-200 active:scale-95 transition-all"
+                    title="إنشاء فاتورة جديدة لهذا الزبون"
+                  >
+                    <FilePlus className="w-3.5 h-3.5" />
+                    <span>فاتورة</span>
+                  </button>
+
+                  {/* Edit Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenEdit(client, e)}
+                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors"
+                    title="تعديل بيانات الزبون"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Delete Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleDelete(client, e)}
+                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors"
+                    title="حذف الزبون"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             );

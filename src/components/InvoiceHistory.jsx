@@ -111,8 +111,8 @@ export function InvoiceHistory({
         </div>
       </div>
 
-      {/* Invoices List (1 col on mobile, 2 or 3 cols on desktop) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* Invoices List (Full-width vertical list, one under one) */}
+      <div className="flex flex-col gap-2.5 w-full">
         {filtered.length > 0 ? (
           filtered.map((inv) => {
             const rawName = (inv.clientName || '').trim();
@@ -145,12 +145,12 @@ export function InvoiceHistory({
                     setSelectedInvoiceForPrint(inv);
                   }
                 }}
-                className="bg-white rounded-2xl border border-slate-200 hover:border-emerald-300 p-3 shadow-xs flex items-center justify-between gap-2 cursor-pointer transition-all active:scale-[0.99]"
+                className="bg-white rounded-2xl border border-slate-200 hover:border-emerald-300 p-3 sm:px-5 sm:py-3.5 shadow-xs flex items-center justify-between gap-3 cursor-pointer transition-all active:scale-[0.99] w-full"
               >
-                {/* Client Info (Reduced Font Size & Category Badge like snack/restaurants) */}
+                {/* Client Info */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[150px] sm:max-w-[200px]">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate max-w-[180px] sm:max-w-md">
                       {inv.clientName}
                     </span>
                     {category && (
@@ -158,18 +158,21 @@ export function InvoiceHistory({
                         {category}
                       </span>
                     )}
+                    <span className="text-[10px] font-mono text-slate-400 font-bold bg-slate-50 px-1.5 py-0.2 rounded border border-slate-200">
+                      #{inv.id}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-slate-400 font-medium font-mono tabular-nums mt-0.5 truncate">
+                  <div className="flex items-center gap-2 text-[10px] sm:text-xs text-slate-400 font-medium font-mono tabular-nums mt-1 truncate">
                     <span>{inv.date}</span>
                     <span>•</span>
                     <bdi dir="ltr">{formatKg(inv.totalWeight)}</bdi>
                   </div>
                 </div>
 
-                {/* Price & Action Buttons (Print & Edit) */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Price & Action Buttons (Print, Edit, Delete) */}
+                <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
                   <div className="text-left font-mono">
-                    <span className="text-xs sm:text-sm font-black text-emerald-700 tabular-nums whitespace-nowrap">
+                    <span className="text-xs sm:text-base font-black text-emerald-700 tabular-nums whitespace-nowrap">
                       {formatDh(inv.totalAmount)}
                     </span>
                   </div>
