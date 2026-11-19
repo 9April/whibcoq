@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Users,
   UserPlus,
@@ -28,6 +28,21 @@ export function ClientsManager({
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const searchRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Edit Client Form State
   const [editName, setEditName] = useState('');
@@ -147,28 +162,125 @@ export function ClientsManager({
           </button>
         </div>
 
-        {/* Search Bar (Auto-detects phone number typing LTR) */}
-        <div className="relative">
+        {/* Search Bar (Auto-detects phone number typing LTR & opens scrollable clients list) */}
+        <div className="relative" ref={searchRef}>
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setIsDropdownOpen(true);
+            }}
+            onFocus={() => setIsDropdownOpen(true)}
             placeholder="بحث عن زبون بالاسم، الهاتف، أو نوع النشاط..."
             dir={/^[0-9+]/.test(searchTerm.trim()) ? 'ltr' : 'rtl'}
-            className={`w-full h-11 pr-9 pl-9 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-bold text-slate-900 outline-none transition-all ${
+            className={`w-full h-11 pr-10 pl-9 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-bold text-slate-900 outline-none transition-all ${
               /^[0-9+]/.test(searchTerm.trim()) ? 'text-left font-mono tracking-wider' : 'text-right'
             }`}
           />
-          <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <button
+            type="button"
+            onClick={() => {
+              playHapticSound('tap');
+              setIsDropdownOpen((prev) => !prev);
+            }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:bg-slate-100 absolute right-1.5 top-1/2 -translate-y-1/2 transition-colors cursor-pointer"
+            title={isDropdownOpen ? 'إغلاق القائمة' : 'عرض قائمة الزبائن'}
+          >
+            <Search className="w-4 h-4" />
+          </button>
           {searchTerm && (
             <button
               type="button"
-              onClick={() => setSearchTerm('')}
+              onClick={() => {
+                setSearchTerm('');
+              }}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
               title="مسح البحث"
             >
               <X className="w-3.5 h-3.5" />
             </button>
+          )}
+
+          {/* Scrollable Dropdown List */}
+          {isDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 z-40 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="p-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 font-bold">
+                <span>قائمة الزبائن ({filteredClients.length})</span>
+                <span className="text-[10px] text-slate-400">اضغط للاختيار أو بدء فاتورة</span>
+              </div>
+              <div className="max-h-64 sm:max-h-72 overflow-y-auto divide-y divide-slate-100">
+                {filteredClients.length > 0 ? (
+                  filteredClients.map((client) => {
+                    const stats = clientStats[client.id] || { invoiceCount: 0, totalAmount: 0 };
+                    return (
+                      <div
+                        key={client.id}
+                        onClick={() => {
+                          playHapticSound('tap');
+                          setSearchTerm(client.name);
+                          setIsDropdownOpen(false);
+                        }}
+                        className="p-3 hover:bg-slate-50 cursor-pointer flex items-center justify-between gap-3 transition-colors group"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                            <User className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-black text-slate-900 truncate">
+                                {client.name}
+                              </span>
+                              {client.category && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium border border-slate-200 flex-shrink-0">
+                                  {client.category}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                              {client.phone ? (
+                                <span className="font-mono text-slate-600" dir="ltr">
+                                  {formatPhone(client.phone)}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-[10px]">بدون رقم</span>
+                              )}
+                              <span className="text-slate-300">•</span>
+                              <span className="text-[10px] text-slate-400">
+                                {stats.invoiceCount} فواتير
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playHapticSound('tap');
+                              setIsDropdownOpen(false);
+                              if (onStartInvoiceForClient) {
+                                onStartInvoiceForClient(client);
+                              }
+                            }}
+                            className="h-7 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-[11px] font-bold border border-emerald-200 hover:border-emerald-600 flex items-center gap-1 transition-all active:scale-95 shadow-2xs"
+                            title="إنشاء فاتورة جديدة لهذا الزبون"
+                          >
+                            <FilePlus className="w-3.5 h-3.5" />
+                            <span>+ فاتورة</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-6 text-center text-xs text-slate-400 font-medium">
+                    لا يوجد زبائن مطابقة للبحث
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
