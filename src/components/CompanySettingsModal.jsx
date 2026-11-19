@@ -44,8 +44,15 @@ export function CompanySettingsModal({
   products: propProducts,
   onAddProduct: appAddProduct,
   onDeleteProduct: appDeleteProduct,
+  initialTab = 'company',
 }) {
-  const [activeTab, setActiveTab] = useState('company'); // 'company' | 'products' | 'security'
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   // Company Data State
   const [companyData, setCompanyData] = useState(() => getBusinessInfo());

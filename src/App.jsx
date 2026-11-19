@@ -45,6 +45,7 @@ import { checkDbConnection } from './utils/api';
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => isAdminAuthenticated());
   const [isCompanySettingsOpen, setIsCompanySettingsOpen] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState('company');
   const [businessInfo, setBusinessInfo] = useState(() => getBusinessInfo());
 
   const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'clients' | 'history' | 'reports'
@@ -236,6 +237,12 @@ export function App() {
     setActiveTab('builder');
   };
 
+  const handleOpenProductsManage = () => {
+    playHapticSound('tap');
+    setSettingsInitialTab('products');
+    setIsCompanySettingsOpen(true);
+  };
+
   // If not authenticated, show Admin Login Screen
   if (!isAuthenticated) {
     return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
@@ -383,6 +390,7 @@ export function App() {
               type="button"
               onClick={() => {
                 playHapticSound('tap');
+                setSettingsInitialTab('company');
                 setIsCompanySettingsOpen(true);
               }}
               className="h-8 px-2 sm:px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold flex items-center gap-1.5 transition-colors active:scale-95 cursor-pointer"
@@ -434,6 +442,7 @@ export function App() {
               }}
               onViewClients={() => setActiveTab('clients')}
               onViewHistory={() => setActiveTab('history')}
+              onManageProducts={handleOpenProductsManage}
             />
           )
         )}
@@ -510,6 +519,7 @@ export function App() {
       {/* Wahib Coq Info & Company Settings Modal (Opened by clicking Settings gear or logo) */}
       <CompanySettingsModal
         isOpen={isCompanySettingsOpen}
+        initialTab={settingsInitialTab}
         onClose={() => setIsCompanySettingsOpen(false)}
         products={products}
         onAddProduct={handleAddProduct}

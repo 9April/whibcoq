@@ -22,6 +22,7 @@ export function HomeDashboard({
   onStartNewInvoice,
   onViewClients,
   onViewHistory,
+  onManageProducts,
 }) {
   const businessInfo = getBusinessInfo();
   const activeProducts = products && products.length > 0 ? products : INITIAL_PRODUCTS;
@@ -244,14 +245,18 @@ export function HomeDashboard({
         </div>
 
         {/* Products Card */}
-        <div className="col-span-1 bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+        <div
+          onClick={() => {
+            playHapticSound('tap');
+            onManageProducts?.();
+          }}
+          className="col-span-1 bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-xs hover:border-amber-300 transition-all cursor-pointer active:scale-98 flex flex-col justify-between group"
+        >
           <div className="flex items-center justify-between mb-2">
-            <span className="w-9 h-9 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
+            <span className="w-9 h-9 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
               <Package className="w-4 h-4 stroke-[2.5]" />
             </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
-              12 صنف
-            </span>
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
           </div>
 
           <div>
@@ -264,9 +269,17 @@ export function HomeDashboard({
             </div>
           </div>
 
-          <span className="text-[10px] sm:text-xs text-slate-500 font-medium mt-2 block">
-            دجاج حي ومقطع ومجهز
-          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              playHapticSound('tap');
+              onManageProducts?.();
+            }}
+            className="text-[10px] sm:text-xs text-amber-600 hover:text-amber-700 font-bold mt-2 block text-right group-hover:underline cursor-pointer"
+          >
+            إدارة وتعديل السلع ←
+          </button>
         </div>
       </div>
 
