@@ -109,9 +109,9 @@ export function CompanySettingsModal({
     const priceNum = parseFloat(newProductPrice) || 0;
     const newProd = {
       name: cleanName,
-      subname: newProductSubname.trim(),
+      subname: '',
       defaultPrice: priceNum,
-      category: newProductCategory || 'découpe',
+      category: 'découpe',
     };
 
     let updated;
@@ -124,7 +124,6 @@ export function CompanySettingsModal({
     const nextList = updated || getStoredProducts();
     setProductsList(nextList);
     setNewProductName('');
-    setNewProductSubname('');
     setNewProductPrice('');
     setProductSuccess(`تمت إضافة منتوج "${cleanName}" بنجاح!`);
     playHapticSound('success');
@@ -606,10 +605,10 @@ export function CompanySettingsModal({
                   <span className="text-[10px] text-slate-400 font-medium">متاح فورياً في الفواتير</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
                     <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                      اسم المنتوج (بالعربية) <span className="text-rose-500">*</span>:
+                      اسم المنتوج بالعربية <span className="text-rose-500">*</span>:
                     </label>
                     <input
                       type="text"
@@ -622,21 +621,7 @@ export function CompanySettingsModal({
 
                   <div>
                     <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                      الاسم الفرعي / بالفرنسية (اختياري):
-                    </label>
-                    <input
-                      type="text"
-                      value={newProductSubname}
-                      onChange={(e) => setNewProductSubname(e.target.value)}
-                      placeholder="Ex: Poulet fermier, Cordon bleu..."
-                      className="w-full h-10 px-3 bg-white border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-medium text-slate-900 outline-none transition-all"
-                      dir="ltr"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                      الثمن الافتراضي للكيلوغرام (د.م.):
+                      الثمن للكيلوغرام (د.م.):
                     </label>
                     <input
                       type="number"
@@ -647,24 +632,6 @@ export function CompanySettingsModal({
                       className="w-full h-10 px-3 bg-white border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-mono font-bold text-slate-900 outline-none transition-all"
                       dir="ltr"
                     />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                      صنف المنتوج:
-                    </label>
-                    <select
-                      value={newProductCategory}
-                      onChange={(e) => setNewProductCategory(e.target.value)}
-                      className="w-full h-10 px-2.5 bg-white border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-bold text-slate-700 outline-none transition-all"
-                    >
-                      <option value="كامل">كامل (Poulet entier)</option>
-                      <option value="découpe">découpe (مقطع)</option>
-                      <option value="abats">abats (أحشاء وكبدة)</option>
-                      <option value="préparé">préparé (محضر وكفتة)</option>
-                      <option value="dérivé">dérivé (مشتقات وهيكل)</option>
-                      <option value="عام">عام (Autre)</option>
-                    </select>
                   </div>
                 </div>
 

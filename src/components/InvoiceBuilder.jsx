@@ -146,9 +146,9 @@ export function InvoiceBuilder({
     const priceNum = parseFloat(newProdPrice) || 0;
     const newProd = {
       name: clean,
-      subname: newProdSubname.trim(),
+      subname: '',
       defaultPrice: priceNum,
-      category: newProdCategory || 'découpe',
+      category: 'découpe',
     };
     let updated;
     if (onAddProduct) {
@@ -164,7 +164,6 @@ export function InvoiceBuilder({
       }));
     }
     setNewProdName('');
-    setNewProdSubname('');
     setNewProdPrice('');
     setIsAddProductModalOpen(false);
     playHapticSound('success');
@@ -888,21 +887,7 @@ export function InvoiceBuilder({
 
               <div>
                 <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                  الاسم الفرعي / بالفرنسية (اختياري):
-                </label>
-                <input
-                  type="text"
-                  value={newProdSubname}
-                  onChange={(e) => setNewProdSubname(e.target.value)}
-                  placeholder="Ex: Poulet fermier..."
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-medium text-slate-900 outline-none"
-                  dir="ltr"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                  الثمن الافتراضي للكيلوغرام (د.م.):
+                  الثمن للكيلوغرام (د.م.):
                 </label>
                 <input
                   type="number"
@@ -913,24 +898,6 @@ export function InvoiceBuilder({
                   className="w-full h-10 px-3 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-mono font-bold text-slate-900 outline-none"
                   dir="ltr"
                 />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                  الصنف:
-                </label>
-                <select
-                  value={newProdCategory}
-                  onChange={(e) => setNewProdCategory(e.target.value)}
-                  className="w-full h-10 px-2.5 bg-slate-50 border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-bold text-slate-700 outline-none"
-                >
-                  <option value="كامل">كامل (Poulet entier)</option>
-                  <option value="découpe">découpe (مقطع)</option>
-                  <option value="abats">abats (أحشاء)</option>
-                  <option value="préparé">préparé (محضر)</option>
-                  <option value="dérivé">dérivé (مشتقات)</option>
-                  <option value="عام">عام (Autre)</option>
-                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-2">
