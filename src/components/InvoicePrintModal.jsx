@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { Printer, PlusCircle, X, Share2, Copy, FileText, Check } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Printer, PlusCircle, X, Share2, Copy, FileText, Check, Download, FileDown, Loader2 } from 'lucide-react';
 import { formatDh, formatKg, formatPhone, playHapticSound, getBusinessInfo } from '../utils/storage';
 
 export function InvoicePrintModal({
@@ -9,6 +9,8 @@ export function InvoicePrintModal({
   onNewInvoice,
 }) {
   const printAreaRef = useRef(null);
+  const [isSavingPdf, setIsSavingPdf] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const businessInfo = getBusinessInfo();
 
   if (!isOpen || !invoice) return null;
@@ -21,6 +23,45 @@ export function InvoicePrintModal({
     setTimeout(() => {
       window.print();
     }, 150);
+  };
+
+  // Direct Save to Device (Downloads / Desktop) as PDF WITHOUT connecting to printer
+  const handleSaveToDevice = async () => {
+    if (!printAreaRef.current || !invoice) return;
+    setIsSavingPdf(true);
+    playHapticSound('success');
+
+    try {
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = html2pdfModule.default || html2pdfModule;
+
+      const element = printAreaRef.current;
+      const cleanClientName = (invoice.clientName || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
+      const filename = `Facture_${invoice.id}_${cleanClientName || 'Client'}.pdf`;
+
+      const opt = {
+        margin: [6, 6, 6, 6],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          scrollX: 0,
+          scrollY: 0,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('Error saving PDF:', err);
+      alert('حدث خطأ أثناء حفظ الفاتورة، يرجى المحاولة ثانية');
+    } finally {
+      setIsSavingPdf(false);
+    }
   };
 
   const handleNewInvoiceClick = () => {
@@ -94,14 +135,41 @@ export function InvoicePrintModal({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Direct Print / PDF Button */}
+            {/* Direct Save to Device (Downloads / Desktop) Button - DOES NOT connect to printer */}
+            <button
+              type="button"
+              onClick={handleSaveToDevice}
+              disabled={isSavingPdf}
+              className="h-10 px-3.5 sm:px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 shadow active:scale-95 transition-all disabled:opacity-60 cursor-pointer"
+              title="تحميل الفاتورة مباشرة بصيغة PDF إلى التنزيلات أو سطح المكتب بدون الحاجة لطابعة"
+            >
+              {isSavingPdf ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>جارٍ الحفظ...</span>
+                </>
+              ) : saveSuccess ? (
+                <>
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>تم التنزيل!</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 stroke-[2.5]" />
+                  <span>حفظ بالجهاز</span>
+                </>
+              )}
+            </button>
+
+            {/* Direct Print Button - Connects to Default / Favourite Printer */}
             <button
               type="button"
               onClick={handlePrint}
-              className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm flex items-center gap-1.5 shadow active:scale-95 transition-all"
+              className="h-10 px-3.5 sm:px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 shadow active:scale-95 transition-all cursor-pointer"
+              title="إرسال الفاتورة إلى الطابعة الافتراضية"
             >
               <Printer className="w-4 h-4" />
-              <span>طباعة / PDF</span>
+              <span>طباعة</span>
             </button>
 
             {/* Copy / Share Button */}
