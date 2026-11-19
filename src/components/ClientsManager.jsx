@@ -348,8 +348,8 @@ export function ClientsManager({
                 <input
                   type="tel"
                   value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                  placeholder="06 XX XX XX XX"
+                  onChange={(e) => setEditPhone(e.target.value.replace(/\s+/g, ''))}
+                  placeholder="06XXXXXXXX"
                   dir="ltr"
                   className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm text-left outline-none focus:border-emerald-600 tabular-nums"
                   style={{ unicodeBidi: 'isolate', direction: 'ltr' }}

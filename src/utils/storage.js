@@ -84,7 +84,7 @@ export const formatArabicDate = (dateStr) => {
   return dateStr;
 };
 
-// Format Phone Number (Ensures Moroccan 06 XX XX XX XX format with strict Left-to-Right protection)
+// Format Phone Number (Clean continuous digits without spaces: e.g. "0672118844")
 export const formatPhone = (phoneStr) => {
   if (!phoneStr) return '';
   let str = String(phoneStr).trim();
@@ -106,24 +106,12 @@ export const formatPhone = (phoneStr) => {
     digits = '0' + digits;
   }
 
-  // Format 10-digit Moroccan number: 06 XX XX XX XX with Unicode LTR mark
-  if (digits.length === 10) {
-    return (
-      '\u200E' +
-      digits.slice(0, 2) +
-      ' ' +
-      digits.slice(2, 4) +
-      ' ' +
-      digits.slice(4, 6) +
-      ' ' +
-      digits.slice(6, 8) +
-      ' ' +
-      digits.slice(8, 10) +
-      '\u200E'
-    );
+  // Return clean continuous digits without spaces
+  if (digits.length >= 9) {
+    return '\u200E' + digits + '\u200E';
   }
 
-  return '\u200E' + str + '\u200E';
+  return '\u200E' + str.replace(/\s+/g, '') + '\u200E';
 };
 
 // Subtitle sound feedback (haptic-like click)
@@ -196,7 +184,11 @@ export const getStoredClients = () => {
           }
         }
       }
-      return { ...c, category: cat };
+      const cleanPhone = c.phone ? String(c.phone).replace(/\s+/g, '') : '';
+      if (cleanPhone !== c.phone) {
+        needsUpdate = true;
+      }
+      return { ...c, category: cat, phone: cleanPhone };
     });
 
     if (needsUpdate) {
