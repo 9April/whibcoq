@@ -21,6 +21,65 @@ const ADMIN_PASSWORD_KEY = 'wahib_coq_admin_password_v2';
 const ADMIN_PIN_KEY = 'wahib_coq_admin_pin_v2';
 const ADMIN_AUTH_STATE_KEY = 'wahib_coq_admin_auth_state_v2';
 const BUSINESS_INFO_KEY = 'wahib_coq_business_info_v2';
+const CLIENT_CATEGORIES_KEY = 'wahib_coq_client_categories_v2';
+
+export const DEFAULT_CLIENT_CATEGORIES = [
+  'مطعم',
+  'سناك',
+  'شواية',
+  'تاجر جملة',
+  'تموين حفلات',
+  'زبون نقدي',
+];
+
+// Get stored client activity categories (Defaults + Custom added + Existing Clients)
+export const getStoredClientCategories = () => {
+  try {
+    const raw = localStorage.getItem(CLIENT_CATEGORIES_KEY);
+    const customList = raw ? JSON.parse(raw) : [];
+
+    const clientsRaw = localStorage.getItem(CLIENTS_STORAGE_KEY);
+    const existingClients = clientsRaw ? JSON.parse(clientsRaw) : [];
+    const clientCats = existingClients
+      .map((c) => (c.category || '').trim())
+      .filter((cat) => cat && cat !== 'عام');
+
+    const combined = [...DEFAULT_CLIENT_CATEGORIES];
+    [...customList, ...clientCats].forEach((cat) => {
+      const trimmed = cat.trim();
+      if (trimmed && !combined.includes(trimmed)) {
+        combined.push(trimmed);
+      }
+    });
+
+    return combined;
+  } catch (e) {
+    return DEFAULT_CLIENT_CATEGORIES;
+  }
+};
+
+// Save a new custom client category to storage & sync with MySQL
+export const saveCustomClientCategory = (newCat) => {
+  if (!newCat) return getStoredClientCategories();
+  const trimmed = newCat.trim();
+  if (!trimmed || trimmed === 'عام') return getStoredClientCategories();
+
+  try {
+    const raw = localStorage.getItem(CLIENT_CATEGORIES_KEY);
+    const customList = raw ? JSON.parse(raw) : [];
+    if (!customList.includes(trimmed)) {
+      customList.push(trimmed);
+      localStorage.setItem(CLIENT_CATEGORIES_KEY, JSON.stringify(customList));
+
+      // Sync asynchronously to MySQL settings table
+      apiSaveSetting('client_categories', JSON.stringify(customList)).catch(() => {});
+    }
+  } catch (e) {
+    console.warn('Failed to save custom category:', e);
+  }
+
+  return getStoredClientCategories();
+};
 
 // Format Moroccan Dirham (e.g., "1 240,00 درهم")
 export const formatDh = (num) => {
@@ -211,6 +270,10 @@ export const saveStoredClients = (clients) => {
 
 // Save a single client with background MySQL sync
 export const persistClientWithDb = async (client) => {
+  if (client?.category) {
+    saveCustomClientCategory(client.category);
+  }
+
   const clients = getStoredClients();
   const index = clients.findIndex((c) => c.id === client.id);
   let updated;
@@ -605,6 +668,22 @@ export const performDatabaseSync = async () => {
         }
       } catch (pe) {
         // Continue silently if products setting fetch fails
+      }
+
+      // Sync custom client categories from MySQL settings
+      try {
+        const catSetting = await apiFetchSetting('client_categories');
+        if (catSetting) {
+          const parsed = JSON.parse(catSetting);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const raw = localStorage.getItem(CLIENT_CATEGORIES_KEY);
+            const current = raw ? JSON.parse(raw) : [];
+            const merged = Array.from(new Set([...current, ...parsed]));
+            localStorage.setItem(CLIENT_CATEGORIES_KEY, JSON.stringify(merged));
+          }
+        }
+      } catch (ce) {
+        // Continue silently
       }
 
       // Notify window listeners

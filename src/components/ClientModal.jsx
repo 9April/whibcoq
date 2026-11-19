@@ -1,34 +1,40 @@
-import React, { useState, useRef } from 'react';
-import { X, UserPlus, Phone, User, Check, Tag } from 'lucide-react';
-import { playHapticSound } from '../utils/storage';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, UserPlus, Phone, User, Check, Tag, Sparkles } from 'lucide-react';
+import { playHapticSound, getStoredClientCategories, saveCustomClientCategory } from '../utils/storage';
 
 export function ClientModal({ isOpen, onClose, onAddClient }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [category, setCategory] = useState('مطعم');
+  const [categoriesList, setCategoriesList] = useState(() => getStoredClientCategories());
   const customInputRef = useRef(null);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      setCategoriesList(getStoredClientCategories());
+    }
+  }, [isOpen]);
 
-  const presetCategories = [
-    'مطعم',
-    'سناك',
-    'شواية',
-    'تاجر جملة',
-    'تموين حفلات',
-    'زبون نقدي',
-  ];
+  if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
 
     playHapticSound('success');
+    const cleanCategory = category.trim() || 'عام';
+
+    // Persist new category as a suggestion if provided
+    if (cleanCategory && cleanCategory !== 'عام') {
+      const updatedCats = saveCustomClientCategory(cleanCategory);
+      setCategoriesList(updatedCats);
+    }
+
     const newClient = {
       id: 'c_' + Date.now(),
       name: name.trim(),
       phone: phone.trim(),
-      category: category.trim() || 'عام',
+      category: cleanCategory,
     };
 
     onAddClient(newClient);
@@ -134,24 +140,31 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
               <input
                 ref={customInputRef}
                 type="text"
+                list="client-categories-suggestions"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="اكتب نوع النشاط هنا (مثال: فندق، مقهى، جزار، مخبزة...)"
                 className="w-full h-12 pr-10 pl-3 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all"
               />
               <Tag className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+
+              <datalist id="client-categories-suggestions">
+                {categoriesList.map((cat) => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
             </div>
 
-            {/* Quick preset pills + "آخر" option */}
+            {/* Quick preset & dynamic custom suggestions pills */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-              {presetCategories.map((cat) => {
+              {categoriesList.map((cat) => {
                 const isSelected = category.trim() === cat;
                 return (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => handleSelectPreset(cat)}
-                    className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 ${
+                    className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
                       isSelected
                         ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
                         : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
@@ -165,15 +178,23 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
               <button
                 type="button"
                 onClick={handleSelectOther}
-                className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 ${
-                  !presetCategories.includes(category.trim()) && category.trim() !== ''
+                className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+                  !categoriesList.includes(category.trim()) && category.trim() !== ''
                     ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                     : 'bg-slate-100 text-emerald-800 border-dashed border-emerald-300 hover:bg-emerald-50'
                 }`}
               >
-                + نشاط يدوي آخر
+                + نشاط يدوي جديد
               </button>
             </div>
+
+            {/* Notification when entering a new category */}
+            {category.trim() && !categoriesList.includes(category.trim()) && category.trim() !== 'عام' && (
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-lg animate-fadeIn">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>سيتم حفظ نشاط "{category.trim()}" تلقائياً كاقتراح للزبائن القادمين</span>
+              </div>
+            )}
           </div>
 
           {/* Submit */}
