@@ -29,11 +29,15 @@ import {
   formatPhone,
   getClientProductPrice,
   saveClientProductPrice,
+  getStoredProducts,
+  persistProductWithDb,
   playHapticSound,
 } from '../utils/storage';
 
 export function InvoiceBuilder({
   clients,
+  products = getStoredProducts(),
+  onAddProduct,
   initialClientId,
   onAddClient,
   onSaveInvoice,
@@ -50,7 +54,7 @@ export function InvoiceBuilder({
     return new Date().toISOString().split('T')[0];
   });
 
-  // Filter mode: 'all' (all 12 products) vs 'active' (selected items only)
+  // Filter mode: 'all' vs 'active' (selected items only)
   const [filterMode, setFilterMode] = useState('all');
 
   // Input states per product: { [productId]: { weight: string|number, price: string|number } }
@@ -60,6 +64,11 @@ export function InvoiceBuilder({
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isArabicDatePickerOpen, setIsArabicDatePickerOpen] = useState(false);
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [newProdName, setNewProdName] = useState('');
+  const [newProdSubname, setNewProdSubname] = useState('');
+  const [newProdPrice, setNewProdPrice] = useState('');
+  const [newProdCategory, setNewProdCategory] = useState('découpe');
   const [savedInvoiceForPreview, setSavedInvoiceForPreview] = useState(null);
 
   // Set default client on load
@@ -69,13 +78,13 @@ export function InvoiceBuilder({
     }
   }, [clients, selectedClientId]);
 
-  // Load custom prices when client changes
+  // Load custom prices when client changes or products change
   useEffect(() => {
     if (!selectedClientId) return;
 
     setItemsState((prev) => {
       const next = { ...prev };
-      INITIAL_PRODUCTS.forEach((p) => {
+      products.forEach((p) => {
         const customPrice = getClientProductPrice(selectedClientId, p.id, p.defaultPrice);
         next[p.id] = {
           weight: prev[p.id]?.weight || '',
@@ -84,7 +93,7 @@ export function InvoiceBuilder({
       });
       return next;
     });
-  }, [selectedClientId]);
+  }, [selectedClientId, products]);
 
   // Handle Editing if an invoice is passed -> jump directly to step 3
   useEffect(() => {
@@ -93,7 +102,7 @@ export function InvoiceBuilder({
       setInvoiceDate(editingInvoice.date || new Date().toISOString().split('T')[0]);
 
       const newState = {};
-      INITIAL_PRODUCTS.forEach((p) => {
+      products.forEach((p) => {
         const found = editingInvoice.items?.find((i) => i.productId === p.id);
         newState[p.id] = {
           weight: found ? found.weight : '',
@@ -104,7 +113,7 @@ export function InvoiceBuilder({
       setFilterMode('active');
       setStep(3);
     }
-  }, [editingInvoice, clients]);
+  }, [editingInvoice, clients, products]);
 
   const handleWeightChange = (productId, newWeight) => {
     setItemsState((prev) => ({
@@ -130,8 +139,39 @@ export function InvoiceBuilder({
     }
   };
 
+  const handleQuickAddProduct = async (e) => {
+    e?.preventDefault();
+    const clean = newProdName.trim();
+    if (!clean) return;
+    const priceNum = parseFloat(newProdPrice) || 0;
+    const newProd = {
+      name: clean,
+      subname: newProdSubname.trim(),
+      defaultPrice: priceNum,
+      category: newProdCategory || 'découpe',
+    };
+    let updated;
+    if (onAddProduct) {
+      updated = await onAddProduct(newProd);
+    } else {
+      updated = await persistProductWithDb(newProd);
+    }
+    const created = updated?.find((p) => p.name === clean) || updated?.[updated.length - 1];
+    if (created) {
+      setItemsState((prev) => ({
+        ...prev,
+        [created.id]: { weight: '', price: priceNum },
+      }));
+    }
+    setNewProdName('');
+    setNewProdSubname('');
+    setNewProdPrice('');
+    setIsAddProductModalOpen(false);
+    playHapticSound('success');
+  };
+
   // Active items calculation
-  const activeItems = INITIAL_PRODUCTS.map((p) => {
+  const activeItems = products.map((p) => {
     const item = itemsState[p.id] || { weight: '', price: p.defaultPrice };
     const weight = parseFloat(item.weight) || 0;
     const price = parseFloat(item.price) || 0;
@@ -164,7 +204,7 @@ export function InvoiceBuilder({
   const handleClearAll = () => {
     playHapticSound('tap');
     const reset = {};
-    INITIAL_PRODUCTS.forEach((p) => {
+    products.forEach((p) => {
       const customPrice = getClientProductPrice(selectedClientId, p.id, p.defaultPrice);
       reset[p.id] = { weight: '', price: customPrice };
     });
@@ -224,7 +264,7 @@ export function InvoiceBuilder({
   });
 
   // Products to render based on filter mode
-  const displayedProducts = INITIAL_PRODUCTS.filter((p) => {
+  const displayedProducts = products.filter((p) => {
     if (filterMode === 'active') {
       const w = parseFloat(itemsState[p.id]?.weight) || 0;
       return w > 0;
@@ -636,8 +676,8 @@ export function InvoiceBuilder({
             )}
           </div>
 
-          {/* List Filter Tabs: All (12) vs Selected Only */}
-          <div className="flex items-center justify-between gap-2 px-1">
+          {/* List Filter Tabs & Add Product Button */}
+          <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
             <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-xl">
               <button
                 type="button"
@@ -651,7 +691,7 @@ export function InvoiceBuilder({
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                الكل (12)
+                الكل ({products.length})
               </button>
 
               <button
@@ -675,16 +715,31 @@ export function InvoiceBuilder({
               </button>
             </div>
 
-            {activeItems.length > 0 && (
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={handleClearAll}
-                className="text-xs text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors"
+                onClick={() => {
+                  playHapticSound('tap');
+                  setIsAddProductModalOpen(true);
+                }}
+                className="h-8 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1 active:scale-95 transition-all shadow-xs"
+                title="إضافة منتوج جديد"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>مسح الكل</span>
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ منتوج جديد</span>
               </button>
-            )}
+
+              {activeItems.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="text-xs text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>مسح الكل</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* 12 Poultry Products List (1 col on mobile, 2 cols on desktop) */}
@@ -784,6 +839,119 @@ export function InvoiceBuilder({
             handleClearAll();
           }}
         />
+      )}
+
+      {/* Quick Add Product Modal */}
+      {isAddProductModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setIsAddProductModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-sm w-full p-5 flex flex-col gap-3.5 animate-in zoom-in-95 duration-150 text-right"
+            onClick={(e) => e.stopPropagation()}
+            dir="rtl"
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center font-bold">
+                  <Plus className="w-4 h-4" />
+                </span>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">إضافة منتوج جديد</h3>
+                  <p className="text-[10px] text-slate-400">سيتم حفظه وإضافته للفاتورة الحالية</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddProductModalOpen(false)}
+                className="w-7 h-7 rounded-lg bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleQuickAddProduct} className="flex flex-col gap-2.5">
+              <div>
+                <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                  اسم المنتوج بالعربية <span className="text-rose-500">*</span>:
+                </label>
+                <input
+                  type="text"
+                  value={newProdName}
+                  onChange={(e) => setNewProdName(e.target.value)}
+                  placeholder="مثال: دجاج بلدي، كوردون بلو..."
+                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-bold text-slate-900 outline-none"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                  الاسم الفرعي / بالفرنسية (اختياري):
+                </label>
+                <input
+                  type="text"
+                  value={newProdSubname}
+                  onChange={(e) => setNewProdSubname(e.target.value)}
+                  placeholder="Ex: Poulet fermier..."
+                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-medium text-slate-900 outline-none"
+                  dir="ltr"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                  الثمن الافتراضي للكيلوغرام (د.م.):
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={newProdPrice}
+                  onChange={(e) => setNewProdPrice(e.target.value)}
+                  placeholder="مثال: 32.00"
+                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-mono font-bold text-slate-900 outline-none"
+                  dir="ltr"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                  الصنف:
+                </label>
+                <select
+                  value={newProdCategory}
+                  onChange={(e) => setNewProdCategory(e.target.value)}
+                  className="w-full h-10 px-2.5 bg-slate-50 border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-bold text-slate-700 outline-none"
+                >
+                  <option value="كامل">كامل (Poulet entier)</option>
+                  <option value="découpe">découpe (مقطع)</option>
+                  <option value="abats">abats (أحشاء)</option>
+                  <option value="préparé">préparé (محضر)</option>
+                  <option value="dérivé">dérivé (مشتقات)</option>
+                  <option value="عام">عام (Autre)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddProductModalOpen(false)}
+                  className="h-10 rounded-xl bg-slate-100 text-slate-600 font-bold text-xs active:scale-95 transition-all"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1 active:scale-95 transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>إضافة المنتوج</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

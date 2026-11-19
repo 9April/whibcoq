@@ -15,7 +15,8 @@ import { INITIAL_PRODUCTS } from '../data/initialData';
 import { formatDh, formatKg, playHapticSound } from '../utils/storage';
 import { ArabicDateRangeModal, formatArabicDisplayDate } from './ArabicDateRangeModal';
 
-export function AnalyticsReports({ invoices, clients }) {
+export function AnalyticsReports({ invoices, clients, products }) {
+  const activeProducts = products && products.length > 0 ? products : INITIAL_PRODUCTS;
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [isAllDates, setIsAllDates] = useState(true);
   const [fromDate, setFromDate] = useState('');
@@ -82,7 +83,7 @@ export function AnalyticsReports({ invoices, clients }) {
   // Product performance calculation
   const productStats = useMemo(() => {
     const map = {};
-    INITIAL_PRODUCTS.forEach((p) => {
+    activeProducts.forEach((p) => {
       map[p.id] = { ...p, totalWeight: 0, totalAmount: 0, orderCount: 0 };
     });
 
@@ -276,8 +277,8 @@ export function AnalyticsReports({ invoices, clients }) {
               }}
               className="w-full h-11 pr-8 pl-8 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none appearance-none cursor-pointer"
             >
-              <option value="all">جميع المنتوجات (12)</option>
-              {INITIAL_PRODUCTS.map((p) => (
+              <option value="all">جميع المنتوجات ({activeProducts.length})</option>
+              {activeProducts.map((p) => (
                 <option key={p.id} value={p.id}>
                   #{p.number} - {p.name}
                 </option>

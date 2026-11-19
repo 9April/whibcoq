@@ -18,17 +18,20 @@ import { formatDh, formatKg, playHapticSound, getBusinessInfo } from '../utils/s
 export function HomeDashboard({
   clients,
   invoices,
+  products,
   onStartNewInvoice,
   onViewClients,
   onViewHistory,
 }) {
   const businessInfo = getBusinessInfo();
+  const activeProducts = products && products.length > 0 ? products : INITIAL_PRODUCTS;
+
   // Compute Products Sales Analytics
   const analytics = useMemo(() => {
     const productStats = {};
 
-    // Initialize all 12 products
-    INITIAL_PRODUCTS.forEach((p) => {
+    // Initialize all products
+    activeProducts.forEach((p) => {
       productStats[p.id] = {
         id: p.id,
         name: p.name,
@@ -255,7 +258,7 @@ export function HomeDashboard({
             <span className="text-[11px] font-bold text-slate-500 block">سلع الدواجن</span>
             <div className="flex items-baseline gap-1 mt-0.5">
               <span className="font-mono text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">
-                {INITIAL_PRODUCTS.length}
+                {activeProducts.length}
               </span>
               <span className="text-xs font-bold text-slate-600">سلعة</span>
             </div>

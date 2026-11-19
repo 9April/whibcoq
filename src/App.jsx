@@ -26,10 +26,13 @@ import { BUSINESS_INFO } from './data/initialData';
 import {
   getStoredClients,
   getStoredInvoices,
+  getStoredProducts,
   persistClientWithDb,
   deleteClientWithDb,
   persistInvoiceWithDb,
   deleteInvoiceWithDb,
+  persistProductWithDb,
+  deleteProductWithDb,
   performDatabaseSync,
   isAdminAuthenticated,
   setAdminAuthenticated,
@@ -48,6 +51,7 @@ export function App() {
 
   const [clients, setClients] = useState(() => getStoredClients());
   const [invoices, setInvoices] = useState(() => getStoredInvoices());
+  const [products, setProducts] = useState(() => getStoredProducts());
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [invoiceToPrint, setInvoiceToPrint] = useState(null);
   const [preselectedClientId, setPreselectedClientId] = useState(null);
@@ -120,11 +124,17 @@ export function App() {
     const onSynced = (e) => {
       setClients(getStoredClients());
       setInvoices(getStoredInvoices());
+      setProducts(getStoredProducts());
       if (e.detail?.timestamp) {
         setLastSyncTime(new Date().toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' }));
       }
     };
+    const onProductsSynced = (e) => {
+      if (e.detail) setProducts(e.detail);
+      else setProducts(getStoredProducts());
+    };
     window.addEventListener('wahib_db_synced', onSynced);
+    window.addEventListener('wahib_products_synced', onProductsSynced);
 
     return () => {
       clearInterval(intervalId);
@@ -132,6 +142,7 @@ export function App() {
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('wahib_db_synced', onSynced);
+      window.removeEventListener('wahib_products_synced', onProductsSynced);
     };
   }, [handleSync]);
 
@@ -165,6 +176,20 @@ export function App() {
     const updated = await deleteClientWithDb(clientId);
     setClients(updated);
     handleSync(true);
+  };
+
+  const handleAddProduct = async (newProduct) => {
+    const updated = await persistProductWithDb(newProduct);
+    setProducts(updated);
+    handleSync(true);
+    return updated;
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    const updated = await deleteProductWithDb(productId);
+    setProducts(updated);
+    handleSync(true);
+    return updated;
   };
 
   const handleStartInvoiceForClient = (client) => {
@@ -359,6 +384,8 @@ export function App() {
             <InvoiceBuilder
               key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
               clients={clients}
+              products={products}
+              onAddProduct={handleAddProduct}
               initialClientId={preselectedClientId}
               onAddClient={handleAddClient}
               onSaveInvoice={handleSaveInvoice}
@@ -370,6 +397,7 @@ export function App() {
             <HomeDashboard
               clients={clients}
               invoices={invoices}
+              products={products}
               onStartNewInvoice={() => {
                 setPreselectedClientId(null);
                 setEditingInvoice(null);
@@ -406,6 +434,7 @@ export function App() {
           <AnalyticsReports
             invoices={invoices}
             clients={clients}
+            products={products}
           />
         )}
       </main>
@@ -449,12 +478,16 @@ export function App() {
         />
       )}
 
-      {/* Wahib Coq Info & Company Settings Modal (Opened by clicking logo) */}
+      {/* Wahib Coq Info & Company Settings Modal (Opened by clicking Settings gear or logo) */}
       <CompanySettingsModal
         isOpen={isCompanySettingsOpen}
         onClose={() => setIsCompanySettingsOpen(false)}
-        onUpdated={({ businessInfo: newB }) => {
+        products={products}
+        onAddProduct={handleAddProduct}
+        onDeleteProduct={handleDeleteProduct}
+        onUpdated={({ businessInfo: newB, products: newP }) => {
           if (newB) setBusinessInfo(newB);
+          if (newP) setProducts(newP);
         }}
       />
     </div>

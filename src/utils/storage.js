@@ -8,10 +8,12 @@ import {
   apiSavePrice,
   apiSaveAdminPin,
   apiSaveSetting,
+  apiFetchSetting,
   apiSyncAll,
 } from './api';
 
 const CLIENTS_STORAGE_KEY = 'wahib_coq_clients_v2';
+const PRODUCTS_STORAGE_KEY = 'wahib_coq_products_v2';
 const INVOICES_STORAGE_KEY = 'wahib_coq_invoices_v2';
 const CLIENT_PRICES_KEY = 'wahib_coq_client_prices_v2';
 const ADMIN_USER_KEY = 'wahib_coq_admin_user_v2';
@@ -240,6 +242,77 @@ export const deleteClientWithDb = async (clientId) => {
     console.warn('MySQL client delete pending offline:', e);
   }
   return clients;
+};
+
+// Products LocalStorage & MySQL Synchronization
+export const getStoredProducts = () => {
+  try {
+    const raw = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(INITIAL_PRODUCTS));
+      return INITIAL_PRODUCTS;
+    }
+    const list = JSON.parse(raw);
+    if (Array.isArray(list) && list.length > 0) {
+      return list;
+    }
+    return INITIAL_PRODUCTS;
+  } catch (e) {
+    return INITIAL_PRODUCTS;
+  }
+};
+
+export const saveStoredProducts = (products) => {
+  try {
+    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+    window.dispatchEvent(new CustomEvent('wahib_products_synced', { detail: products }));
+  } catch (e) { }
+};
+
+export const persistProductWithDb = async (product) => {
+  const current = getStoredProducts();
+  const id = product.id || `prod_${Date.now()}`;
+  const number = product.number || current.length + 1;
+  const normalized = {
+    ...product,
+    id,
+    number,
+    name: String(product.name || '').trim(),
+    subname: String(product.subname || '').trim(),
+    defaultPrice: Number(product.defaultPrice) || 0,
+    category: product.category || 'découpe',
+    code: product.code || `P${String(number).padStart(2, '0')}`,
+  };
+
+  const index = current.findIndex((p) => p.id === id);
+  let updated;
+  if (index >= 0) {
+    updated = [...current];
+    updated[index] = normalized;
+  } else {
+    updated = [...current, normalized];
+  }
+  saveStoredProducts(updated);
+
+  try {
+    await apiSaveSetting('custom_products', JSON.stringify(updated));
+  } catch (e) {
+    console.warn('MySQL product sync pending offline:', e);
+  }
+  return updated;
+};
+
+export const deleteProductWithDb = async (productId) => {
+  const current = getStoredProducts();
+  const updated = current.filter((p) => p.id !== productId);
+  saveStoredProducts(updated);
+
+  try {
+    await apiSaveSetting('custom_products', JSON.stringify(updated));
+  } catch (e) {
+    console.warn('MySQL product delete pending offline:', e);
+  }
+  return updated;
 };
 
 export const normalizeInvoiceData = (inv) => {
@@ -515,6 +588,23 @@ export const performDatabaseSync = async () => {
         const pass = String(result.adminPassword || result.adminPin);
         localStorage.setItem(ADMIN_PASSWORD_KEY, pass);
         localStorage.setItem(ADMIN_PIN_KEY, pass);
+      }
+
+      // Sync custom products from MySQL settings
+      try {
+        const prodSetting = await apiFetchSetting('custom_products');
+        if (prodSetting) {
+          const parsed = JSON.parse(prodSetting);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(parsed));
+          }
+        } else {
+          // If not in db yet, save local products to MySQL setting
+          const currentProds = getStoredProducts();
+          await apiSaveSetting('custom_products', JSON.stringify(currentProds));
+        }
+      } catch (pe) {
+        // Continue silently if products setting fetch fails
       }
 
       // Notify window listeners

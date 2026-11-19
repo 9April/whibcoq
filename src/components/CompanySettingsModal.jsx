@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Building2,
@@ -13,7 +13,13 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Package,
+  Plus,
+  Trash2,
+  Search,
+  AlertTriangle,
+  Tag
 } from 'lucide-react';
 import {
   getAdminUser,
@@ -24,11 +30,22 @@ import {
   verifyAdminPin,
   getBusinessInfo,
   saveBusinessInfo,
+  getStoredProducts,
+  persistProductWithDb,
+  deleteProductWithDb,
+  formatDh,
   playHapticSound
 } from '../utils/storage';
 
-export function CompanySettingsModal({ isOpen, onClose, onUpdated }) {
-  const [activeTab, setActiveTab] = useState('company'); // 'company' | 'security'
+export function CompanySettingsModal({
+  isOpen,
+  onClose,
+  onUpdated,
+  products: propProducts,
+  onAddProduct: appAddProduct,
+  onDeleteProduct: appDeleteProduct,
+}) {
+  const [activeTab, setActiveTab] = useState('company'); // 'company' | 'products' | 'security'
 
   // Company Data State
   const [companyData, setCompanyData] = useState(() => getBusinessInfo());
@@ -46,10 +63,84 @@ export function CompanySettingsModal({ isOpen, onClose, onUpdated }) {
   const [success, setSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Products State
+  const [productsList, setProductsList] = useState(() => propProducts || getStoredProducts());
+  const [productSearch, setProductSearch] = useState('');
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductSubname, setNewProductSubname] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState('');
+  const [newProductCategory, setNewProductCategory] = useState('découpe');
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [productError, setProductError] = useState('');
+  const [productSuccess, setProductSuccess] = useState('');
+
+  useEffect(() => {
+    if (propProducts && Array.isArray(propProducts)) {
+      setProductsList(propProducts);
+    }
+  }, [propProducts]);
+
   if (!isOpen) return null;
 
   const handleCompanyChange = (field, val) => {
     setCompanyData((prev) => ({ ...prev, [field]: val }));
+  };
+
+  // Add Product Handler
+  const handleAddNewProduct = async (e) => {
+    e?.preventDefault();
+    setProductError('');
+    setProductSuccess('');
+
+    const cleanName = newProductName.trim();
+    if (!cleanName) {
+      setProductError('يرجى كتابة اسم المنتوج بالعربية (مطلوب)');
+      playHapticSound('tap');
+      return;
+    }
+
+    const priceNum = parseFloat(newProductPrice) || 0;
+    const newProd = {
+      name: cleanName,
+      subname: newProductSubname.trim(),
+      defaultPrice: priceNum,
+      category: newProductCategory || 'découpe',
+    };
+
+    let updated;
+    if (appAddProduct) {
+      updated = await appAddProduct(newProd);
+    } else {
+      updated = await persistProductWithDb(newProd);
+    }
+
+    const nextList = updated || getStoredProducts();
+    setProductsList(nextList);
+    setNewProductName('');
+    setNewProductSubname('');
+    setNewProductPrice('');
+    setProductSuccess(`تمت إضافة منتوج "${cleanName}" بنجاح!`);
+    playHapticSound('success');
+    if (onUpdated) onUpdated({ products: nextList });
+  };
+
+  // Delete Product Handler
+  const handleConfirmDeleteProduct = async () => {
+    if (!productToDelete) return;
+    playHapticSound('tap');
+
+    let updated;
+    if (appDeleteProduct) {
+      updated = await appDeleteProduct(productToDelete.id);
+    } else {
+      updated = await deleteProductWithDb(productToDelete.id);
+    }
+
+    const nextList = updated || getStoredProducts();
+    setProductsList(nextList);
+    setProductSuccess(`تم حذف منتوج "${productToDelete.name}" بنجاح!`);
+    setProductToDelete(null);
+    if (onUpdated) onUpdated({ products: nextList });
   };
 
   const handleSave = async (e) => {
@@ -176,21 +267,37 @@ export function CompanySettingsModal({ isOpen, onClose, onUpdated }) {
         </div>
 
         {/* Tab Navigation */}
-        <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-2xl">
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-2xl">
           <button
             type="button"
             onClick={() => {
               playHapticSound('tap');
               setActiveTab('company');
             }}
-            className={`h-9 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            className={`h-9 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 ${
               activeTab === 'company'
                 ? 'bg-white text-slate-900 shadow-xs font-black'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Building2 className="w-4 h-4 text-emerald-600" />
-            <span>بيانات الشركة والفاتورة</span>
+            <span className="truncate">الشركة</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              playHapticSound('tap');
+              setActiveTab('products');
+            }}
+            className={`h-9 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 ${
+              activeTab === 'products'
+                ? 'bg-white text-slate-900 shadow-xs font-black'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Package className="w-4 h-4 text-emerald-600" />
+            <span className="truncate">المنتجات ({productsList.length})</span>
           </button>
 
           <button
@@ -199,14 +306,14 @@ export function CompanySettingsModal({ isOpen, onClose, onUpdated }) {
               playHapticSound('tap');
               setActiveTab('security');
             }}
-            className={`h-9 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            className={`h-9 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 ${
               activeTab === 'security'
                 ? 'bg-white text-slate-900 shadow-xs font-black'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>المستخدم وكلمة المرور</span>
+            <span className="truncate">الأمان</span>
           </button>
         </div>
 
@@ -463,16 +570,211 @@ export function CompanySettingsModal({ isOpen, onClose, onUpdated }) {
             </div>
           )}
 
+          {/* TAB 3: Products Management (Add / Remove Products by Name) */}
+          {activeTab === 'products' && (
+            <div className="flex flex-col gap-3 animate-fadeIn">
+              {/* Product Feedback Alerts */}
+              {productError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                  <span>{productError}</span>
+                </div>
+              )}
+              {productSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
+                  <Check className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <span>{productSuccess}</span>
+                </div>
+              )}
+
+              {/* Add New Product Box */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
+                      <Plus className="w-4 h-4" />
+                    </span>
+                    <span className="text-xs font-black text-slate-900">إضافة منتوج جديد</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-medium">متاح فورياً في الفواتير</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                      اسم المنتوج (بالعربية) <span className="text-rose-500">*</span>:
+                    </label>
+                    <input
+                      type="text"
+                      value={newProductName}
+                      onChange={(e) => setNewProductName(e.target.value)}
+                      placeholder="مثال: دجاج بلدي، كوردون بلو، ديك رومي..."
+                      className="w-full h-10 px-3 bg-white border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-bold text-slate-900 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                      الاسم الفرعي / بالفرنسية (اختياري):
+                    </label>
+                    <input
+                      type="text"
+                      value={newProductSubname}
+                      onChange={(e) => setNewProductSubname(e.target.value)}
+                      placeholder="Ex: Poulet fermier, Cordon bleu..."
+                      className="w-full h-10 px-3 bg-white border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-medium text-slate-900 outline-none transition-all"
+                      dir="ltr"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                      الثمن الافتراضي للكيلوغرام (د.م.):
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={newProductPrice}
+                      onChange={(e) => setNewProductPrice(e.target.value)}
+                      placeholder="مثال: 35.00"
+                      className="w-full h-10 px-3 bg-white border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-mono font-bold text-slate-900 outline-none transition-all"
+                      dir="ltr"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                      صنف المنتوج:
+                    </label>
+                    <select
+                      value={newProductCategory}
+                      onChange={(e) => setNewProductCategory(e.target.value)}
+                      className="w-full h-10 px-2.5 bg-white border border-slate-200 focus:border-emerald-600 rounded-xl text-xs font-bold text-slate-700 outline-none transition-all"
+                    >
+                      <option value="كامل">كامل (Poulet entier)</option>
+                      <option value="découpe">découpe (مقطع)</option>
+                      <option value="abats">abats (أحشاء وكبدة)</option>
+                      <option value="préparé">préparé (محضر وكفتة)</option>
+                      <option value="dérivé">dérivé (مشتقات وهيكل)</option>
+                      <option value="عام">عام (Autre)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddNewProduct}
+                  className="w-full h-10 mt-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ إضافة هذا المنتوج لقائمة المنتجات</span>
+                </button>
+              </div>
+
+              {/* Products List Header & Search */}
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <span className="text-xs font-black text-slate-900">
+                  المنتجات المتاحة ({productsList.length})
+                </span>
+                <div className="relative max-w-[180px] w-full">
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    placeholder="بحث في المنتجات..."
+                    className="w-full h-8 pr-7 pl-2 bg-slate-50 border border-slate-200 focus:border-emerald-600 rounded-lg text-[11px] font-bold outline-none"
+                  />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Scrollable Products List */}
+              <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-0.5 divide-y divide-slate-100 border border-slate-200 rounded-2xl p-2 bg-white">
+                {productsList
+                  .filter((p) => {
+                    if (!productSearch.trim()) return true;
+                    const q = productSearch.toLowerCase().trim();
+                    return (
+                      p.name?.toLowerCase().includes(q) ||
+                      p.subname?.toLowerCase().includes(q) ||
+                      p.category?.toLowerCase().includes(q)
+                    );
+                  })
+                  .map((p, idx) => (
+                    <div
+                      key={p.id || idx}
+                      className="pt-2 pb-1.5 first:pt-0.5 flex items-center justify-between gap-2 hover:bg-slate-50 px-2 rounded-xl transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-mono text-[11px] font-bold flex items-center justify-center flex-shrink-0">
+                          {p.code || `#${idx + 1}`}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-black text-slate-900 truncate">
+                              {p.name}
+                            </span>
+                            {p.category && (
+                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-bold border border-slate-200">
+                                {p.category}
+                              </span>
+                            )}
+                          </div>
+                          {p.subname && (
+                            <span className="text-[10px] text-slate-400 block truncate" dir="ltr">
+                              {p.subname}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-xs font-black font-mono text-emerald-700 tabular-nums">
+                          {formatDh(p.defaultPrice)}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playHapticSound('warning');
+                            setProductToDelete(p);
+                          }}
+                          className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors"
+                          title={`حذف منتوج ${p.name}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50"
-            >
-              <Check className="w-4 h-4 stroke-[2.5]" />
-              <span>{isSaving ? 'جارٍ الحفظ والمزامنة...' : 'حفظ ومزامنة التغييرات'}</span>
-            </button>
+            {activeTab !== 'products' ? (
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50"
+              >
+                <Check className="w-4 h-4 stroke-[2.5]" />
+                <span>{isSaving ? 'جارٍ الحفظ والمزامنة...' : 'حفظ ومزامنة التغييرات'}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  playHapticSound('tap');
+                  onClose();
+                }}
+                className="flex-1 h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+              >
+                <Check className="w-4 h-4 stroke-[2.5]" />
+                <span>إغلاق وحفظ</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -486,6 +788,70 @@ export function CompanySettingsModal({ isOpen, onClose, onUpdated }) {
             </button>
           </div>
         </form>
+
+        {/* Product Delete Confirmation Warning Popup */}
+        {productToDelete && (
+          <div
+            className="fixed inset-0 z-60 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+            onClick={() => setProductToDelete(null)}
+          >
+            <div
+              className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-sm w-full p-5 flex flex-col gap-4 animate-in zoom-in-95 duration-150 text-right"
+              onClick={(e) => e.stopPropagation()}
+              dir="rtl"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">تأكيد حذف المنتوج</h3>
+                  <p className="text-xs text-rose-600 font-bold">تحذير: لن يظهر هذا المنتوج في الفواتير الجديدة</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200 flex flex-col gap-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">اسم المنتوج:</span>
+                  <span className="font-black text-slate-900">{productToDelete.name}</span>
+                </div>
+                {productToDelete.subname && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium">الاسم الفرعي:</span>
+                    <span className="font-mono text-slate-700">{productToDelete.subname}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">الثمن الافتراضي:</span>
+                  <span className="font-mono font-bold text-emerald-700">{formatDh(productToDelete.defaultPrice)}</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                هل أنت متأكد من رغبتك في حذف المنتوج "{productToDelete.name}" نهائياً من قائمة المنتجات؟
+              </p>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setProductToDelete(null)}
+                  className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs active:scale-95 transition-all"
+                >
+                  إلغاء
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmDeleteProduct}
+                  className="h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>نعم، حذف المنتوج</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
