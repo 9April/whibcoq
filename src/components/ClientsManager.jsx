@@ -11,7 +11,8 @@ import {
   X,
   Tag,
   Receipt,
-  User
+  User,
+  AlertTriangle
 } from 'lucide-react';
 import { ClientModal } from './ClientModal';
 import { formatDh, formatKg, formatPhone, playHapticSound } from '../utils/storage';
@@ -28,6 +29,7 @@ export function ClientsManager({
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
+  const [clientToDelete, setClientToDelete] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchRef = useRef(null);
 
@@ -122,10 +124,15 @@ export function ClientsManager({
 
   const handleDelete = (client, e) => {
     e.stopPropagation();
+    playHapticSound('warning');
+    setClientToDelete(client);
+  };
+
+  const handleConfirmDeleteClient = () => {
+    if (!clientToDelete) return;
     playHapticSound('tap');
-    if (window.confirm(`هل أنت متأكد من حذف الزبون "${client.name}" من قائمة الزبائن؟`)) {
-      onDeleteClient(client.id);
-    }
+    onDeleteClient(clientToDelete.id);
+    setClientToDelete(null);
   };
 
   const handleStartInvoice = (client, e) => {
@@ -330,10 +337,10 @@ export function ClientsManager({
             return (
               <div
                 key={client.id}
-                className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 p-3.5 sm:px-5 sm:py-3.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all w-full"
+                className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 p-3.5 sm:px-5 sm:py-3.5 shadow-sm flex flex-col md:grid md:grid-cols-12 md:items-center gap-3 transition-all w-full"
               >
-                {/* Info */}
-                <div className="flex items-center gap-3 min-w-0">
+                {/* Info (5 cols on desktop) */}
+                <div className="md:col-span-5 flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold flex-shrink-0">
                     <User className="w-5 h-5 text-slate-600" />
                   </div>
@@ -372,32 +379,32 @@ export function ClientsManager({
                   </div>
                 </div>
 
-                {/* Center / Stats (Horizontally aligned on desktop) */}
-                <div className="flex items-center gap-4 text-xs font-semibold py-2 md:py-0 border-t md:border-t-0 border-slate-100 md:px-4">
-                  <span className="text-slate-500 whitespace-nowrap">
+                {/* Center / Stats (4 cols on desktop, perfectly aligned across list) */}
+                <div className="md:col-span-4 flex items-center justify-between md:justify-center gap-3 lg:gap-4 text-xs font-semibold py-2 md:py-0 border-t md:border-t-0 border-slate-100 md:px-2">
+                  <span className="text-slate-500 whitespace-nowrap min-w-[95px] text-right">
                     عدد الفواتير:{' '}
                     <strong className="text-slate-900 font-mono tabular-nums">
                       {stats.invoiceCount}
                     </strong>
                   </span>
 
-                  <span className="text-slate-300 hidden sm:inline">•</span>
+                  <span className="text-slate-300 hidden md:inline">•</span>
 
-                  <span className="text-slate-500 whitespace-nowrap">
-                    مجموع المشتريات:{' '}
+                  <span className="text-slate-500 whitespace-nowrap min-w-[130px] text-right">
+                    المشتريات:{' '}
                     <strong className="text-emerald-700 font-mono font-bold tabular-nums">
                       {formatDh(stats.totalAmount)}
                     </strong>
                   </span>
                 </div>
 
-                {/* Quick Action Icons */}
-                <div className="flex items-center gap-1.5 flex-shrink-0 justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-100">
+                {/* Quick Action Icons (3 cols on desktop, aligned to end) */}
+                <div className="md:col-span-3 flex items-center gap-1.5 flex-shrink-0 justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-100">
                   {/* Start Invoice for this Client */}
                   <button
                     type="button"
                     onClick={(e) => handleStartInvoice(client, e)}
-                    className="h-8 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1 border border-emerald-200 active:scale-95 transition-all"
+                    className="h-8 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1 border border-emerald-200 active:scale-95 transition-all cursor-pointer"
                     title="إنشاء فاتورة جديدة لهذا الزبون"
                   >
                     <FilePlus className="w-3.5 h-3.5" />
@@ -408,7 +415,7 @@ export function ClientsManager({
                   <button
                     type="button"
                     onClick={(e) => handleOpenEdit(client, e)}
-                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors"
+                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors cursor-pointer"
                     title="تعديل بيانات الزبون"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
@@ -418,7 +425,7 @@ export function ClientsManager({
                   <button
                     type="button"
                     onClick={(e) => handleDelete(client, e)}
-                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors"
+                    className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center border border-slate-200 active:scale-95 transition-colors cursor-pointer"
                     title="حذف الزبون"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -505,6 +512,89 @@ export function ClientsManager({
                 <span>حفظ التعديلات</span>
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Client Confirmation Warning Popup Modal (Matching Invoices Historic) */}
+      {clientToDelete && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setClientToDelete(null)}
+        >
+          <div
+            className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-sm w-full p-5 flex flex-col gap-4 animate-in zoom-in-95 duration-150 text-right"
+            onClick={(e) => e.stopPropagation()}
+            dir="rtl"
+          >
+            {/* Header with Warning Icon */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 stroke-[2.5]" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900">تأكيد حذف الزبون</h3>
+                <p className="text-xs text-rose-600 font-bold">تحذير: هذا الإجراء نهائي ولا يمكن التراجع عنه</p>
+              </div>
+            </div>
+
+            {/* Warning Message & Client Summary Box */}
+            <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">اسم الزبون:</span>
+                <span className="font-black text-slate-900 truncate max-w-[180px]">
+                  {clientToDelete.name}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">نوع النشاط / الفئة:</span>
+                <span className="font-bold text-slate-700">
+                  {clientToDelete.category || 'زبون تجاري'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">رقم الهاتف:</span>
+                <span className="font-mono text-slate-700" dir="ltr">
+                  {formatPhone(clientToDelete.phone) || 'بدون هاتف'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-200">
+                <span className="text-slate-500 font-medium">عدد الفواتير المسجلة:</span>
+                <span className="font-mono font-bold text-slate-900">
+                  {clientStats[clientToDelete.id]?.invoiceCount || 0} فواتير
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">إجمالي المشتريات:</span>
+                <span className="font-mono font-black text-emerald-700">
+                  {formatDh(clientStats[clientToDelete.id]?.totalAmount || 0)}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed font-medium">
+              هل أنت متأكد من رغبتك في حذف هذا الزبون؟ سيتم حذفه من سجل الزبائن وقاعدة البيانات.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setClientToDelete(null)}
+                className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs active:scale-95 transition-all cursor-pointer"
+              >
+                إلغاء
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmDeleteClient}
+                className="h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>نعم، حذف الزبون</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
