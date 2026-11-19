@@ -63,9 +63,14 @@ export function ClientsManager({
   // Filter clients
   const filteredClients = clients.filter((c) => {
     const term = searchTerm.toLowerCase().trim();
+    const cleanTermDigits = term.replace(/\D/g, '');
+    const cleanPhone = (c.phone || '').replace(/\D/g, '');
+    const matchPhone = cleanTermDigits.length > 0 && cleanPhone.includes(cleanTermDigits);
+
     const matchTerm =
       !term ||
       c.name.toLowerCase().includes(term) ||
+      matchPhone ||
       (c.phone && c.phone.includes(term)) ||
       (c.category && c.category.toLowerCase().includes(term));
 
@@ -142,16 +147,29 @@ export function ClientsManager({
           </button>
         </div>
 
-        {/* Search Bar */}
+        {/* Search Bar (Auto-detects phone number typing LTR) */}
         <div className="relative">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="بحث عن زبون بالاسم، الهاتف، أو نوع النشاط..."
-            className="w-full h-11 pr-9 pl-4 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-bold text-slate-900 outline-none transition-all"
+            dir={/^[0-9+]/.test(searchTerm.trim()) ? 'ltr' : 'rtl'}
+            className={`w-full h-11 pr-9 pl-9 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-bold text-slate-900 outline-none transition-all ${
+              /^[0-9+]/.test(searchTerm.trim()) ? 'text-left font-mono tracking-wider' : 'text-right'
+            }`}
           />
           <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+              title="مسح البحث"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Category Filter Pills */}

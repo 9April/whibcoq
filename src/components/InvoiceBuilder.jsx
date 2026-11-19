@@ -14,7 +14,8 @@ import {
   Printer,
   Package,
   Clock,
-  Sparkles
+  Sparkles,
+  X,
 } from 'lucide-react';
 import { INITIAL_PRODUCTS, BUSINESS_INFO } from '../data/initialData';
 import { ProductRow } from './ProductRow';
@@ -210,8 +211,13 @@ export function InvoiceBuilder({
   const filteredClients = clients.filter((c) => {
     const term = clientSearch.toLowerCase().trim();
     if (!term) return true;
+    const cleanTermDigits = term.replace(/\D/g, '');
+    const cleanPhone = (c.phone || '').replace(/\D/g, '');
+    const matchPhone = cleanTermDigits.length > 0 && cleanPhone.includes(cleanTermDigits);
+
     return (
       c.name.toLowerCase().includes(term) ||
+      matchPhone ||
       (c.phone && c.phone.includes(term)) ||
       (c.category && c.category.toLowerCase().includes(term))
     );
@@ -357,16 +363,29 @@ export function InvoiceBuilder({
               </button>
             </div>
 
-            {/* Client Search Bar */}
+            {/* Client Search Bar (Auto-detects phone number typing LTR) */}
             <div className="relative">
               <input
                 type="text"
                 value={clientSearch}
                 onChange={(e) => setClientSearch(e.target.value)}
                 placeholder="ابحث عن زبون بالاسم أو الهاتف..."
-                className="w-full h-11 pr-9 pl-4 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-bold text-slate-900 outline-none transition-all"
+                dir={/^[0-9+]/.test(clientSearch.trim()) ? 'ltr' : 'rtl'}
+                className={`w-full h-11 pr-9 pl-9 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-bold text-slate-900 outline-none transition-all ${
+                  /^[0-9+]/.test(clientSearch.trim()) ? 'text-left font-mono tracking-wider' : 'text-right'
+                }`}
               />
               <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              {clientSearch && (
+                <button
+                  type="button"
+                  onClick={() => setClientSearch('')}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  title="مسح البحث"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 

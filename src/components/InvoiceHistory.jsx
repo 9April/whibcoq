@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Printer, Edit3, ChevronLeft, Calendar, FileText } from 'lucide-react';
+import { Search, Printer, Edit3, ChevronLeft, Calendar, FileText, X } from 'lucide-react';
 import { formatDh, formatKg, playHapticSound } from '../utils/storage';
 import { INITIAL_CLIENTS } from '../data/initialData';
 import { InvoicePrintModal } from './InvoicePrintModal';
@@ -39,10 +39,14 @@ export function InvoiceHistory({
   const filtered = invoices.filter((inv) => {
     const term = searchTerm.toLowerCase().trim();
     if (!term) return true;
+    const cleanTermDigits = term.replace(/\D/g, '');
+    const cleanPhone = (inv.clientPhone || '').replace(/\D/g, '');
+    const phoneMatch = cleanTermDigits.length > 0 && cleanPhone.includes(cleanTermDigits);
+
     const nameMatch = inv.clientName?.toLowerCase().includes(term);
     const idMatch = String(inv.id).includes(term);
     const dateMatch = inv.date?.includes(term);
-    return nameMatch || idMatch || dateMatch;
+    return nameMatch || idMatch || dateMatch || phoneMatch || (inv.clientPhone && inv.clientPhone.includes(term));
   });
 
   const handleEdit = (inv, e) => {
@@ -70,10 +74,23 @@ export function InvoiceHistory({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="بحث باسم الزبون أو التاريخ..."
-            className="w-full h-11 pr-10 pl-4 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all"
+            placeholder="بحث باسم الزبون، الهاتف، أو التاريخ..."
+            dir={/^[0-9+]/.test(searchTerm.trim()) ? 'ltr' : 'rtl'}
+            className={`w-full h-11 pr-10 pl-9 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all ${
+              /^[0-9+]/.test(searchTerm.trim()) ? 'text-left font-mono tracking-wider' : 'text-right'
+            }`}
           />
           <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+              title="مسح البحث"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
