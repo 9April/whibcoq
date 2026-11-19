@@ -11,6 +11,7 @@ import {
   Receipt,
   BarChart3,
   Layers,
+  Settings,
 } from 'lucide-react';
 import { InvoiceBuilder } from './components/InvoiceBuilder';
 import { HomeDashboard } from './components/HomeDashboard';
@@ -211,33 +212,25 @@ export function App() {
       {/* Top Admin Header Bar (Hidden during print) */}
       <header className="no-print bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-4">
-          {/* Clickable Logo & Company Title to open Company/Account Settings */}
-          <button
-            type="button"
-            onClick={() => {
-              playHapticSound('tap');
-              setIsCompanySettingsOpen(true);
-            }}
-            className="flex items-center gap-2.5 group p-1 -mr-1 rounded-xl hover:bg-slate-100/80 active:scale-95 transition-all text-right cursor-pointer shrink-0"
-            title="إعدادات وهيب كوك (المستخدم، كلمة المرور، وبيانات الشركة)"
-          >
+          {/* Logo & Company Title (Brand Header) */}
+          <div className="flex items-center gap-2.5 p-1 -mr-1 text-right shrink-0 select-none">
             <div className="relative">
               <img
                 src="/wahibcoq.jpeg"
                 alt={businessInfo.name || BUSINESS_INFO.name}
-                className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs group-hover:border-emerald-500 group-hover:ring-2 group-hover:ring-emerald-200 transition-all"
+                className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs"
               />
               <span className="w-2 h-2 bg-emerald-500 border border-white rounded-full absolute -top-0.5 -left-0.5" />
             </div>
             <div className="flex flex-col text-right">
-              <span className="text-sm font-black text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors">
+              <span className="text-sm font-black text-slate-900 tracking-tight">
                 {businessInfo.name || BUSINESS_INFO.name}
               </span>
               <span className="text-[10px] text-slate-400 font-bold hidden sm:inline">
                 منصة الفوترة والتوزيع
               </span>
             </div>
-          </button>
+          </div>
 
           {/* Desktop Navigation Tabs (Visible on tablet/desktop, hidden on mobile) */}
           <nav className="hidden md:flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -331,11 +324,25 @@ export function App() {
           </nav>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Settings Button */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsCompanySettingsOpen(true);
+              }}
+              className="h-8 px-2 sm:px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold flex items-center gap-1.5 transition-colors active:scale-95 cursor-pointer"
+              title="إعدادات وهيب كوك (المستخدم، كلمة المرور، وبيانات الشركة)"
+            >
+              <Settings className="w-4 h-4 text-slate-600" />
+              <span className="hidden sm:inline">الإعدادات</span>
+            </button>
+
             {/* Logout / Lock Button */}
             <button
               type="button"
               onClick={handleLogout}
-              className="h-8 px-2.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95"
+              className="h-8 px-2 sm:px-2.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95 cursor-pointer"
               title="قفل التطبيق وتسجيل الخروج"
             >
               <LogOut className="w-3.5 h-3.5" />
