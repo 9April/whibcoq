@@ -16,20 +16,22 @@ async function fetchWithFallback(endpoint, options = {}) {
       return await res.json();
     }
   } catch (e) {
-    // If running directly on static PHP server where mod_rewrite isn't enabled, try with .php
-    if (!endpoint.includes('.php')) {
-      const phpEndpoint = endpoint.replace(/(\/api\/[a-zA-Z0-9_-]+)/, '$1.php');
-      try {
-        const resPhp = await fetch(`${API_BASE}${phpEndpoint}`, { ...options, headers });
-        if (resPhp.ok) {
-          return await resPhp.json();
-        }
-      } catch (err2) {
-        // failed both
-      }
-    }
-    throw e;
+    // network or CORS error, try .php fallback
   }
+
+  // If mod_rewrite is not active or direct URL failed, try with .php
+  if (!endpoint.includes('.php')) {
+    const phpEndpoint = endpoint.replace(/(\/api\/[a-zA-Z0-9_-]+)/, '$1.php');
+    try {
+      const resPhp = await fetch(`${API_BASE}${phpEndpoint}`, { ...options, headers });
+      if (resPhp.ok) {
+        return await resPhp.json();
+      }
+    } catch (err2) {
+      // failed both
+    }
+  }
+
   throw new Error(`Request failed for ${endpoint}`);
 }
 

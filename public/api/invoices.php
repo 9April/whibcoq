@@ -102,6 +102,21 @@ if ($method === 'DELETE') {
     $stmt = $pdo->prepare('DELETE FROM invoices WHERE id = :id');
     $stmt->execute([':id' => $id]);
 
+    // Record tombstone in settings table so sync will NEVER restore it
+    try {
+        $delInvStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_invoices'");
+        $storedDeletedInvoices = json_decode($delInvStmt->fetchColumn() ?: '[]', true) ?: [];
+        if (!in_array($id, $storedDeletedInvoices, true)) {
+            $storedDeletedInvoices[] = $id;
+            $stmtUpd = $pdo->prepare("
+                INSERT INTO settings (setting_key, setting_value)
+                VALUES ('deleted_invoices', :val)
+                ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+            ");
+            $stmtUpd->execute([':val' => json_encode(array_values($storedDeletedInvoices), JSON_UNESCAPED_UNICODE)]);
+        }
+    } catch (Exception $e) {}
+
     echo json_encode(['ok' => true, 'deleted_id' => $id]);
     exit;
 }

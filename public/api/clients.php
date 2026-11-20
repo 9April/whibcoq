@@ -71,6 +71,21 @@ if ($method === 'DELETE') {
     $stmt2 = $pdo->prepare('DELETE FROM client_prices WHERE client_id = :id');
     $stmt2->execute([':id' => $id]);
 
+    // Record tombstone in settings table so sync will NEVER restore it
+    try {
+        $delClientStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_clients'");
+        $storedDeletedClients = json_decode($delClientStmt->fetchColumn() ?: '[]', true) ?: [];
+        if (!in_array($id, $storedDeletedClients, true)) {
+            $storedDeletedClients[] = $id;
+            $stmtUpd = $pdo->prepare("
+                INSERT INTO settings (setting_key, setting_value)
+                VALUES ('deleted_clients', :val)
+                ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+            ");
+            $stmtUpd->execute([':val' => json_encode(array_values($storedDeletedClients), JSON_UNESCAPED_UNICODE)]);
+        }
+    } catch (Exception $e) {}
+
     echo json_encode(['ok' => true, 'deleted_id' => $id]);
     exit;
 }

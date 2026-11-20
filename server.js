@@ -87,6 +87,19 @@ app.delete(['/api/clients', '/api/clients.php', '/api/clients/:id'], async (req,
     await pool.query('DELETE FROM clients WHERE id = ?', [id]);
     await pool.query('DELETE FROM client_prices WHERE client_id = ?', [id]);
 
+    try {
+      const [rows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_clients'");
+      const stored = rows[0]?.setting_value ? JSON.parse(rows[0].setting_value) : [];
+      if (!stored.includes(id)) {
+        stored.push(id);
+        await pool.query(
+          `INSERT INTO settings (setting_key, setting_value) VALUES ('deleted_clients', ?)
+           ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+          [JSON.stringify(stored)]
+        );
+      }
+    } catch {}
+
     res.json({ ok: true, deleted_id: id });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -244,11 +257,61 @@ app.post(['/api/settings', '/api/settings.php'], async (req, res) => {
 // Full Batch Sync API
 app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
   try {
-    const { clients, invoices, prices, adminPin } = req.body || {};
+    const { clients, invoices, prices, adminPin, deletedClientIds, deletedInvoiceIds } = req.body || {};
 
+    // 0. Handle deleted client tombstones
+    let storedDeletedClients = [];
+    try {
+      const [delRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_clients'");
+      storedDeletedClients = delRows[0]?.setting_value ? JSON.parse(delRows[0].setting_value) : [];
+    } catch {}
+
+    if (Array.isArray(deletedClientIds)) {
+      for (const id of deletedClientIds) {
+        if (id && !storedDeletedClients.includes(id)) {
+          storedDeletedClients.push(id);
+        }
+      }
+    }
+
+    if (storedDeletedClients.length > 0) {
+      await pool.query(
+        `INSERT INTO settings (setting_key, setting_value) VALUES ('deleted_clients', ?)
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+        [JSON.stringify(storedDeletedClients)]
+      );
+      await pool.query('DELETE FROM clients WHERE id IN (?)', [storedDeletedClients]);
+      await pool.query('DELETE FROM client_prices WHERE client_id IN (?)', [storedDeletedClients]);
+    }
+
+    // 0b. Handle deleted invoice tombstones
+    let storedDeletedInvoices = [];
+    try {
+      const [delInvRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_invoices'");
+      storedDeletedInvoices = delInvRows[0]?.setting_value ? JSON.parse(delInvRows[0].setting_value) : [];
+    } catch {}
+
+    if (Array.isArray(deletedInvoiceIds)) {
+      for (const id of deletedInvoiceIds) {
+        if (id && !storedDeletedInvoices.includes(id)) {
+          storedDeletedInvoices.push(id);
+        }
+      }
+    }
+
+    if (storedDeletedInvoices.length > 0) {
+      await pool.query(
+        `INSERT INTO settings (setting_key, setting_value) VALUES ('deleted_invoices', ?)
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+        [JSON.stringify(storedDeletedInvoices)]
+      );
+      await pool.query('DELETE FROM invoices WHERE id IN (?)', [storedDeletedInvoices]);
+    }
+
+    // 1. Sync clients (skip any deleted client)
     if (Array.isArray(clients)) {
       for (const c of clients) {
-        if (c.id && c.name) {
+        if (c.id && c.name && !storedDeletedClients.includes(c.id)) {
           await pool.query(
             `INSERT INTO clients (id, name, phone, category) 
              VALUES (?, ?, ?, ?)
@@ -259,9 +322,10 @@ app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
       }
     }
 
+    // 2. Sync invoices (skip any deleted invoice)
     if (Array.isArray(invoices)) {
       for (const inv of invoices) {
-        if (inv.id) {
+        if (inv.id && !storedDeletedInvoices.includes(inv.id)) {
           const itemsStr = typeof inv.items === 'string' ? inv.items : JSON.stringify(inv.items || []);
           await pool.query(
             `INSERT INTO invoices (id, client_id, client_name, client_phone, date, total_weight, total_amount, items, timestamp)
@@ -294,7 +358,7 @@ app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
     if (prices && typeof prices === 'object') {
       for (const [key, price] of Object.entries(prices)) {
         const parts = key.split('_');
-        if (parts.length === 2) {
+        if (parts.length === 2 && !storedDeletedClients.includes(parts[0])) {
           await pool.query(
             `INSERT INTO client_prices (client_id, product_id, price)
              VALUES (?, ?, ?)
@@ -330,7 +394,7 @@ app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
       );
     }
 
-    // Return fresh state
+    // Return fresh state excluding deleted records
     const [cRows] = await pool.query('SELECT id, name, phone, category FROM clients ORDER BY created_at ASC');
     const [iRows] = await pool.query(
       'SELECT id, client_id as clientId, client_name as clientName, client_phone as clientPhone, date, total_weight as totalWeight, total_amount as totalAmount, items, timestamp FROM invoices ORDER BY timestamp DESC'
@@ -339,33 +403,41 @@ app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
     const [uRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_user'");
     const [sRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_password'");
 
-    const parsedInvoices = iRows.map((r) => {
-      const rawItems = typeof r.items === 'string' ? JSON.parse(r.items || '[]') : (r.items || []);
-      const parsedItems = Array.isArray(rawItems)
-        ? rawItems.map((it) => ({
-            ...it,
-            weight: Number(it.weight) || 0,
-            price: Number(it.price) || 0,
-            total:
-              it.total !== undefined && !isNaN(Number(it.total))
-                ? Number(it.total)
-                : (Number(it.weight) || 0) * (Number(it.price) || 0),
-          }))
-        : [];
-      const computedWeight = parsedItems.reduce((sum, it) => sum + it.weight, 0);
-      const computedAmount = parsedItems.reduce((sum, it) => sum + it.total, 0);
+    const activeClients = cRows.filter((c) => !storedDeletedClients.includes(c.id));
 
-      return {
-        ...r,
-        totalWeight: parsedItems.length > 0 ? computedWeight : Number(r.totalWeight) || 0,
-        totalAmount: parsedItems.length > 0 ? computedAmount : Number(r.totalAmount) || 0,
-        timestamp: Number(r.timestamp) || Date.now(),
-        items: parsedItems,
-      };
-    });
+    const parsedInvoices = iRows
+      .filter((r) => !storedDeletedInvoices.includes(r.id))
+      .map((r) => {
+        const rawItems = typeof r.items === 'string' ? JSON.parse(r.items || '[]') : (r.items || []);
+        const parsedItems = Array.isArray(rawItems)
+          ? rawItems.map((it) => ({
+              ...it,
+              weight: Number(it.weight) || 0,
+              price: Number(it.price) || 0,
+              total:
+                it.total !== undefined && !isNaN(Number(it.total))
+                  ? Number(it.total)
+                  : (Number(it.weight) || 0) * (Number(it.price) || 0),
+            }))
+          : [];
+        const computedWeight = parsedItems.reduce((sum, it) => sum + it.weight, 0);
+        const computedAmount = parsedItems.reduce((sum, it) => sum + it.total, 0);
+
+        return {
+          ...r,
+          totalWeight: parsedItems.length > 0 ? computedWeight : Number(r.totalWeight) || 0,
+          totalAmount: parsedItems.length > 0 ? computedAmount : Number(r.totalAmount) || 0,
+          timestamp: Number(r.timestamp) || Date.now(),
+          items: parsedItems,
+        };
+      });
 
     const pricesMap = {};
-    pRows.forEach((r) => (pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price)));
+    pRows.forEach((r) => {
+      if (!storedDeletedClients.includes(r.client_id)) {
+        pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price);
+      }
+    });
 
     const currentAdminUser = uRows[0]?.setting_value || 'wahib';
     const currentAdminPass = sRows[0]?.setting_value || '12345';
@@ -373,8 +445,10 @@ app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
     res.json({
       ok: true,
       database: dbConfig.database,
-      clients: cRows,
+      clients: activeClients,
+      deletedClientIds: storedDeletedClients,
       invoices: parsedInvoices,
+      deletedInvoiceIds: storedDeletedInvoices,
       prices: pricesMap,
       adminUser: currentAdminUser,
       adminPassword: currentAdminPass,

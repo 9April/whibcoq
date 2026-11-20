@@ -22,6 +22,48 @@ const ADMIN_PIN_KEY = 'wahib_coq_admin_pin_v2';
 const ADMIN_AUTH_STATE_KEY = 'wahib_coq_admin_auth_state_v2';
 const BUSINESS_INFO_KEY = 'wahib_coq_business_info_v2';
 const CLIENT_CATEGORIES_KEY = 'wahib_coq_client_categories_v2';
+const DELETED_CLIENTS_KEY = 'wahib_coq_deleted_clients_v2';
+const DELETED_INVOICES_KEY = 'wahib_coq_deleted_invoices_v2';
+
+export const getStoredDeletedClients = () => {
+  try {
+    const raw = localStorage.getItem(DELETED_CLIENTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const trackDeletedClientId = (id) => {
+  if (!id) return;
+  try {
+    const list = getStoredDeletedClients();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem(DELETED_CLIENTS_KEY, JSON.stringify(list));
+    }
+  } catch {}
+};
+
+export const getStoredDeletedInvoices = () => {
+  try {
+    const raw = localStorage.getItem(DELETED_INVOICES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const trackDeletedInvoiceId = (id) => {
+  if (!id) return;
+  try {
+    const list = getStoredDeletedInvoices();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem(DELETED_INVOICES_KEY, JSON.stringify(list));
+    }
+  } catch {}
+};
 
 export const DEFAULT_CLIENT_CATEGORIES = [
   'مطعم',
@@ -209,21 +251,29 @@ export const playHapticSound = (type = 'tap') => {
 // Persistent Clients
 export const getStoredClients = () => {
   try {
+    const deleted = getStoredDeletedClients();
     const raw = localStorage.getItem(CLIENTS_STORAGE_KEY);
     let list;
     if (!raw) {
-      localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(INITIAL_CLIENTS));
-      list = INITIAL_CLIENTS;
+      const init = INITIAL_CLIENTS.filter((c) => !deleted.includes(c.id));
+      localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(init));
+      list = init;
     } else {
       list = JSON.parse(raw);
     }
 
-    if (!Array.isArray(list) || list.length === 0) {
-      return INITIAL_CLIENTS;
+    if (!Array.isArray(list)) {
+      return [];
+    }
+
+    // Strictly exclude any client that was deleted
+    const active = list.filter((c) => !deleted.includes(c.id));
+    if (active.length !== list.length) {
+      localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(active));
     }
 
     let needsUpdate = false;
-    const enriched = list.map((c) => {
+    const enriched = active.map((c) => {
       let cat = c.category;
       if (!cat || cat === 'عام') {
         const init = INITIAL_CLIENTS.find((ic) => ic.id === c.id || ic.name?.trim() === c.name?.trim());
@@ -258,13 +308,15 @@ export const getStoredClients = () => {
 
     return enriched;
   } catch (e) {
-    return INITIAL_CLIENTS;
+    return [];
   }
 };
 
 export const saveStoredClients = (clients) => {
   try {
-    localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(clients));
+    const deleted = getStoredDeletedClients();
+    const clean = Array.isArray(clients) ? clients.filter((c) => !deleted.includes(c.id)) : [];
+    localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(clean));
   } catch (e) { }
 };
 
@@ -295,6 +347,7 @@ export const persistClientWithDb = async (client) => {
 };
 
 export const deleteClientWithDb = async (clientId) => {
+  trackDeletedClientId(clientId);
   const clients = getStoredClients().filter((c) => c.id !== clientId);
   saveStoredClients(clients);
 
@@ -457,6 +510,7 @@ export const persistInvoiceWithDb = async (invoice) => {
 };
 
 export const deleteInvoiceWithDb = async (invoiceId) => {
+  trackDeletedInvoiceId(invoiceId);
   const invoices = getStoredInvoices().filter((inv) => inv.id !== invoiceId);
   saveStoredInvoices(invoices);
 
@@ -599,8 +653,10 @@ export const saveBusinessInfo = (newInfo) => {
 // Full Bidirectional Database Synchronization
 export const performDatabaseSync = async () => {
   try {
-    const localClients = getStoredClients();
-    const localInvoices = getStoredInvoices();
+    const localDeletedClients = getStoredDeletedClients();
+    const localDeletedInvoices = getStoredDeletedInvoices();
+    const localClients = getStoredClients().filter((c) => !localDeletedClients.includes(c.id));
+    const localInvoices = getStoredInvoices().filter((inv) => !localDeletedInvoices.includes(inv.id));
     const localPricesRaw = localStorage.getItem(CLIENT_PRICES_KEY);
     const localPrices = localPricesRaw ? JSON.parse(localPricesRaw) : {};
     const localUser = getAdminUser();
@@ -608,7 +664,9 @@ export const performDatabaseSync = async () => {
 
     const result = await apiSyncAll({
       clients: localClients,
+      deletedClientIds: localDeletedClients,
       invoices: localInvoices,
+      deletedInvoiceIds: localDeletedInvoices,
       prices: localPrices,
       adminUser: localUser,
       adminPin: localPass,
@@ -616,29 +674,45 @@ export const performDatabaseSync = async () => {
     });
 
     if (result && result.ok) {
-      if (Array.isArray(result.clients) && result.clients.length > 0) {
-        const enriched = result.clients.map((c) => {
-          let cat = c.category;
-          if (!cat || cat === 'عام') {
-            const init = INITIAL_CLIENTS.find((ic) => ic.id === c.id || ic.name?.trim() === c.name?.trim());
-            if (init?.category) cat = init.category;
-            else {
-              const name = (c.name || '').toLowerCase();
-              if (name.includes('مطعم')) cat = 'مطعم';
-              else if (name.includes('سناك')) cat = 'سناك';
-              else if (name.includes('شواية')) cat = 'شواية';
-              else if (name.includes('جملة')) cat = 'تاجر جملة';
-              else if (name.includes('طباخ') || name.includes('حفل')) cat = 'تموين حفلات';
-              else if (name.includes('نقدي') || name.includes('مباشر')) cat = 'مباشر';
-              else cat = 'عام';
+      if (Array.isArray(result.deletedClientIds)) {
+        result.deletedClientIds.forEach((id) => trackDeletedClientId(id));
+      }
+      if (Array.isArray(result.deletedInvoiceIds)) {
+        result.deletedInvoiceIds.forEach((id) => trackDeletedInvoiceId(id));
+      }
+
+      const allDeletedClients = getStoredDeletedClients();
+      const allDeletedInvoices = getStoredDeletedInvoices();
+
+      if (Array.isArray(result.clients)) {
+        const enriched = result.clients
+          .filter((c) => !allDeletedClients.includes(c.id))
+          .map((c) => {
+            let cat = c.category;
+            if (!cat || cat === 'عام') {
+              const init = INITIAL_CLIENTS.find((ic) => ic.id === c.id || ic.name?.trim() === c.name?.trim());
+              if (init?.category) cat = init.category;
+              else {
+                const name = (c.name || '').toLowerCase();
+                if (name.includes('مطعم')) cat = 'مطعم';
+                else if (name.includes('سناك')) cat = 'سناك';
+                else if (name.includes('شواية')) cat = 'شواية';
+                else if (name.includes('جملة')) cat = 'تاجر جملة';
+                else if (name.includes('طباخ') || name.includes('حفل')) cat = 'تموين حفلات';
+                else if (name.includes('نقدي') || name.includes('مباشر')) cat = 'مباشر';
+                else cat = 'عام';
+              }
             }
-          }
-          return { ...c, category: cat };
-        });
+            return { ...c, category: cat };
+          });
         localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(enriched));
       }
-      if (Array.isArray(result.invoices) && result.invoices.length > 0) {
-        const normalizedInvoices = result.invoices.map(normalizeInvoiceData).filter(Boolean);
+
+      if (Array.isArray(result.invoices)) {
+        const normalizedInvoices = result.invoices
+          .filter((inv) => !allDeletedInvoices.includes(inv.id))
+          .map(normalizeInvoiceData)
+          .filter(Boolean);
         localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(normalizedInvoices));
       }
       if (result.prices && typeof result.prices === 'object') {

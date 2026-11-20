@@ -99,6 +99,20 @@ export function mysqlApiPlugin() {
               if (!id) return sendJson(res, 400, { ok: false, error: 'Client ID required' });
               await pool.query('DELETE FROM clients WHERE id = ?', [id]);
               await pool.query('DELETE FROM client_prices WHERE client_id = ?', [id]);
+
+              try {
+                const [rows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_clients'");
+                const stored = rows[0]?.setting_value ? JSON.parse(rows[0].setting_value) : [];
+                if (!stored.includes(id)) {
+                  stored.push(id);
+                  await pool.query(
+                    `INSERT INTO settings (setting_key, setting_value) VALUES ('deleted_clients', ?)
+                     ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+                    [JSON.stringify(stored)]
+                  );
+                }
+              } catch {}
+
               return sendJson(res, 200, { ok: true, deleted_id: id });
             }
           }
@@ -211,11 +225,61 @@ export function mysqlApiPlugin() {
           // Batch Sync
           if (pathname === '/api/sync' && req.method === 'POST') {
             const body = await parseJsonBody(req);
-            const { clients, invoices, prices, adminPin } = body;
+            const { clients, invoices, prices, adminPin, deletedClientIds, deletedInvoiceIds } = body;
 
+            // 0. Process deleted client tombstones
+            let storedDeletedClients = [];
+            try {
+              const [delRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_clients'");
+              storedDeletedClients = delRows[0]?.setting_value ? JSON.parse(delRows[0].setting_value) : [];
+            } catch {}
+
+            if (Array.isArray(deletedClientIds)) {
+              for (const id of deletedClientIds) {
+                if (id && !storedDeletedClients.includes(id)) {
+                  storedDeletedClients.push(id);
+                }
+              }
+            }
+
+            if (storedDeletedClients.length > 0) {
+              await pool.query(
+                `INSERT INTO settings (setting_key, setting_value) VALUES ('deleted_clients', ?)
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+                [JSON.stringify(storedDeletedClients)]
+              );
+              await pool.query('DELETE FROM clients WHERE id IN (?)', [storedDeletedClients]);
+              await pool.query('DELETE FROM client_prices WHERE client_id IN (?)', [storedDeletedClients]);
+            }
+
+            // 0b. Process deleted invoice tombstones
+            let storedDeletedInvoices = [];
+            try {
+              const [delInvRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_invoices'");
+              storedDeletedInvoices = delInvRows[0]?.setting_value ? JSON.parse(delInvRows[0].setting_value) : [];
+            } catch {}
+
+            if (Array.isArray(deletedInvoiceIds)) {
+              for (const id of deletedInvoiceIds) {
+                if (id && !storedDeletedInvoices.includes(id)) {
+                  storedDeletedInvoices.push(id);
+                }
+              }
+            }
+
+            if (storedDeletedInvoices.length > 0) {
+              await pool.query(
+                `INSERT INTO settings (setting_key, setting_value) VALUES ('deleted_invoices', ?)
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+                [JSON.stringify(storedDeletedInvoices)]
+              );
+              await pool.query('DELETE FROM invoices WHERE id IN (?)', [storedDeletedInvoices]);
+            }
+
+            // 1. Sync clients (skip any in storedDeletedClients)
             if (Array.isArray(clients)) {
               for (const c of clients) {
-                if (c.id && c.name) {
+                if (c.id && c.name && !storedDeletedClients.includes(c.id)) {
                   await pool.query(
                     `INSERT INTO clients (id, name, phone, category) 
                      VALUES (?, ?, ?, ?)
@@ -226,9 +290,10 @@ export function mysqlApiPlugin() {
               }
             }
 
+            // 2. Sync invoices (skip any in storedDeletedInvoices)
             if (Array.isArray(invoices)) {
               for (const inv of invoices) {
-                if (inv.id) {
+                if (inv.id && !storedDeletedInvoices.includes(inv.id)) {
                   const itemsStr = typeof inv.items === 'string' ? inv.items : JSON.stringify(inv.items || []);
                   await pool.query(
                     `INSERT INTO invoices (id, client_id, client_name, client_phone, date, total_weight, total_amount, items, timestamp)
@@ -261,7 +326,7 @@ export function mysqlApiPlugin() {
             if (prices && typeof prices === 'object') {
               for (const [key, price] of Object.entries(prices)) {
                 const parts = key.split('_');
-                if (parts.length === 2) {
+                if (parts.length === 2 && !storedDeletedClients.includes(parts[0])) {
                   await pool.query(
                     `INSERT INTO client_prices (client_id, product_id, price)
                      VALUES (?, ?, ?)
@@ -305,16 +370,24 @@ export function mysqlApiPlugin() {
             const [uRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_user'");
             const [sRows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'admin_password'");
 
-            const parsedInvoices = iRows.map((r) => ({
-              ...r,
-              totalWeight: Number(r.totalWeight),
-              totalAmount: Number(r.totalAmount),
-              timestamp: Number(r.timestamp),
-              items: typeof r.items === 'string' ? JSON.parse(r.items || '[]') : r.items,
-            }));
+            const activeClients = cRows.filter((c) => !storedDeletedClients.includes(c.id));
+
+            const parsedInvoices = iRows
+              .filter((r) => !storedDeletedInvoices.includes(r.id))
+              .map((r) => ({
+                ...r,
+                totalWeight: Number(r.totalWeight),
+                totalAmount: Number(r.totalAmount),
+                timestamp: Number(r.timestamp),
+                items: typeof r.items === 'string' ? JSON.parse(r.items || '[]') : r.items,
+              }));
 
             const pricesMap = {};
-            pRows.forEach((r) => (pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price)));
+            pRows.forEach((r) => {
+              if (!storedDeletedClients.includes(r.client_id)) {
+                pricesMap[`${r.client_id}_${r.product_id}`] = Number(r.price);
+              }
+            });
 
             const currentAdminUser = uRows[0]?.setting_value || 'wahib';
             const currentAdminPass = sRows[0]?.setting_value || '12345';
@@ -322,8 +395,10 @@ export function mysqlApiPlugin() {
             return sendJson(res, 200, {
               ok: true,
               database: dbConfig.database,
-              clients: cRows,
+              clients: activeClients,
+              deletedClientIds: storedDeletedClients,
               invoices: parsedInvoices,
+              deletedInvoiceIds: storedDeletedInvoices,
               prices: pricesMap,
               adminUser: currentAdminUser,
               adminPassword: currentAdminPass,

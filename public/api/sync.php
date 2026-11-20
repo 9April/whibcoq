@@ -6,7 +6,54 @@ $pdo = getDbConnection();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?: [];
 
-    // 1. Sync clients if sent
+    // 0. Process deleted client tombstones
+    $delClientStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_clients'");
+    $storedDeletedClients = json_decode($delClientStmt->fetchColumn() ?: '[]', true) ?: [];
+    if (!empty($input['deletedClientIds']) && is_array($input['deletedClientIds'])) {
+        foreach ($input['deletedClientIds'] as $delId) {
+            if (!empty($delId) && !in_array($delId, $storedDeletedClients, true)) {
+                $storedDeletedClients[] = $delId;
+            }
+        }
+    }
+    // Persist deleted clients list
+    $stmtUpdDelClients = $pdo->prepare("
+        INSERT INTO settings (setting_key, setting_value)
+        VALUES ('deleted_clients', :val)
+        ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    ");
+    $stmtUpdDelClients->execute([':val' => json_encode(array_values($storedDeletedClients), JSON_UNESCAPED_UNICODE)]);
+
+    // Delete any marked clients from DB
+    if (!empty($storedDeletedClients)) {
+        $inClause = implode(',', array_fill(0, count($storedDeletedClients), '?'));
+        $pdo->prepare("DELETE FROM clients WHERE id IN ($inClause)")->execute($storedDeletedClients);
+        $pdo->prepare("DELETE FROM client_prices WHERE client_id IN ($inClause)")->execute($storedDeletedClients);
+    }
+
+    // 0b. Process deleted invoice tombstones
+    $delInvStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_invoices'");
+    $storedDeletedInvoices = json_decode($delInvStmt->fetchColumn() ?: '[]', true) ?: [];
+    if (!empty($input['deletedInvoiceIds']) && is_array($input['deletedInvoiceIds'])) {
+        foreach ($input['deletedInvoiceIds'] as $delInvId) {
+            if (!empty($delInvId) && !in_array($delInvId, $storedDeletedInvoices, true)) {
+                $storedDeletedInvoices[] = $delInvId;
+            }
+        }
+    }
+    $stmtUpdDelInvoices = $pdo->prepare("
+        INSERT INTO settings (setting_key, setting_value)
+        VALUES ('deleted_invoices', :val)
+        ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    ");
+    $stmtUpdDelInvoices->execute([':val' => json_encode(array_values($storedDeletedInvoices), JSON_UNESCAPED_UNICODE)]);
+
+    if (!empty($storedDeletedInvoices)) {
+        $inClauseInv = implode(',', array_fill(0, count($storedDeletedInvoices), '?'));
+        $pdo->prepare("DELETE FROM invoices WHERE id IN ($inClauseInv)")->execute($storedDeletedInvoices);
+    }
+
+    // 1. Sync clients if sent (Never re-insert a client that was deleted)
     if (!empty($input['clients']) && is_array($input['clients'])) {
         $stmtClient = $pdo->prepare('
             INSERT INTO clients (id, name, phone, category)
@@ -17,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 category = VALUES(category)
         ');
         foreach ($input['clients'] as $c) {
-            if (!empty($c['id']) && !empty($c['name'])) {
+            if (!empty($c['id']) && !empty($c['name']) && !in_array($c['id'], $storedDeletedClients, true)) {
                 $stmtClient->execute([
                     ':id' => $c['id'],
                     ':name' => $c['name'],
@@ -28,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // 2. Sync invoices if sent
+    // 2. Sync invoices if sent (Never re-insert an invoice that was deleted)
     if (!empty($input['invoices']) && is_array($input['invoices'])) {
         $stmtInv = $pdo->prepare('
             INSERT INTO invoices (id, client_id, client_name, client_phone, date, total_weight, total_amount, items, timestamp)
@@ -44,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 timestamp = VALUES(timestamp)
         ');
         foreach ($input['invoices'] as $inv) {
-            if (!empty($inv['id'])) {
+            if (!empty($inv['id']) && !in_array($inv['id'], $storedDeletedInvoices, true)) {
                 $items = isset($inv['items']) ? (is_string($inv['items']) ? $inv['items'] : json_encode($inv['items'], JSON_UNESCAPED_UNICODE)) : '[]';
                 $stmtInv->execute([
                     ':id' => $inv['id'],
@@ -108,10 +155,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Now return full database state to synchronize the client
-    $clients = $pdo->query('SELECT id, name, phone, category FROM clients ORDER BY created_at ASC')->fetchAll();
+    $rawClients = $pdo->query('SELECT id, name, phone, category FROM clients ORDER BY created_at ASC')->fetchAll();
+    $clients = [];
+    foreach ($rawClients as $rc) {
+        if (!in_array($rc['id'], $storedDeletedClients, true)) {
+            $clients[] = $rc;
+        }
+    }
     
     $invRows = $pdo->query('SELECT id, client_id as clientId, client_name as clientName, client_phone as clientPhone, date, total_weight as totalWeight, total_amount as totalAmount, items, timestamp FROM invoices ORDER BY timestamp DESC')->fetchAll();
-    $invoices = array_map(function($row) {
+    $invoices = [];
+    foreach ($invRows as $row) {
+        if (in_array($row['id'], $storedDeletedInvoices, true)) {
+            continue;
+        }
         $rawItems = is_string($row['items']) ? json_decode($row['items'], true) : $row['items'];
         $items = [];
         $computedWeight = 0.0;
@@ -133,13 +190,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $row['totalAmount'] = count($items) > 0 ? $computedAmount : (float)$row['totalAmount'];
         $row['timestamp'] = (int)$row['timestamp'];
         $row['items'] = $items;
-        return $row;
-    }, $invRows);
+        $invoices[] = $row;
+    }
 
     $priceRows = $pdo->query('SELECT client_id, product_id, price FROM client_prices')->fetchAll();
     $prices = [];
     foreach ($priceRows as $pr) {
-        $prices[$pr['client_id'] . '_' . $pr['product_id']] = (float)$pr['price'];
+        if (!in_array($pr['client_id'], $storedDeletedClients, true)) {
+            $prices[$pr['client_id'] . '_' . $pr['product_id']] = (float)$pr['price'];
+        }
     }
 
     // Load single authoritative credentials
@@ -157,7 +216,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'ok' => true,
         'database' => $db_name,
         'clients' => $clients,
+        'deletedClientIds' => $storedDeletedClients,
         'invoices' => $invoices,
+        'deletedInvoiceIds' => $storedDeletedInvoices,
         'prices' => $prices,
         'adminUser' => $adminUser,
         'adminPassword' => $adminPassword,
