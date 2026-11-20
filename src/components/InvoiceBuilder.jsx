@@ -288,11 +288,11 @@ export function InvoiceBuilder({
         </button>
 
         <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-          {editingInvoice ? `تعديل الفاتورة #${editingInvoice.id}` : 'إعداد الفاتورة (4 خطوات)'}
+          {editingInvoice ? `تعديل الفاتورة #${editingInvoice.id}` : 'إعداد الفاتورة (3 خطوات)'}
         </span>
       </div>
 
-      {/* 4-Step Visual Progress Stepper Bar */}
+      {/* 3-Step Visual Progress Stepper Bar */}
       <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-xs">
         <div className="flex items-center justify-between gap-1 sm:gap-2">
           {/* Step 1 Pill */}
@@ -438,8 +438,9 @@ export function InvoiceBuilder({
                   onClick={() => {
                     playHapticSound('tap');
                     setSelectedClientId(c.id);
+                    setStep(2);
                   }}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99] ${
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99] group ${
                     isSelected
                       ? 'bg-emerald-50/40 border-emerald-600 ring-2 ring-emerald-600/20 shadow-sm'
                       : 'bg-white border-slate-200 hover:border-slate-300'
@@ -485,7 +486,7 @@ export function InvoiceBuilder({
           </div>
 
           {/* Step 1 Bottom Action Bar */}
-          <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 md:py-4">
+          <div className="fixed bottom-16 sm:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 md:py-4">
             <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               <div className="text-right min-w-0">
                 <span className="text-[11px] font-bold text-slate-400 block">الزبون المختار:</span>
@@ -500,9 +501,9 @@ export function InvoiceBuilder({
                   playHapticSound('tap');
                   setStep(2);
                 }}
-                className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all flex-shrink-0"
+                className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all flex-shrink-0 cursor-pointer"
               >
-                <span>متابعة: التاريخ</span>
+                <span>متابعة: التاريخ (الخطوة 2)</span>
                 <ArrowLeft className="w-4 h-4" />
               </button>
             </div>
@@ -514,7 +515,7 @@ export function InvoiceBuilder({
       {/* STEP 2: CHOOSE DATE (الخطوة 2: اختيار التاريخ) */}
       {/* ============================================================== */}
       {step === 2 && (
-        <div className="flex flex-col gap-3 animate-fadeIn">
+        <div className="flex flex-col gap-3 animate-fadeIn pb-24 md:pb-16">
           {/* Selected Client Summary Card */}
           <div className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-xs flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -522,7 +523,7 @@ export function InvoiceBuilder({
                 <User className="w-4 h-4" />
               </span>
               <div>
-                <span className="text-[11px] font-bold text-slate-400 block">الزبون:</span>
+                <span className="text-[11px] font-bold text-slate-400 block">الزبون المختار:</span>
                 <span className="text-sm font-black text-slate-900">{selectedClient.name}</span>
               </div>
             </div>
@@ -533,67 +534,102 @@ export function InvoiceBuilder({
                 playHapticSound('tap');
                 setStep(1);
               }}
-              className="text-xs font-bold text-emerald-700 hover:underline"
+              className="text-xs font-bold text-emerald-700 hover:underline cursor-pointer"
             >
               تغيير الزبون
             </button>
           </div>
 
           {/* Date Picker Box */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col gap-3">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col gap-3.5">
             <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
               <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-black">
                 <Calendar className="w-5 h-5" />
               </span>
               <div>
                 <h2 className="text-lg font-black text-slate-900">الخطوة 2: تحديد تاريخ الفاتورة</h2>
-                <p className="text-xs text-slate-500">يتم تحديد تاريخ اليوم تلقائياً، يمكنك تغييره بالضغط أدناه</p>
+                <p className="text-xs text-slate-500">اختر التاريخ للمتابعة مباشرة إلى إدخال السلع والكميات</p>
               </div>
             </div>
 
-            {/* Expanded Arabic Date Selector Button */}
+            {/* Quick 1-Click Action Buttons: Today & Yesterday (Sets Date & Directly Advances to Step 3) */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  playHapticSound('success');
+                  setInvoiceDate(new Date().toISOString().split('T')[0]);
+                  setStep(3);
+                }}
+                className={`h-12 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border cursor-pointer ${
+                  invoiceDate === new Date().toISOString().split('T')[0]
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'
+                }`}
+              >
+                <Check className="w-4 h-4 text-emerald-400 stroke-[3] shrink-0" />
+                <span className="truncate">تاريخ اليوم والمتابعة ({new Date().toISOString().split('T')[0].split('-').reverse().join('/')}) ←</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  playHapticSound('success');
+                  const d = new Date();
+                  d.setDate(d.getDate() - 1);
+                  setInvoiceDate(d.toISOString().split('T')[0]);
+                  setStep(3);
+                }}
+                className="h-12 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 cursor-pointer"
+              >
+                <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
+                <span>تاريخ الأمس والمتابعة ←</span>
+              </button>
+            </div>
+
+            {/* Current Chosen Date Card with Calendar Modal Trigger */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col gap-2">
+              <span className="text-[11px] font-bold text-slate-500 block">التاريخ المختار حالياً:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  playHapticSound('tap');
+                  setIsArabicDatePickerOpen(true);
+                }}
+                className="w-full h-13 px-3.5 bg-white hover:bg-slate-100 border-2 border-emerald-500/80 rounded-xl flex items-center justify-between transition-all cursor-pointer text-right group shadow-xs"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Calendar className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <span className="text-base font-black text-slate-900 truncate">
+                    {formatArabicDate(invoiceDate)}
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono hidden sm:inline tabular-nums">
+                    ({invoiceDate.split('-').reverse().join('/')})
+                  </span>
+                </div>
+
+                <span className="text-xs text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 shrink-0 group-hover:bg-emerald-100 transition-colors">
+                  تغيير من التقويم 📅
+                </span>
+              </button>
+            </div>
+
+            {/* Primary Continue Button directly in the card */}
             <button
               type="button"
               onClick={() => {
                 playHapticSound('tap');
-                setIsArabicDatePickerOpen(true);
+                setStep(3);
               }}
-              className="w-full h-14 pr-11 pl-4 bg-slate-50 hover:bg-slate-100 border-2 border-slate-300 hover:border-emerald-600 rounded-xl flex items-center justify-between transition-all cursor-pointer text-right group relative"
+              className="w-full h-13 mt-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Calendar className="w-5 h-5 text-emerald-600 absolute right-3.5 pointer-events-none" />
-                <span className="text-base font-black text-slate-900 truncate">
-                  {formatArabicDate(invoiceDate)}
-                </span>
-                <span className="text-xs text-slate-400 font-mono hidden sm:inline tabular-nums">
-                  ({invoiceDate.split('-').reverse().join('/')})
-                </span>
-              </div>
-
-              <span className="text-xs text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex-shrink-0 group-hover:bg-emerald-100 transition-colors">
-                تغيير 📅
-              </span>
+              <span>متابعة: اختيار السلع والكميات (الخطوة 3)</span>
+              <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
             </button>
-
-            {/* Quick Set Today Button */}
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-xs text-slate-500 font-semibold">هل الفاتورة لتاريخ اليوم؟</span>
-              <button
-                type="button"
-                onClick={setToday}
-                className={`h-10 px-4 rounded-xl text-xs font-bold transition-all border active:scale-95 ${
-                  invoiceDate === new Date().toISOString().split('T')[0]
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                    : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
-                }`}
-              >
-                اليوم ({new Date().toISOString().split('T')[0].split('-').reverse().join('/')})
-              </button>
-            </div>
           </div>
 
           {/* Step 2 Bottom Action Bar */}
-          <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 md:py-4">
+          <div className="fixed bottom-16 sm:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 md:py-4">
             <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               <button
                 type="button"
@@ -601,7 +637,7 @@ export function InvoiceBuilder({
                   playHapticSound('tap');
                   setStep(1);
                 }}
-                className="h-12 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 active:scale-95 transition-all"
+                className="h-12 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
               >
                 <ArrowRight className="w-4 h-4" />
                 <span>السابق: الزبون</span>
@@ -613,7 +649,7 @@ export function InvoiceBuilder({
                   playHapticSound('tap');
                   setStep(3);
                 }}
-                className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all"
+                className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
               >
                 <span>متابعة: اختيار السلع</span>
                 <ArrowLeft className="w-4 h-4" />
@@ -772,7 +808,7 @@ export function InvoiceBuilder({
           </div>
 
           {/* Floating Bottom Checkout Bar (Above Nav on mobile, docked on desktop) */}
-          <div className="floating-checkout fixed bottom-16 md:bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-800 shadow-2xl p-3 sm:p-4 md:py-4">
+          <div className="floating-checkout fixed bottom-16 sm:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-800 shadow-2xl p-3 sm:p-4 md:py-4">
             <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               {/* Grand Total */}
               <div className="text-right">
@@ -824,7 +860,9 @@ export function InvoiceBuilder({
         onClose={() => setIsArabicDatePickerOpen(false)}
         currentDate={invoiceDate}
         onSelectDate={(newDate) => {
+          playHapticSound('success');
           setInvoiceDate(newDate);
+          setStep(3);
         }}
       />
 

@@ -278,7 +278,7 @@ export function ArabicSingleDatePickerModal({
             className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
           >
             <Check className="w-4 h-4 stroke-[2.5]" />
-            <span>تأكيد التاريخ ({formatMoroccanDate(selectedDate)})</span>
+            <span>تأكيد ومتابعة للسلع ({formatMoroccanDate(selectedDate)})</span>
           </button>
 
           <button

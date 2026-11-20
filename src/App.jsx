@@ -293,11 +293,10 @@ export function App() {
                 }
                 setActiveTab('builder');
               }}
-              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
-                activeTab === 'builder'
-                  ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              }`}
+              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${activeTab === 'builder'
+                ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                }`}
             >
               {isBuildingInvoice ? (
                 <Layers className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
@@ -314,11 +313,10 @@ export function App() {
                 setIsBuildingInvoice(false);
                 setActiveTab('clients');
               }}
-              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
-                activeTab === 'clients'
-                  ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              }`}
+              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${activeTab === 'clients'
+                ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                }`}
             >
               <Users className={`w-4 h-4 ${activeTab === 'clients' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
               <span>الزبائن</span>
@@ -336,11 +334,10 @@ export function App() {
                 setIsBuildingInvoice(false);
                 setActiveTab('history');
               }}
-              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
-                activeTab === 'history'
-                  ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              }`}
+              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${activeTab === 'history'
+                ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                }`}
             >
               <Receipt className={`w-4 h-4 ${activeTab === 'history' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
               <span>السجل</span>
@@ -358,11 +355,10 @@ export function App() {
                 setIsBuildingInvoice(false);
                 setActiveTab('reports');
               }}
-              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${
-                activeTab === 'reports'
-                  ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              }`}
+              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${activeTab === 'reports'
+                ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                }`}
             >
               <BarChart3 className={`w-4 h-4 ${activeTab === 'reports' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
               <span>التقارير</span>
@@ -374,11 +370,10 @@ export function App() {
             <button
               type="button"
               onClick={handleGoHome}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
-                activeTab === 'builder' && !isBuildingInvoice
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
-              }`}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95 cursor-pointer ${activeTab === 'builder' && !isBuildingInvoice
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                }`}
               title="الصفحة الرئيسية"
               aria-label="الرئيسية"
             >
