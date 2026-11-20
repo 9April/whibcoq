@@ -207,139 +207,146 @@ export function InvoicePrintModal({
           </div>
         </div>
 
-        {/* Printable Official Receipt Body (Adapted to A5 Paper: 148mm x 210mm) */}
+        {/* Printable Official Receipt Body (Spacious & Minimal A5: 148mm x 210mm) */}
         <div className="printable-invoice-area-wrapper overflow-y-auto p-2 sm:p-6 bg-slate-100/60 flex justify-center">
           <div
             ref={printAreaRef}
             id="printable-invoice"
-            className="printable-invoice-area w-full max-w-[148mm] bg-white text-slate-900 p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200"
+            className="printable-invoice-area w-full max-w-[140mm] min-h-[195mm] bg-white text-slate-900 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between"
           >
-            {/* Header matching classic WAHIB COQ invoice (A5 Proportions) */}
-            <div className="border-b-2 border-slate-900 pb-2 mb-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src="/wahibcoq.jpeg"
-                    alt="WAHIB COQ"
-                    className="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-xl border border-slate-300 p-0.5 bg-white flex-shrink-0"
-                  />
-                  <div>
-                    <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight">
-                      {businessInfo.name}
-                    </h1>
-                    <p className="text-[11px] font-bold text-slate-600 mt-0.5 leading-tight">
-                      {businessInfo.frenchSubtitle}
-                    </p>
-                    <p className="text-[10px] text-slate-500 leading-tight">
-                      {businessInfo.arabicTitle}
-                    </p>
-                    <p className="text-[9px] text-slate-400 font-mono leading-tight">
-                      {businessInfo.taxInfo}
-                    </p>
+            {/* Top Container: Header, Client Info & Minimal Products Table */}
+            <div>
+              {/* Header: Clean & Spacious Brand Banner */}
+              <div className="border-b border-slate-200 pb-3 mb-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src="/wahibcoq.jpeg"
+                      alt="WAHIB COQ"
+                      className="w-13 h-13 sm:w-15 sm:h-15 object-contain rounded-xl border border-slate-200 p-0.5 bg-white flex-shrink-0"
+                    />
+                    <div>
+                      <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-snug">
+                        {businessInfo.name}
+                      </h1>
+                      <p className="text-xs font-semibold text-slate-600 mt-0.5 leading-tight">
+                        {businessInfo.frenchSubtitle}
+                      </p>
+                      <p className="text-[11px] text-slate-500 leading-tight">
+                        {businessInfo.arabicTitle}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-mono leading-tight mt-0.5">
+                        {businessInfo.taxInfo}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="text-left border-2 border-slate-900 rounded-xl p-1.5 bg-slate-50 min-w-[125px]" dir="ltr">
-                  <div className="text-right" dir="rtl">
-                    <span className="block text-[9px] font-bold text-slate-500 uppercase">
-                      FACTURE / وصل بيع
-                    </span>
-                    <span className="block text-base sm:text-lg font-black text-slate-900 font-mono tabular-nums leading-tight">
-                      N° {invoice.id}
-                    </span>
-                    <div className="mt-1 pt-1 border-t border-slate-300 flex items-center justify-between text-[11px] font-bold text-slate-700">
-                      <span>التاريخ:</span>
-                      <span className="font-mono tabular-nums">{displayDate()}</span>
+                  {/* Facture Number & Date Badge (Minimal & Crisp) */}
+                  <div className="text-left border border-slate-200 rounded-xl p-2 bg-slate-50/80 min-w-[130px]" dir="ltr">
+                    <div className="text-right" dir="rtl">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                        FACTURE / وصل بيع
+                      </span>
+                      <span className="block text-base sm:text-lg font-black text-slate-900 font-mono tabular-nums leading-tight mt-0.5">
+                        N° {invoice.id}
+                      </span>
+                      <div className="mt-1.5 pt-1 border-t border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-600">
+                        <span>التاريخ:</span>
+                        <span className="font-mono tabular-nums">{displayDate()}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Client Info Bar */}
-              <div className="mt-2 pt-1.5 border-t border-slate-200 flex items-center justify-between bg-slate-50 px-2 py-1.5 rounded-xl border border-slate-200">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-[11px] font-bold text-slate-500">الزبون:</span>
-                  <span className="text-xs font-black text-slate-900 truncate max-w-[180px]">{invoice.clientName}</span>
-                  {invoice.clientCategory && (
-                    <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 text-[9px] font-bold">
-                      {invoice.clientCategory}
-                    </span>
+                {/* Client Info Bar (Minimal & Spacious) */}
+                <div className="mt-3 flex items-center justify-between bg-slate-50/70 px-3 py-2 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs font-bold text-slate-400">الزبون:</span>
+                    <span className="text-xs sm:text-sm font-black text-slate-900 truncate max-w-[200px]">{invoice.clientName}</span>
+                    {invoice.clientCategory && (
+                      <span className="px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-700 text-[10px] font-bold">
+                        {invoice.clientCategory}
+                      </span>
+                    )}
+                  </div>
+                  {invoice.clientPhone && (
+                    <div className="text-xs font-mono font-semibold text-slate-600 flex items-center gap-1 flex-shrink-0">
+                      <span>Tél:</span>
+                      <bdi dir="ltr" className="font-mono tabular-nums tracking-wide inline-block" style={{ unicodeBidi: 'isolate', direction: 'ltr' }}>
+                        {formatPhone(invoice.clientPhone)}
+                      </bdi>
+                    </div>
                   )}
                 </div>
-                {invoice.clientPhone && (
-                  <div className="text-[11px] font-mono font-semibold text-slate-700 flex items-center gap-1 flex-shrink-0">
-                    <span>Tél:</span>
-                    <bdi dir="ltr" className="font-mono tabular-nums tracking-wide inline-block" style={{ unicodeBidi: 'isolate', direction: 'ltr' }}>
-                      {formatPhone(invoice.clientPhone)}
-                    </bdi>
-                  </div>
-                )}
               </div>
-            </div>
 
-            {/* 4-Column Official Poultry Table (A5 Compact) */}
-            <table className="print-table w-full text-right border-2 border-slate-900 mb-2">
-              <thead>
-                <tr className="bg-slate-100 text-slate-900 border-b-2 border-slate-900 text-[11px] font-black">
-                  <th className="py-1 px-1.5 border-l-2 border-slate-900 text-center w-8">#</th>
-                  <th className="py-1 px-2 border-l-2 border-slate-900">المنتوج / Désignation</th>
-                  <th className="py-1 px-2 border-l-2 border-slate-900 text-center w-20">الوزن (kg)</th>
-                  <th className="py-1 px-2 border-l-2 border-slate-900 text-center w-18">الثمن (درهم)</th>
-                  <th className="py-1 px-2 text-left w-24">المجموع (درهم)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-300 text-[11px]">
-                {invoice.items && invoice.items.length > 0 ? (
-                  invoice.items.map((item, index) => (
-                    <tr key={item.productId || index} className="hover:bg-slate-50">
-                      <td className="py-0.5 px-1.5 border-l-2 border-slate-900 text-center font-bold text-slate-600 tabular-nums">
-                        {index + 1}
-                      </td>
-                      <td className="py-0.5 px-2 border-l-2 border-slate-900 font-bold text-slate-900">
-                        {item.productName}
-                      </td>
-                      <td className="py-0.5 px-2 border-l-2 border-slate-900 text-center font-mono font-bold tabular-nums">
-                        {item.weight}
-                      </td>
-                      <td className="py-0.5 px-2 border-l-2 border-slate-900 text-center font-mono font-bold tabular-nums">
-                        {Number(item.price).toFixed(2)}
-                      </td>
-                      <td className="py-0.5 px-2 text-left font-mono font-black text-slate-900 tabular-nums">
-                        {formatDh(item.total)}
+              {/* Minimal 5-Column Official Poultry Table (Clean, Spacious, No Heavy Outlines) */}
+              <table className="print-table w-full text-right border-collapse mb-4">
+                <thead>
+                  <tr className="border-y border-slate-200 bg-slate-50/60 text-slate-600 text-xs font-bold">
+                    <th className="py-2 px-2 text-center w-8 text-slate-400">#</th>
+                    <th className="py-2 px-2 text-right">المنتوج / Désignation</th>
+                    <th className="py-2 px-2 text-center w-20 sm:w-24">الوزن (kg)</th>
+                    <th className="py-2 px-2 text-center w-20 sm:w-22">الثمن (درهم)</th>
+                    <th className="py-2 px-2 text-left w-24 sm:w-28">المجموع (درهم)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
+                  {invoice.items && invoice.items.length > 0 ? (
+                    invoice.items.map((item, index) => (
+                      <tr key={item.productId || index} className="hover:bg-slate-50/40">
+                        <td className="py-2.5 px-2 text-center font-bold text-slate-400 tabular-nums">
+                          {index + 1}
+                        </td>
+                        <td className="py-2.5 px-2 font-bold text-slate-900">
+                          {item.productName}
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-800 tabular-nums">
+                          {item.weight}
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-800 tabular-nums">
+                          {Number(item.price).toFixed(2)}
+                        </td>
+                        <td className="py-2.5 px-2 text-left font-mono font-black text-slate-900 tabular-nums">
+                          {formatDh(item.total)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="py-6 text-center text-slate-400 font-medium">
+                        لا توجد بنود
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="py-2 text-center text-slate-400">
-                      لا توجد بنود
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-
-            {/* Total Summary Box (A5 Compact) */}
-            <div className="flex justify-end mb-2">
-              <div className="w-full sm:w-60 border-2 border-slate-900 rounded-xl overflow-hidden">
-                <div className="flex items-center justify-between p-1 bg-slate-100 border-b border-slate-300 text-[11px] font-bold text-slate-700">
-                  <span>مجموع الوزن (Poids Total):</span>
-                  <span className="font-mono text-xs font-black text-slate-900 tabular-nums" dir="ltr">
-                    {formatKg(invoice.totalWeight)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-1.5 bg-slate-900 text-white">
-                  <span className="font-black text-xs">المجموع الكلي (TOTAL):</span>
-                  <span className="font-mono text-base font-black text-emerald-400 tabular-nums">
-                    {formatDh(invoice.totalAmount)}
-                  </span>
-                </div>
-              </div>
+                  )}
+                </tbody>
+              </table>
             </div>
 
-            {/* Footer */}
-            <div className="border-t border-slate-200 pt-1.5 mt-auto text-center text-[9px] text-slate-500 font-semibold">
-              {businessInfo.name} • {businessInfo.address} • Tél: {businessInfo.phone}
+            {/* Bottom Container: Minimal Total Summary Box & Footer */}
+            <div className="mt-auto pt-3">
+              {/* Total Summary Box (Minimal & Clean) */}
+              <div className="flex justify-end mb-3">
+                <div className="w-full sm:w-64 border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+                  <div className="flex items-center justify-between px-3 py-2 bg-slate-50/90 border-b border-slate-200/70 text-xs font-bold text-slate-600">
+                    <span>مجموع الوزن (Poids Total):</span>
+                    <span className="font-mono text-xs font-black text-slate-900 tabular-nums" dir="ltr">
+                      {formatKg(invoice.totalWeight)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-900 text-white">
+                    <span className="font-black text-xs sm:text-sm">المجموع الكلي (TOTAL):</span>
+                    <span className="font-mono text-base sm:text-lg font-black text-emerald-400 tabular-nums">
+                      {formatDh(invoice.totalAmount)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Minimal Clean Footer */}
+              <div className="border-t border-slate-200/60 pt-2 text-center text-[10px] text-slate-400 font-medium">
+                {businessInfo.name} • {businessInfo.address} • Tél: {businessInfo.phone}
+              </div>
             </div>
           </div>
         </div>

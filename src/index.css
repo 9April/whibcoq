@@ -63,7 +63,7 @@
 @media print {
   @page {
     size: A5 portrait;
-    margin: 5mm 5mm;
+    margin: 5mm;
   }
 
   *, *::before, *::after {
@@ -99,21 +99,23 @@
     opacity: 1 !important;
   }
 
-  /* 3. Pull printable invoice to the absolute top of the physical A5 page */
+  /* 3. Pull printable invoice to the absolute top of the physical A5 page (Spacious & Minimal) */
   #printable-invoice {
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
     width: 100% !important;
-    max-width: 148mm !important;
-    max-height: 200mm !important;
+    max-width: 138mm !important;
+    min-height: 198mm !important;
     margin: 0 auto !important;
     padding: 4mm !important;
     border: none !important;
     box-shadow: none !important;
     background: #ffffff !important;
     color: #0f172a !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
     overflow: visible !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
@@ -128,28 +130,35 @@
     visibility: hidden !important;
   }
 
-  /* 4. Table Styling for A5 format */
+  /* 4. Minimal & Spacious Table Styling for A5 format (No heavy outer/vertical borders) */
   #printable-invoice .print-table {
     border-collapse: collapse !important;
     width: 100% !important;
+    border: none !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  #printable-invoice .print-table th,
-  #printable-invoice .print-table td {
-    border: 1.5px solid #0f172a !important;
-    padding: 2.5px 5px !important;
-    color: #0f172a !important;
-    line-height: 1.2 !important;
-    font-size: 8.5pt !important;
-  }
-
   #printable-invoice .print-table th {
-    background-color: #f1f5f9 !important;
+    border: none !important;
+    border-top: 1px solid #e2e8f0 !important;
+    border-bottom: 1.5px solid #cbd5e1 !important;
+    padding: 6px 8px !important;
+    color: #475569 !important;
+    font-size: 8.5pt !important;
     font-weight: 800 !important;
+    background-color: #f8fafc !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  #printable-invoice .print-table td {
+    border: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 7px 8px !important;
+    color: #0f172a !important;
+    line-height: 1.35 !important;
+    font-size: 9pt !important;
   }
 
   /* Prevent page breaks across elements */
