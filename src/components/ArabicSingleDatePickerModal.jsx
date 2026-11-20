@@ -101,11 +101,13 @@ export function ArabicSingleDatePickerModal({
   const firstDayIndex = new Date(viewYear, viewMonth, 1).getDay(); // 0 = Sunday
 
   const handleSelectDay = (day) => {
-    playHapticSound('tap');
+    playHapticSound('success');
     const mStr = String(viewMonth + 1).padStart(2, '0');
     const dStr = String(day).padStart(2, '0');
     const dateFormatted = `${viewYear}-${mStr}-${dStr}`;
     setSelectedDate(dateFormatted);
+    onSelectDate(dateFormatted);
+    onClose();
   };
 
   const handleApply = () => {
@@ -115,14 +117,13 @@ export function ArabicSingleDatePickerModal({
   };
 
   const handleSetQuick = (daysAgo) => {
-    playHapticSound('tap');
+    playHapticSound('success');
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
     const iso = d.toISOString().split('T')[0];
     setSelectedDate(iso);
-    const ym = parseYearMonth(iso);
-    setViewYear(ym.year);
-    setViewMonth(ym.month);
+    onSelectDate(iso);
+    onClose();
   };
 
   return (

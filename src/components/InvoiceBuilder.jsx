@@ -58,7 +58,14 @@ export function InvoiceBuilder({
   const [filterMode, setFilterMode] = useState('all');
 
   // Input states per product: { [productId]: { weight: string|number, price: string|number } }
-  const [itemsState, setItemsState] = useState({});
+  const [itemsState, setItemsState] = useState(() => {
+    const init = {};
+    (products || []).forEach((p) => {
+      const customPrice = getClientProductPrice(initialClientId, p.id, p.defaultPrice);
+      init[p.id] = { weight: '', price: customPrice };
+    });
+    return init;
+  });
 
   // Modals
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
@@ -116,23 +123,35 @@ export function InvoiceBuilder({
   }, [editingInvoice, clients, products]);
 
   const handleWeightChange = (productId, newWeight) => {
-    setItemsState((prev) => ({
-      ...prev,
-      [productId]: {
-        ...prev[productId],
-        weight: newWeight,
-      },
-    }));
+    setItemsState((prev) => {
+      const prod = products.find((p) => p.id === productId);
+      const defaultPrice = prod ? prod.defaultPrice : 0;
+      const currentPrice =
+        prev[productId]?.price !== undefined && prev[productId]?.price !== ''
+          ? prev[productId].price
+          : getClientProductPrice(selectedClientId, productId, defaultPrice);
+
+      return {
+        ...prev,
+        [productId]: {
+          weight: newWeight,
+          price: currentPrice,
+        },
+      };
+    });
   };
 
   const handlePriceChange = (productId, newPrice) => {
-    setItemsState((prev) => ({
-      ...prev,
-      [productId]: {
-        ...prev[productId],
-        price: newPrice,
-      },
-    }));
+    setItemsState((prev) => {
+      const currentWeight = prev[productId]?.weight !== undefined ? prev[productId].weight : '';
+      return {
+        ...prev,
+        [productId]: {
+          weight: currentWeight,
+          price: newPrice,
+        },
+      };
+    });
 
     if (selectedClientId) {
       saveClientProductPrice(selectedClientId, productId, Number(newPrice) || 0);
@@ -215,7 +234,8 @@ export function InvoiceBuilder({
 
   const handleSaveAndGenerate = () => {
     if (activeItems.length === 0) {
-      alert('الرجاء إدخال وزن منتوج واحد على الأقل لحفظ الفاتورة.');
+      playHapticSound('error');
+      alert('⚠️ يرجى إدخال وزن منتوج واحد على الأقل (مثلاً بالضغط على +1kg أو كتابة الوزن) لحفظ وطباعة الفاتورة.');
       return;
     }
 
@@ -486,7 +506,7 @@ export function InvoiceBuilder({
           </div>
 
           {/* Step 1 Bottom Action Bar */}
-          <div className="fixed bottom-16 sm:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 md:py-4">
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-4">
             <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               <div className="text-right min-w-0">
                 <span className="text-[11px] font-bold text-slate-400 block">الزبون المختار:</span>
@@ -629,7 +649,7 @@ export function InvoiceBuilder({
           </div>
 
           {/* Step 2 Bottom Action Bar */}
-          <div className="fixed bottom-16 sm:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 md:py-4">
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:py-4">
             <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               <button
                 type="button"
@@ -707,6 +727,29 @@ export function InvoiceBuilder({
             ) : (
               <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                 الخطوة 3: السلع
+              </span>
+            )}
+          </div>
+
+          {/* Step 3 Helper Guide Banner */}
+          <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0">
+                3
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-xs sm:text-sm font-black text-emerald-950 truncate">
+                  الخطوة 3: تحديد السلع والكميات بالكيلوغرام (kg)
+                </h3>
+                <p className="text-[11px] text-emerald-800 font-medium">
+                  استعمل أزرار (+1kg / +5kg) أو اكتب الوزن مباشرة في خانة كل سلعة، ثم اضغط على حفظ وطباعة الفاتورة بالأسفل.
+                </p>
+              </div>
+            </div>
+
+            {activeItems.length > 0 && (
+              <span className="text-xs font-black text-emerald-800 bg-white px-2.5 py-1 rounded-xl border border-emerald-200 shrink-0 font-mono tabular-nums">
+                {activeItems.length} سلع مختارة
               </span>
             )}
           </div>
@@ -807,8 +850,8 @@ export function InvoiceBuilder({
             )}
           </div>
 
-          {/* Floating Bottom Checkout Bar (Above Nav on mobile, docked on desktop) */}
-          <div className="floating-checkout fixed bottom-16 sm:bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-800 shadow-2xl p-3 sm:p-4 md:py-4">
+          {/* Floating Bottom Checkout Bar (Docked cleanly at bottom with safe-area padding) */}
+          <div className="floating-checkout fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-800 shadow-2xl p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4 md:py-4">
             <div className="max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto flex items-center justify-between gap-3">
               {/* Grand Total */}
               <div className="text-right">
@@ -825,19 +868,22 @@ export function InvoiceBuilder({
                 </div>
               </div>
 
-              {/* Primary Save & Print CTA */}
+              {/* Primary Save & Print CTA - Always active & interactive */}
               <button
                 type="button"
                 onClick={handleSaveAndGenerate}
-                disabled={activeItems.length === 0}
-                className={`h-13 sm:h-14 px-5 sm:px-7 rounded-xl font-black text-base sm:text-lg flex items-center gap-2 shadow-md transition-all active:scale-95 select-none ${
+                className={`h-13 sm:h-14 px-5 sm:px-7 rounded-xl font-black text-base sm:text-lg flex items-center gap-2 shadow-md transition-all active:scale-95 select-none cursor-pointer ${
                   activeItems.length > 0
-                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer ring-2 ring-emerald-400/40'
-                    : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white ring-2 ring-emerald-400/50 shadow-emerald-900/30'
+                    : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30'
                 }`}
               >
-                <Printer className="w-5 h-5" />
-                <span>حفظ وطباعة الفاتورة</span>
+                <Printer className="w-5 h-5 shrink-0" />
+                <span>
+                  {activeItems.length > 0
+                    ? 'حفظ وطباعة الفاتورة'
+                    : 'أدخل أوزان السلع للحفظ والطباعة ✍️'}
+                </span>
               </button>
             </div>
           </div>

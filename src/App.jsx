@@ -472,29 +472,31 @@ export function App() {
         )}
       </main>
 
-      {/* Fixed Bottom Navigation (4 Large Thumb-Accessible Tabs) - Hidden during print */}
-      <BottomNav
-        activeTab={activeTab}
-        isBuildingInvoice={isBuildingInvoice}
-        setActiveTab={(tab) => {
-          if (tab === 'builder') {
-            if (activeTab === 'builder' && !isBuildingInvoice) {
-              // Clicking "فاتورة جديدة" from dashboard opens the steps!
-              setIsBuildingInvoice(true);
-            } else if (activeTab !== 'builder') {
-              // Clicking from another tab opens the steps!
-              setPreselectedClientId(null);
-              setEditingInvoice(null);
-              setIsBuildingInvoice(true);
+      {/* Fixed Bottom Navigation (4 Large Thumb-Accessible Tabs) - Hidden during print and during invoice wizard */}
+      {!isBuildingInvoice && (
+        <BottomNav
+          activeTab={activeTab}
+          isBuildingInvoice={isBuildingInvoice}
+          setActiveTab={(tab) => {
+            if (tab === 'builder') {
+              if (activeTab === 'builder' && !isBuildingInvoice) {
+                // Clicking "فاتورة جديدة" from dashboard opens the steps!
+                setIsBuildingInvoice(true);
+              } else if (activeTab !== 'builder') {
+                // Clicking from another tab opens the steps!
+                setPreselectedClientId(null);
+                setEditingInvoice(null);
+                setIsBuildingInvoice(true);
+              }
+            } else {
+              setIsBuildingInvoice(false);
             }
-          } else {
-            setIsBuildingInvoice(false);
-          }
-          setActiveTab(tab);
-        }}
-        invoicesCount={invoices.length}
-        clientsCount={clients.length}
-      />
+            setActiveTab(tab);
+          }}
+          invoicesCount={invoices.length}
+          clientsCount={clients.length}
+        />
+      )}
 
       {/* Official A4 / Receipt Print Modal - Rendered outside main so print isolates this exactly */}
       {invoiceToPrint && (

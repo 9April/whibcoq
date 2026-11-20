@@ -2,6 +2,15 @@ import React, { useRef } from 'react';
 import { Check, Plus, Minus, X } from 'lucide-react';
 import { formatDh, playHapticSound } from '../utils/storage';
 
+// Normalize Arabic/Persian digits and comma decimal separators
+function normalizeDecimalInput(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632))
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1776))
+    .replace(/[,،]/g, '.');
+}
+
 export function ProductRow({
   product,
   weight,
@@ -20,7 +29,7 @@ export function ProductRow({
   const handleWeightStep = (delta) => {
     playHapticSound('tap');
     const next = Math.max(0, Math.round((numWeight + delta) * 10) / 10);
-    onWeightChange(product.id, next);
+    onWeightChange(product.id, next === 0 ? '' : next);
   };
 
   const handlePriceStep = (delta) => {
@@ -31,14 +40,14 @@ export function ProductRow({
 
   const handleClear = () => {
     playHapticSound('tap');
-    onWeightChange(product.id, 0);
+    onWeightChange(product.id, '');
   };
 
   return (
     <div
       className={`bg-white rounded-2xl border transition-all duration-150 p-3 sm:p-4 shadow-sm flex flex-col gap-2.5 ${
         isActive
-          ? 'border-emerald-600 ring-1 ring-emerald-600/20 bg-emerald-50/20'
+          ? 'border-emerald-600 ring-2 ring-emerald-600/20 bg-emerald-50/20'
           : 'border-slate-200 hover:border-slate-300'
       }`}
     >
@@ -70,7 +79,7 @@ export function ProductRow({
               <button
                 type="button"
                 onClick={handleClear}
-                className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors active:scale-95"
+                className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors active:scale-95 cursor-pointer"
                 title="إلغاء الكمية"
               >
                 <X className="w-4 h-4" />
@@ -102,7 +111,7 @@ export function ProductRow({
             <button
               type="button"
               onClick={() => handleWeightStep(-1)}
-              className="absolute right-1 w-9 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10"
+              className="absolute right-1 w-9 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10 cursor-pointer"
               aria-label="إنقاص 1 kg"
             >
               <Minus className="w-4 h-4 stroke-[2.5]" />
@@ -113,12 +122,11 @@ export function ProductRow({
               ref={weightInputRef}
               type="text"
               inputMode="decimal"
-              pattern="[0-9]*[.,]?[0-9]*"
               value={weight === 0 || weight === '' ? '' : weight}
               placeholder="0.0"
               onFocus={(e) => e.target.select()}
               onChange={(e) => {
-                const val = e.target.value.replace(',', '.');
+                const val = normalizeDecimalInput(e.target.value);
                 if (/^\d*\.?\d*$/.test(val)) {
                   onWeightChange(product.id, val);
                 }
@@ -134,11 +142,25 @@ export function ProductRow({
             <button
               type="button"
               onClick={() => handleWeightStep(1)}
-              className="absolute left-1 w-9 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10"
+              className="absolute left-1 w-9 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10 cursor-pointer"
               aria-label="زيادة 1 kg"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
             </button>
+          </div>
+
+          {/* Quick Add Chips: +1, +5, +10 */}
+          <div className="flex items-center gap-1 mt-1 justify-center">
+            {[1, 5, 10].map((step) => (
+              <button
+                key={step}
+                type="button"
+                onClick={() => handleWeightStep(step)}
+                className="flex-1 py-1 px-1 rounded-lg text-[10px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 active:scale-95 transition-all border border-slate-200 cursor-pointer tabular-nums"
+              >
+                +{step}kg
+              </button>
+            ))}
           </div>
         </div>
 
@@ -154,7 +176,7 @@ export function ProductRow({
             <button
               type="button"
               onClick={() => handlePriceStep(-1)}
-              className="absolute right-1 w-9 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10"
+              className="absolute right-1 w-9 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10 cursor-pointer"
               aria-label="إنقاص درهم"
             >
               <Minus className="w-4 h-4 stroke-[2.5]" />
@@ -165,12 +187,11 @@ export function ProductRow({
               ref={priceInputRef}
               type="text"
               inputMode="decimal"
-              pattern="[0-9]*[.,]?[0-9]*"
               value={price === 0 || price === '' ? '' : price}
               placeholder="0.0"
               onFocus={(e) => e.target.select()}
               onChange={(e) => {
-                const val = e.target.value.replace(',', '.');
+                const val = normalizeDecimalInput(e.target.value);
                 if (/^\d*\.?\d*$/.test(val)) {
                   onPriceChange(product.id, val);
                 }
@@ -182,10 +203,35 @@ export function ProductRow({
             <button
               type="button"
               onClick={() => handlePriceStep(1)}
-              className="absolute left-1 w-9 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10"
+              className="absolute left-1 w-9 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold flex items-center justify-center active:scale-95 transition-all text-base z-10 cursor-pointer"
               aria-label="زيادة درهم"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
+            </button>
+          </div>
+
+          {/* Quick Price Adjust Chips: -1, +1, +5 */}
+          <div className="flex items-center gap-1 mt-1 justify-center">
+            <button
+              type="button"
+              onClick={() => handlePriceStep(-1)}
+              className="flex-1 py-1 px-1 rounded-lg text-[10px] font-bold font-mono bg-slate-100 hover:bg-slate-200 text-slate-600 active:scale-95 transition-all border border-slate-200 cursor-pointer tabular-nums"
+            >
+              -1د.م
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePriceStep(1)}
+              className="flex-1 py-1 px-1 rounded-lg text-[10px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 active:scale-95 transition-all border border-slate-200 cursor-pointer tabular-nums"
+            >
+              +1د.م
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePriceStep(5)}
+              className="flex-1 py-1 px-1 rounded-lg text-[10px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 active:scale-95 transition-all border border-slate-200 cursor-pointer tabular-nums"
+            >
+              +5د.م
             </button>
           </div>
         </div>
