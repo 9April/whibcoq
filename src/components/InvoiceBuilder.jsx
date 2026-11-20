@@ -16,6 +16,7 @@ import {
   Clock,
   Sparkles,
   X,
+  Plus,
 } from 'lucide-react';
 import { INITIAL_PRODUCTS, BUSINESS_INFO } from '../data/initialData';
 import { ProductRow } from './ProductRow';
