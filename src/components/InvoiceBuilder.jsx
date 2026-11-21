@@ -86,8 +86,11 @@ export function InvoiceBuilder({
   const [itemsState, setItemsState] = useState(() => {
     const init = {};
     (products || []).forEach((p) => {
-      const customPrice = getClientProductPrice(initialClientId, p.id, p.defaultPrice);
-      init[p.id] = { weight: '', price: customPrice };
+      const customPrice = getClientProductPrice(initialClientId, p.id, '');
+      init[p.id] = {
+        weight: '',
+        price: customPrice !== undefined && customPrice !== null && customPrice !== '' ? customPrice : '',
+      };
     });
     return init;
   });
@@ -115,10 +118,15 @@ export function InvoiceBuilder({
     setItemsState((prev) => {
       const next = { ...prev };
       products.forEach((p) => {
-        const customPrice = getClientProductPrice(selectedClientId, p.id, p.defaultPrice);
+        const customPrice = getClientProductPrice(selectedClientId, p.id, '');
         next[p.id] = {
           weight: prev[p.id]?.weight || '',
-          price: prev[p.id]?.price !== undefined && prev[p.id]?.price !== '' ? prev[p.id].price : customPrice,
+          price:
+            prev[p.id]?.price !== undefined && prev[p.id]?.price !== ''
+              ? prev[p.id].price
+              : customPrice !== undefined && customPrice !== null && customPrice !== ''
+              ? customPrice
+              : '',
         };
       });
       return next;
@@ -138,9 +146,10 @@ export function InvoiceBuilder({
       const newState = {};
       products.forEach((p) => {
         const found = editingInvoice.items?.find((i) => i.productId === p.id);
+        const savedPrice = getClientProductPrice(editingInvoice.clientId, p.id, '');
         newState[p.id] = {
           weight: found ? found.weight : '',
-          price: found ? found.price : p.defaultPrice,
+          price: found && found.price !== undefined && found.price !== '' ? found.price : (savedPrice || ''),
         };
       });
       setItemsState(newState);
@@ -195,12 +204,10 @@ export function InvoiceBuilder({
 
   const handleWeightChange = (productId, newWeight) => {
     setItemsState((prev) => {
-      const prod = products.find((p) => p.id === productId);
-      const defaultPrice = prod ? prod.defaultPrice : 0;
       const currentPrice =
         prev[productId]?.price !== undefined && prev[productId]?.price !== ''
           ? prev[productId].price
-          : getClientProductPrice(selectedClientId, productId, defaultPrice);
+          : (getClientProductPrice(selectedClientId, productId, '') || '');
 
       return {
         ...prev,
@@ -224,8 +231,12 @@ export function InvoiceBuilder({
       };
     });
 
-    if (selectedClientId) {
-      saveClientProductPrice(selectedClientId, productId, Number(newPrice) || 0);
+    if (newPrice !== '' && !isNaN(Number(newPrice)) && Number(newPrice) > 0) {
+      const val = Number(newPrice);
+      if (selectedClientId) {
+        saveClientProductPrice(selectedClientId, productId, val);
+      }
+      saveClientProductPrice('default', productId, val);
     }
   };
 
@@ -248,10 +259,17 @@ export function InvoiceBuilder({
     }
     const created = updated?.find((p) => p.name === clean) || updated?.[updated.length - 1];
     if (created) {
+      const priceVal = priceNum > 0 ? priceNum : '';
       setItemsState((prev) => ({
         ...prev,
-        [created.id]: { weight: '', price: priceNum },
+        [created.id]: { weight: '', price: priceVal },
       }));
+      if (priceNum > 0) {
+        if (selectedClientId) {
+          saveClientProductPrice(selectedClientId, created.id, priceNum);
+        }
+        saveClientProductPrice('default', created.id, priceNum);
+      }
     }
     setNewProdName('');
     setNewProdPrice('');
@@ -262,7 +280,7 @@ export function InvoiceBuilder({
   // Active items calculation
   const activeItems = products
     .map((p) => {
-      const item = itemsState[p.id] || { weight: '', price: p.defaultPrice };
+      const item = itemsState[p.id] || { weight: '', price: '' };
       const weight = parseFloat(item.weight) || 0;
       const price = parseFloat(item.price) || 0;
       return {
@@ -301,8 +319,11 @@ export function InvoiceBuilder({
     playHapticSound('tap');
     const reset = {};
     products.forEach((p) => {
-      const customPrice = getClientProductPrice(selectedClientId, p.id, p.defaultPrice);
-      reset[p.id] = { weight: '', price: customPrice };
+      const savedPrice = getClientProductPrice(selectedClientId, p.id, '');
+      reset[p.id] = {
+        weight: '',
+        price: savedPrice !== undefined && savedPrice !== null && savedPrice !== '' ? savedPrice : '',
+      };
     });
     setItemsState(reset);
     setFilterMode('all');
@@ -405,13 +426,27 @@ export function InvoiceBuilder({
       invoice: invObj,
     });
 
+    // Save all active item prices so they are remembered for next times
+    activeItems.forEach((it) => {
+      if (it.price && Number(it.price) > 0) {
+        if (selectedClientId) {
+          saveClientProductPrice(selectedClientId, it.productId, Number(it.price));
+        }
+        saveClientProductPrice('default', it.productId, Number(it.price));
+      }
+    });
+
     // 4. Auto-increment to the next free invoice number & reset builder to clean state
     const updatedInvoices = [...invoices.filter((i) => i.id !== invObj.id), invObj];
     setInvoiceNumber(getNextInvoiceNumber(updatedInvoices));
 
     const reset = {};
     products.forEach((p) => {
-      reset[p.id] = { weight: '', price: p.defaultPrice };
+      const savedPrice = getClientProductPrice(selectedClientId, p.id, '');
+      reset[p.id] = {
+        weight: '',
+        price: savedPrice !== undefined && savedPrice !== null && savedPrice !== '' ? savedPrice : '',
+      };
     });
     setItemsState(reset);
     setFilterMode('all');
@@ -435,7 +470,11 @@ export function InvoiceBuilder({
     playHapticSound('tap');
     const reset = {};
     products.forEach((p) => {
-      reset[p.id] = { weight: '', price: p.defaultPrice };
+      const savedPrice = getClientProductPrice(selectedClientId, p.id, '');
+      reset[p.id] = {
+        weight: '',
+        price: savedPrice !== undefined && savedPrice !== null && savedPrice !== '' ? savedPrice : '',
+      };
     });
     setItemsState(reset);
     setFilterMode('all');
@@ -946,7 +985,7 @@ export function InvoiceBuilder({
             <div className="flex flex-col gap-3 sm:gap-3.5 w-full">
               {displayedProducts.length > 0 ? (
                 displayedProducts.map((product) => {
-                  const currentItem = itemsState[product.id] || { weight: '', price: product.defaultPrice };
+                  const currentItem = itemsState[product.id] || { weight: '', price: '' };
                   return (
                     <ProductRow
                       key={product.id}

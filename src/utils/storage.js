@@ -557,13 +557,21 @@ export const isInvoiceNumberTaken = (number, currentEditingId, invoices = getSto
 };
 
 // Remember custom price per client/product
-export const getClientProductPrice = (clientId, productId, defaultPrice) => {
+export const getClientProductPrice = (clientId, productId, defaultPrice = '') => {
   try {
     const raw = localStorage.getItem(CLIENT_PRICES_KEY);
     if (!raw) return defaultPrice;
     const prices = JSON.parse(raw);
     const key = `${clientId || 'default'}_${productId}`;
-    return prices[key] !== undefined ? Number(prices[key]) : defaultPrice;
+    if (prices[key] !== undefined && prices[key] !== null && prices[key] !== '') {
+      return Number(prices[key]);
+    }
+    // Also check generic default key if client-specific is not set
+    const fallbackKey = `default_${productId}`;
+    if (prices[fallbackKey] !== undefined && prices[fallbackKey] !== null && prices[fallbackKey] !== '') {
+      return Number(prices[fallbackKey]);
+    }
+    return defaultPrice;
   } catch (e) {
     return defaultPrice;
   }
@@ -574,13 +582,24 @@ export const saveClientProductPrice = (clientId, productId, price) => {
     const raw = localStorage.getItem(CLIENT_PRICES_KEY);
     const prices = raw ? JSON.parse(raw) : {};
     const key = `${clientId || 'default'}_${productId}`;
-    prices[key] = Number(price);
+    const fallbackKey = `default_${productId}`;
+
+    if (price === '' || price === null || price === undefined || isNaN(Number(price))) {
+      delete prices[key];
+    } else {
+      const numVal = Number(price);
+      prices[key] = numVal;
+      // Also remember this price as default for next times
+      prices[fallbackKey] = numVal;
+    }
     localStorage.setItem(CLIENT_PRICES_KEY, JSON.stringify(prices));
 
     // Background MySQL sync
-    apiSavePrice(clientId || 'default', productId, price).catch((e) =>
-      console.warn('MySQL price sync pending offline:', e)
-    );
+    if (price !== '' && price !== null && price !== undefined && !isNaN(Number(price))) {
+      apiSavePrice(clientId || 'default', productId, Number(price)).catch((e) =>
+        console.warn('MySQL price sync pending offline:', e)
+      );
+    }
   } catch (e) { }
 };
 
