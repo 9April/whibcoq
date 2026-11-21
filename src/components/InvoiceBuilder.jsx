@@ -1401,14 +1401,14 @@ export function InvoiceBuilder({
             {/* Action Buttons Below Invoice */}
             <div className="no-print flex flex-col gap-3 max-w-[144mm] mx-auto w-full pt-2">
               {/* Row 1: Two Main Action Buttons side-by-side */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full">
                 {/* 1. Print */}
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="h-13 px-5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                  className="w-full h-16 min-h-[60px] py-4 px-6 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-base sm:text-lg flex items-center justify-center gap-3 shadow-lg hover:shadow-xl active:scale-95 transition-all cursor-pointer"
                 >
-                  <Printer className="w-5 h-5 shrink-0" />
+                  <Printer className="w-6 h-6 shrink-0 stroke-[2.5]" />
                   <span className="whitespace-nowrap">طباعة الفاتورة</span>
                 </button>
 
@@ -1417,16 +1417,16 @@ export function InvoiceBuilder({
                   type="button"
                   onClick={handleSaveInvoiceAction}
                   disabled={isSavingPdf}
-                  className="h-13 px-5 rounded-2xl bg-softgreen-600 hover:bg-softgreen-700 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-60"
+                  className="w-full h-16 min-h-[60px] py-4 px-6 rounded-2xl bg-softgreen-600 hover:bg-softgreen-700 text-white font-black text-base sm:text-lg flex items-center justify-center gap-3 shadow-lg shadow-softgreen-600/25 hover:shadow-xl active:scale-95 transition-all cursor-pointer disabled:opacity-60"
                 >
                   {isSavingPdf ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0" />
+                      <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin shrink-0" />
                       <span className="whitespace-nowrap">جاري تحميل الفاتورة PDF...</span>
                     </>
                   ) : (
                     <>
-                      <Check className="w-5 h-5 stroke-[2.5] shrink-0" />
+                      <Check className="w-6 h-6 stroke-[3] shrink-0" />
                       <span className="whitespace-nowrap">حفظ وتحميل الفاتورة PDF</span>
                     </>
                   )}
@@ -1437,9 +1437,9 @@ export function InvoiceBuilder({
               <button
                 type="button"
                 onClick={handleStartNewInvoice}
-                className="w-full h-12 px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center gap-2 border border-slate-200 shadow-xs active:scale-95 transition-all cursor-pointer"
+                className="w-full h-14 min-h-[52px] px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 border border-slate-300 shadow-xs active:scale-95 transition-all cursor-pointer"
               >
-                <RotateCcw className="w-4 h-4 shrink-0 text-slate-500" />
+                <RotateCcw className="w-5 h-5 shrink-0 text-slate-500" />
                 <span className="whitespace-nowrap">فاتورة جديدة (البدء من جديد)</span>
               </button>
 

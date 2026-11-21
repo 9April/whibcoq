@@ -42,6 +42,12 @@ export default {
           ruby: '#ef4444'
         }
       },
+      spacing: {
+        '13': '3.25rem',
+        '14': '3.5rem',
+        '15': '3.75rem',
+        '16': '4rem',
+      },
       fontFamily: {
         arabic: ['Cairo', 'Tajawal', 'IBM Plex Sans Arabic', 'Segoe UI', 'sans-serif'],
         mono: ['Inter', 'Cairo', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
