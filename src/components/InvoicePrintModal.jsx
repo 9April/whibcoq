@@ -247,7 +247,7 @@ export function InvoicePrintModal({
               {/* Main Title & Date Line */}
               <div className="pt-3 pb-2 flex items-baseline justify-between border-b border-slate-100">
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-wide">
-                  فاتورة / INVOICE
+                  فاتورة
                 </h2>
                 <div className="text-xs sm:text-sm font-bold text-slate-600">
                   <span className="text-slate-400 ml-1">التاريخ :</span>
@@ -260,7 +260,7 @@ export function InvoicePrintModal({
                 {/* Billed to */}
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    فاتورة إلى (Billed to):
+                    فاتورة إلى:
                   </span>
                   <span className="text-sm font-black text-slate-900">
                     {invoice.clientName}
@@ -280,7 +280,7 @@ export function InvoicePrintModal({
                 {/* From */}
                 <div className="flex flex-col gap-0.5 text-left" dir="ltr">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    من طرف (From):
+                    من طرف:
                   </span>
                   <span className="text-sm font-black text-slate-900">
                     {businessInfo.name || 'WAHIB COQ'}
@@ -301,10 +301,10 @@ export function InvoicePrintModal({
               <table className="print-table w-full text-right border-collapse my-3">
                 <thead>
                   <tr className="bg-[#E5E7EB] text-slate-800 text-xs font-black">
-                    <th className="py-2 px-2.5 text-right">المنتوج (Item)</th>
-                    <th className="py-2 px-2.5 text-center w-24">الوزن (Kg)</th>
-                    <th className="py-2 px-2.5 text-center w-24">الثمن (Dh)</th>
-                    <th className="py-2 px-2.5 text-left w-28">المجموع (Amount)</th>
+                    <th className="py-2 px-2.5 text-right">المنتوج</th>
+                    <th className="py-2 px-2.5 text-center w-24">الوزن (كلغ)</th>
+                    <th className="py-2 px-2.5 text-center w-24">الثمن (درهم)</th>
+                    <th className="py-2 px-2.5 text-left w-28">المجموع</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
@@ -336,7 +336,7 @@ export function InvoicePrintModal({
                 <tfoot>
                   <tr className="border-t-2 border-b-2 border-slate-300 font-black text-xs sm:text-sm bg-slate-50/60">
                     <td className="py-2.5 px-2.5 text-slate-900">
-                      المجموع الكلي (Total)
+                      المجموع الكلي
                     </td>
                     <td className="py-2.5 px-2.5 text-center font-mono font-black text-slate-900 tabular-nums">
                       {formatKg(invoice.totalWeight)}
