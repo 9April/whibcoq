@@ -1,20 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, UserPlus, Phone, User, Check, Tag, Sparkles, MapPin } from 'lucide-react';
-import { playHapticSound, getStoredClientCategories, saveCustomClientCategory } from '../utils/storage';
+import React, { useState } from 'react';
+import { X, UserPlus, Phone, User, Check, MapPin } from 'lucide-react';
+import { playHapticSound } from '../utils/storage';
 
 export function ClientModal({ isOpen, onClose, onAddClient }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [category, setCategory] = useState('مطعم');
-  const [categoriesList, setCategoriesList] = useState(() => getStoredClientCategories());
-  const customInputRef = useRef(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      setCategoriesList(getStoredClientCategories());
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -23,41 +14,19 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
     if (!name.trim()) return;
 
     playHapticSound('success');
-    const cleanCategory = category.trim() || 'عام';
-
-    // Persist new category as a suggestion if provided
-    if (cleanCategory && cleanCategory !== 'عام') {
-      const updatedCats = saveCustomClientCategory(cleanCategory);
-      setCategoriesList(updatedCats);
-    }
 
     const newClient = {
       id: 'c_' + Date.now(),
       name: name.trim(),
       phone: phone.trim(),
       address: address.trim(),
-      category: cleanCategory,
     };
 
     onAddClient(newClient);
     setName('');
     setPhone('');
     setAddress('');
-    setCategory('مطعم');
     onClose();
-  };
-
-  const handleSelectPreset = (cat) => {
-    playHapticSound('tap');
-    setCategory(cat);
-  };
-
-  const handleSelectOther = () => {
-    playHapticSound('tap');
-    setCategory('');
-    setTimeout(() => {
-      customInputRef.current?.focus();
-    }, 50);
   };
 
   return (
@@ -90,7 +59,7 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
           </button>
         </div>
 
-        {/* Form */}
+        {/* Form: 3 Clean Fields */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
           {/* 1. Client Name (Required) */}
           <div className="flex flex-col gap-1">
@@ -139,39 +108,6 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
               placeholder="مثال: حي السلام، شارع محمد الخامس..."
               className="w-full h-12 px-4 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all"
             />
-          </div>
-
-          {/* Activity Category */}
-          <div className="flex flex-col gap-1.5 pt-1">
-            <label className="text-xs font-bold text-slate-600 flex items-center justify-between">
-              <span className="flex items-center gap-1">
-                <Tag className="w-3.5 h-3.5 text-slate-400" />
-                <span>النشاط:</span>
-              </span>
-              <span className="text-[10px] text-slate-400">
-                (اختياري)
-              </span>
-            </label>
-
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {categoriesList.slice(0, 5).map((cat) => {
-                const isSelected = category.trim() === cat;
-                return (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => handleSelectPreset(cat)}
-                    className={`px-2.5 py-1 rounded-lg border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
-                      isSelected
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           {/* Submit Button */}

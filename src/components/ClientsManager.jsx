@@ -49,7 +49,7 @@ export function ClientsManager({
   // Edit Client Form State
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editCategory, setEditCategory] = useState('');
+  const [editAddress, setEditAddress] = useState('');
 
   // Calculate purchases per client from invoices
   const clientStats = React.useMemo(() => {
@@ -105,7 +105,7 @@ export function ClientsManager({
     setEditingClient(client);
     setEditName(client.name);
     setEditPhone(client.phone || '');
-    setEditCategory(client.category || 'عام');
+    setEditAddress(client.address || '');
   };
 
   const handleSaveEdit = (e) => {
@@ -113,16 +113,12 @@ export function ClientsManager({
     if (!editName.trim() || !editingClient) return;
 
     playHapticSound('success');
-    const cleanCategory = editCategory.trim() || 'عام';
-    if (cleanCategory && cleanCategory !== 'عام') {
-      saveCustomClientCategory(cleanCategory);
-    }
 
     const updated = {
       ...editingClient,
       name: editName.trim(),
       phone: editPhone.trim(),
-      category: cleanCategory,
+      address: editAddress.trim(),
     };
 
     onUpdateClient(updated);
@@ -186,7 +182,7 @@ export function ClientsManager({
               setIsDropdownOpen(true);
             }}
             onFocus={() => setIsDropdownOpen(true)}
-            placeholder="بحث عن زبون بالاسم، الهاتف، أو نوع النشاط..."
+            placeholder="بحث عن زبون بالاسم أو الهاتف..."
             dir={/^[0-9+]/.test(searchTerm.trim()) ? 'ltr' : 'rtl'}
             className={`w-full h-11 pr-10 pl-9 bg-slate-50 border border-slate-200 focus:border-emerald-600 focus:bg-white rounded-xl text-xs font-bold text-slate-900 outline-none transition-all ${
               /^[0-9+]/.test(searchTerm.trim()) ? 'text-left font-mono tracking-wider' : 'text-right'
@@ -501,43 +497,14 @@ export function ClientsManager({
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">نوع النشاط التجاري</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    list="edit-client-categories-suggestions"
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
-                    placeholder="مثال: مطعم، سناك، شواية، جزار، فندق..."
-                    className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 outline-none focus:border-emerald-600"
-                  />
-                  <datalist id="edit-client-categories-suggestions">
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat} />
-                    ))}
-                  </datalist>
-                </div>
-
-                {/* Suggestions pills */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-2">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => {
-                        playHapticSound('tap');
-                        setEditCategory(cat);
-                      }}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer active:scale-95 ${
-                        editCategory.trim() === cat
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">العنوان (اختياري)</label>
+                <input
+                  type="text"
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                  placeholder="مثال: حي السلام، شارع محمد الخامس..."
+                  className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 outline-none focus:border-emerald-600"
+                />
               </div>
 
               <button
@@ -582,12 +549,14 @@ export function ClientsManager({
                   {clientToDelete.name}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-medium">نوع النشاط / الفئة:</span>
-                <span className="font-bold text-slate-700">
-                  {clientToDelete.category || 'زبون تجاري'}
-                </span>
-              </div>
+              {clientToDelete.address && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium">العنوان:</span>
+                  <span className="font-bold text-slate-700">
+                    {clientToDelete.address}
+                  </span>
+                </div>
+              )}
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-500 font-medium">رقم الهاتف:</span>
                 <span className="font-mono text-slate-700" dir="ltr">

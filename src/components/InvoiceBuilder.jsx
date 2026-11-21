@@ -378,7 +378,7 @@ export function InvoiceBuilder({
     return (
       (c.name && c.name.toLowerCase().includes(term)) ||
       (c.phone && c.phone.includes(term)) ||
-      (c.category && c.category.toLowerCase().includes(term))
+      (c.address && c.address.toLowerCase().includes(term))
     );
   });
 
@@ -653,11 +653,6 @@ export function InvoiceBuilder({
                         <span className="font-black text-sm text-slate-900 block truncate">
                           {client.name}
                         </span>
-                        {client.category && (
-                          <span className="text-[10px] font-bold text-slate-500 block mt-0.5">
-                            {client.category}
-                          </span>
-                        )}
                       </div>
 
                       {isSelected ? (
