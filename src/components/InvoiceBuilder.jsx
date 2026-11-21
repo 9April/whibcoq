@@ -686,7 +686,7 @@ export function InvoiceBuilder({
             {/* Invoice Number Input */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
-                <span>رقم الفاتورة (N° de Facture)</span>
+                <span>رقم الفاتورة</span>
                 <span className="text-[10px] text-slate-400 font-mono">تلقائي +1</span>
               </label>
               <div className="relative">
@@ -700,7 +700,7 @@ export function InvoiceBuilder({
                   placeholder="000001"
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
-                  #NO
+                  #
                 </span>
               </div>
             </div>
@@ -708,7 +708,7 @@ export function InvoiceBuilder({
             {/* Invoice Date Picker */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold text-slate-700">
-                <span>تاريخ الفاتورة (Date)</span>
+                <span>تاريخ الفاتورة</span>
               </label>
               <input
                 type="date"
