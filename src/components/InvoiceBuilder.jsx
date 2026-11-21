@@ -62,9 +62,8 @@ export function InvoiceBuilder({
 }) {
   const businessInfo = getBusinessInfo();
 
-  // Step Unlocking State (Progressive Disclosure on the same scrollable page)
-  const [step2Unlocked, setStep2Unlocked] = useState(() => Boolean(initialClientId || editingInvoice));
-  const [activeSection, setActiveSection] = useState('step1');
+  // Focused Step State: 1 (Client & Date) | 2 (Products & Weights) | 3 (Invoice Preview & Actions)
+  const [activeStep, setActiveStep] = useState(editingInvoice ? 2 : 1);
 
   // Step 1: Client, Auto-Incremented Invoice #, and Date
   const [selectedClientId, setSelectedClientId] = useState(initialClientId || '');
@@ -154,39 +153,15 @@ export function InvoiceBuilder({
       });
       setItemsState(newState);
       setFilterMode('active');
-      setStep2Unlocked(true);
+      setActiveStep(2);
     }
   }, [editingInvoice, clients, products]);
 
-  // Scroll spy to highlight active section in the sticky top progress bar
-  useEffect(() => {
-    const handleScroll = () => {
-      const s1 = document.getElementById('section-step-1');
-      const s2 = document.getElementById('section-step-2');
-      const s3 = document.getElementById('section-step-3');
-      const scrollPos = window.scrollY + 220;
-
-      if (s3 && scrollPos >= s3.offsetTop) {
-        setActiveSection('step3');
-      } else if (s2 && scrollPos >= s2.offsetTop) {
-        setActiveSection('step2');
-      } else {
-        setActiveSection('step1');
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const scrollToSection = (id) => {
+  // Navigate to a specific step and scroll to top smoothly
+  const goToStep = (stepNumber) => {
     playHapticSound('tap');
-    const element = document.getElementById(id);
-    if (element) {
-      const yOffset = -90; // offset for sticky header
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
+    setActiveStep(stepNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Invoice Number validation
@@ -451,8 +426,8 @@ export function InvoiceBuilder({
     setItemsState(reset);
     setFilterMode('all');
 
-    // Smoothly scroll back to top of Step 1
-    scrollToSection('section-step-1');
+    // Return to Step 1 in clean state
+    goToStep(1);
   };
 
   // Direct Print
@@ -482,7 +457,7 @@ export function InvoiceBuilder({
     setPaymentMethod('نقداً');
     setInvoiceDate(new Date().toISOString().split('T')[0]);
     if (onCancelEdit) onCancelEdit();
-    scrollToSection('section-step-1');
+    goToStep(1);
   };
 
   // Filter clients list for Step 1
@@ -508,26 +483,26 @@ export function InvoiceBuilder({
   return (
     <div className="flex flex-col gap-6 animate-fadeIn" dir="rtl">
       {/* ============================================================== */}
-      {/* STICKY TOP PROGRESS INDICATOR (Anchored Smooth Scroll Nav)     */}
+      {/* STICKY TOP PROGRESS INDICATOR (Focused Step Navigation)        */}
       {/* ============================================================== */}
       <div className="no-print sticky top-12 z-20 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xs p-2">
         <div className="grid grid-cols-3 gap-1.5 text-center">
           {/* Step 1 Pill */}
           <button
             type="button"
-            onClick={() => scrollToSection('section-step-1')}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeSection === 'step1'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : selectedClientId
-                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                : 'bg-slate-100 text-slate-700'
-              }`}
+            onClick={() => goToStep(1)}
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              activeStep === 1
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200'
+            }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeSection === 'step1' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
-                }`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
+                activeStep === 1 ? 'bg-white text-emerald-800' : 'bg-emerald-200 text-emerald-800'
+              }`}
             >
-              {selectedClientId ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '1'}
+              {activeStep > 1 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '1'}
             </span>
             <span className="truncate">1. الزبون والتاريخ</span>
           </button>
@@ -536,30 +511,35 @@ export function InvoiceBuilder({
           <button
             type="button"
             onClick={() => {
-              if (!step2Unlocked && !selectedClientId) {
-                alert('يرجى اختيار الزبون أولاً في الخطوة 1');
-                return;
+              if (activeStep === 1) {
+                if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
+                  setShowDuplicateAlert(true);
+                  return;
+                }
               }
-              setStep2Unlocked(true);
-              scrollToSection('section-step-2');
+              goToStep(2);
             }}
-            disabled={!step2Unlocked && !selectedClientId}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeSection === 'step2'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : activeItems.length > 0
-                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                : step2Unlocked || selectedClientId
-                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  : 'bg-slate-100/50 text-slate-400 cursor-not-allowed opacity-60'
-              }`}
+            disabled={activeStep === 1}
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${
+              activeStep === 2
+                ? 'bg-emerald-600 text-white shadow-sm cursor-pointer'
+                : activeStep === 3
+                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 cursor-pointer'
+                : 'bg-slate-100/60 text-slate-400 opacity-60 cursor-not-allowed'
+            }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeSection === 'step2' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
-                }`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
+                activeStep === 2
+                  ? 'bg-white text-emerald-800'
+                  : activeStep === 3 && activeItems.length > 0
+                  ? 'bg-emerald-200 text-emerald-800'
+                  : 'bg-slate-300 text-slate-600'
+              }`}
             >
-              {activeItems.length > 0 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '2'}
+              {activeStep === 3 && activeItems.length > 0 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '2'}
             </span>
-            <span className="truncate">2. المنتوجات والكميات</span>
+            <span className="truncate">2. السلع والكميات</span>
           </button>
 
           {/* Step 3 Pill */}
@@ -567,22 +547,24 @@ export function InvoiceBuilder({
             type="button"
             onClick={() => {
               if (activeItems.length === 0) {
-                alert('يرجى إدخال وزن منتوج واحد على الأقل لتفعيل معاينة الفاتورة');
+                alert('⚠️ يرجى إدخال وزن منتوج واحد على الأقل لتفعيل معاينة الفاتورة');
                 return;
               }
-              scrollToSection('section-step-3');
+              goToStep(3);
             }}
-            disabled={activeItems.length === 0}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeSection === 'step3'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : activeItems.length > 0
-                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                : 'bg-slate-100/50 text-slate-400 cursor-not-allowed opacity-60'
-              }`}
+            disabled={activeStep < 2 || activeItems.length === 0}
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${
+              activeStep === 3
+                ? 'bg-emerald-600 text-white shadow-sm cursor-pointer'
+                : activeItems.length > 0
+                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer'
+                : 'bg-slate-100/60 text-slate-400 opacity-60 cursor-not-allowed'
+            }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeSection === 'step3' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
-                }`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
+                activeStep === 3 ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
+              }`}
             >
               3
             </span>
@@ -637,28 +619,30 @@ export function InvoiceBuilder({
       {/* SECTION 1: CLIENT, INVOICE #, AND DATE (الخطوة 1)             */}
       {/* ============================================================== */}
       <section id="section-step-1" className="flex flex-col gap-4 scroll-mt-24">
-        {/* Step 1 Title Banner */}
-        <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0">
-              1
-            </span>
-            <div>
-              <h2 className="text-sm sm:text-base font-black text-emerald-950">
-                الخطوة 1: تحديد الزبون ورقم الفاتورة والتاريخ
-              </h2>
-              <p className="text-[11px] text-emerald-800">
-                اختر الزبون من القائمة أدناه ثم تابع مباشرة لإدخال السلع في نفس الصفحة
-              </p>
+        {activeStep === 1 ? (
+          <>
+            {/* Step 1 Title Banner */}
+            <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0">
+                  1
+                </span>
+                <div>
+                  <h2 className="text-sm sm:text-base font-black text-emerald-950">
+                    الخطوة 1: تحديد الزبون ورقم الفاتورة والتاريخ
+                  </h2>
+                  <p className="text-[11px] text-emerald-800">
+                    اختر الزبون من القائمة أدناه ثم اضغط متابعة للانتقال للخطوة 2
+                  </p>
+                </div>
+              </div>
+              {selectedClientId && (
+                <span className="px-2.5 py-1 rounded-xl bg-white border border-emerald-300 text-emerald-800 font-bold text-xs shrink-0 flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  <span>محدد: {selectedClient.name}</span>
+                </span>
+              )}
             </div>
-          </div>
-          {selectedClientId && (
-            <span className="px-2.5 py-1 rounded-xl bg-white border border-emerald-300 text-emerald-800 font-bold text-xs shrink-0 flex items-center gap-1">
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
-              <span>محدد: {selectedClient.name}</span>
-            </span>
-          )}
-        </div>
 
         {/* Card 1: Invoice Number & Date Box */}
         <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col gap-3.5">
@@ -852,7 +836,7 @@ export function InvoiceBuilder({
           </div>
         </div>
 
-        {/* CTA Button: Unlock Step 2 & Scroll Down to Products */}
+        {/* CTA Button: Proceed to Step 2 */}
         <button
           type="button"
           onClick={() => {
@@ -860,63 +844,93 @@ export function InvoiceBuilder({
               setShowDuplicateAlert(true);
               return;
             }
-            setStep2Unlocked(true);
-            scrollToSection('section-step-2');
+            goToStep(2);
           }}
           className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer"
         >
           <span>متابعة: اختيار السلع والكميات (الخطوة 2)</span>
-          <ArrowDown className="w-5 h-5 stroke-[2.5]" />
+          <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
         </button>
-      </section>
+      </>
+    ) : (
+      /* Step 1 is DISABLED (User is focusing on Step 2 or 3) */
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-xs shrink-0">
+            <Check className="w-4 h-4 stroke-[3]" />
+          </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-black text-slate-900 truncate">
+                الخطوة 1: {selectedClient.name}
+              </span>
+              <span className="text-xs font-mono font-bold text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                #{invoiceNumber}
+              </span>
+              <span className="text-xs font-mono text-slate-500">
+                {displayDate()}
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-400 font-bold block mt-0.5">
+              الخطوة 1 مكتملة (معطلة للتركيز على الخطوة الحالية)
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => goToStep(1)}
+          className="h-8 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0 flex items-center gap-1"
+        >
+          <span>تعديل</span>
+        </button>
+      </div>
+    )}
+  </section>
 
       {/* ============================================================== */}
       {/* SECTION 2: PRODUCTS, WEIGHTS, AND PRICES (الخطوة 2)           */}
       {/* ============================================================== */}
       <section id="section-step-2" className="flex flex-col gap-4 scroll-mt-24">
-        {/* Step 2 Title Banner */}
-        <div className="bg-slate-900 text-white rounded-2xl p-3 flex items-center justify-between gap-3 shadow-sm">
-          <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-sm shrink-0">
-              2
-            </span>
-            <div>
-              <h2 className="text-sm sm:text-base font-black text-white">
-                الخطوة 2: تحديد السلع والكميات بالكيلوغرام (kg)
-              </h2>
-              <p className="text-[11px] text-slate-400">
-                استعمل أزرار (+1kg / +5kg) أو اكتب الوزن مباشرة في خانة كل سلعة
-              </p>
+        {activeStep === 1 ? (
+          /* Step 2 is DISABLED while in Step 1 */
+          <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3 opacity-60 cursor-not-allowed select-none">
+            <div className="flex items-center gap-3">
+              <span className="w-8 h-8 rounded-xl bg-slate-200 text-slate-400 flex items-center justify-center font-black text-xs shrink-0">
+                <Lock className="w-4 h-4" />
+              </span>
+              <div>
+                <span className="text-sm font-bold text-slate-500 block">الخطوة 2: تحديد السلع والكميات</span>
+                <span className="text-[11px] text-slate-400 block">معطلة — أكمل الخطوة 1 واضغط متابعة لتفعيلها</span>
+              </div>
             </div>
+            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">معطلة</span>
           </div>
-
-          {activeItems.length > 0 && (
-            <span className="px-2.5 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs shrink-0 font-mono tabular-nums">
-              {activeItems.length} سلع مختارة
-            </span>
-          )}
-        </div>
-
-        {/* Conditional Disabling: If Step 2 not unlocked yet */}
-        {!step2Unlocked && !selectedClientId ? (
-          <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center flex flex-col items-center gap-3">
-            <span className="w-12 h-12 rounded-2xl bg-slate-200 text-slate-500 flex items-center justify-center">
-              <Lock className="w-6 h-6" />
-            </span>
-            <div>
-              <h3 className="text-base font-black text-slate-700">الخطوة 2 مقفلة مؤقتاً</h3>
-              <p className="text-xs text-slate-500 mt-1">يرجى تأكيد واختيار الزبون في الخطوة 1 أعلاه لتفعيل إدخال السلع</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => scrollToSection('section-step-1')}
-              className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs active:scale-95 transition-all cursor-pointer"
-            >
-              الذهاب لاختيار الزبون ↑
-            </button>
-          </div>
-        ) : (
+        ) : activeStep === 2 ? (
+          /* Step 2 is ACTIVE & FOCUSED */
           <div className="flex flex-col gap-3">
+            {/* Step 2 Title Banner */}
+            <div className="bg-slate-900 text-white rounded-2xl p-3 flex items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-sm shrink-0">
+                  2
+                </span>
+                <div>
+                  <h2 className="text-sm sm:text-base font-black text-white">
+                    الخطوة 2: تحديد السلع والكميات بالكيلوغرام (kg)
+                  </h2>
+                  <p className="text-[11px] text-slate-400">
+                    استعمل أزرار (+1kg / +5kg) أو اكتب الوزن مباشرة في خانة كل سلعة
+                  </p>
+                </div>
+              </div>
+
+              {activeItems.length > 0 && (
+                <span className="px-2.5 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs shrink-0 font-mono tabular-nums">
+                  {activeItems.length} سلع مختارة
+                </span>
+              )}
+            </div>
             {/* List Filter Tabs & Add Product Button */}
             <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
               <div className="flex items-center gap-1.5 bg-slate-200/70 p-1 rounded-xl">
@@ -1024,9 +1038,9 @@ export function InvoiceBuilder({
               <span>+ إضافة منتوج جديد</span>
             </button>
 
-            {/* Step 2 Summary & Scroll Down to Step 3 CTA Button */}
-            <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm flex items-center justify-between gap-3 mt-2">
-              <div className="text-right">
+            {/* Step 2 Summary & Navigation Buttons */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+              <div className="text-right w-full sm:w-auto">
                 <span className="text-xs font-bold text-slate-500 block">المجموع الحالي للسلع:</span>
                 <span className="text-xl sm:text-2xl font-black font-mono text-emerald-700 tabular-nums">
                   {formatDh(grandTotal)}
@@ -1038,24 +1052,69 @@ export function InvoiceBuilder({
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (activeItems.length === 0) {
-                    alert('⚠️ يرجى إدخال وزن منتوج واحد على الأقل للمتابعة إلى معاينة الفاتورة.');
-                    return;
-                  }
-                  scrollToSection('section-step-3');
-                }}
-                className={`h-12 px-5 sm:px-6 rounded-xl font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${activeItems.length > 0
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  : 'bg-slate-200 text-slate-500'
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => goToStep(1)}
+                  className="h-12 px-4 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                  <span>رجوع للخطوة 1</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeItems.length === 0) {
+                      alert('⚠️ يرجى إدخال وزن منتوج واحد على الأقل للمتابعة إلى معاينة الفاتورة.');
+                      return;
+                    }
+                    goToStep(3);
+                  }}
+                  className={`h-12 px-5 sm:px-6 rounded-xl font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${
+                    activeItems.length > 0
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-slate-200 text-slate-500'
                   }`}
-              >
-                <span>معاينة الفاتورة بالأسفل (الخطوة 3)</span>
-                <ArrowDown className="w-4 h-4 stroke-[2.5]" />
-              </button>
+                >
+                  <span>متابعة: معاينة الفاتورة (الخطوة 3)</span>
+                  <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
+                </button>
+              </div>
             </div>
+          </div>
+        ) : (
+          /* Step 2 is DISABLED while in Step 3 */
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-xs shrink-0">
+                <Check className="w-4 h-4 stroke-[3]" />
+              </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-black text-slate-900 truncate">
+                    الخطوة 2: {activeItems.length} سلع مختارة
+                  </span>
+                  <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    {formatDh(grandTotal)}
+                  </span>
+                  <span className="text-xs font-mono text-slate-500">
+                    {formatKg(totalWeight)}
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-400 font-bold block mt-0.5">
+                  الخطوة 2 مكتملة (معطلة للتركيز على المعاينة النهائية)
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => goToStep(2)}
+              className="h-8 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0 flex items-center gap-1"
+            >
+              <span>تعديل السلع</span>
+            </button>
           </div>
         )}
       </section>
@@ -1064,56 +1123,60 @@ export function InvoiceBuilder({
       {/* SECTION 3: FINAL INVOICE PREVIEW & ACTIONS (الخطوة 3)         */}
       {/* ============================================================== */}
       <section id="section-step-3" className="flex flex-col gap-4 scroll-mt-24 pb-16">
-        {/* Step 3 Title Banner */}
-        <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0">
-              3
-            </span>
-            <div>
-              <h2 className="text-sm sm:text-base font-black text-emerald-950">
-                الخطوة 3: المعاينة النهائية للفاتورة وإصدارها
-              </h2>
-              <p className="text-[11px] text-emerald-800">
-                تحقق من تفاصيل الفاتورة الرسمية أدناه ثم اختر الطباعة أو الحفظ بالجهاز
-              </p>
+        {activeStep < 3 ? (
+          /* Step 3 is DISABLED while in Step 1 or 2 */
+          <div className="bg-slate-50/70 border border-dashed border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3 opacity-60 cursor-not-allowed select-none">
+            <div className="flex items-center gap-3">
+              <span className="w-8 h-8 rounded-xl bg-slate-200 text-slate-400 flex items-center justify-center font-black text-xs shrink-0">
+                <Lock className="w-4 h-4" />
+              </span>
+              <div>
+                <span className="text-sm font-bold text-slate-500 block">الخطوة 3: المعاينة النهائية والطباعة</span>
+                <span className="text-[11px] text-slate-400 block">معطلة — حدد السلع في الخطوة 2 للمتابعة إلى المعاينة</span>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Conditional Disabling: If activeItems is 0 */}
-        {activeItems.length === 0 ? (
-          <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center flex flex-col items-center gap-3">
-            <span className="w-12 h-12 rounded-2xl bg-slate-200 text-slate-500 flex items-center justify-center">
-              <FileText className="w-6 h-6" />
-            </span>
-            <div>
-              <h3 className="text-base font-black text-slate-700">معاينة الفاتورة بانتظار إدخال السلع</h3>
-              <p className="text-xs text-slate-500 mt-1">
-                يرجى إدخال وزن منتوج واحد على الأقل في الخطوة 2 أعلاه لتوليد الفاتورة والطباعة
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => scrollToSection('section-step-2')}
-              className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs active:scale-95 transition-all cursor-pointer"
-            >
-              الرجوع لتحديد الكميات ↑
-            </button>
+            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">معطلة</span>
           </div>
         ) : (
+          /* Step 3 is ACTIVE & FOCUSED */
           <div className="flex flex-col gap-4">
+            {/* Step 3 Title Banner */}
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0">
+                  3
+                </span>
+                <div>
+                  <h2 className="text-sm sm:text-base font-black text-emerald-950">
+                    الخطوة 3: المعاينة النهائية للفاتورة وإصدارها
+                  </h2>
+                  <p className="text-[11px] text-emerald-800">
+                    تحقق من تفاصيل الفاتورة الرسمية أدناه ثم اختر الطباعة أو الحفظ بالجهاز
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => goToStep(2)}
+                className="h-8 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0 flex items-center gap-1"
+              >
+                <ArrowRight className="w-3.5 h-3.5" />
+                <span>تعديل السلع</span>
+              </button>
+            </div>
+
             {/* Top Control Bar */}
             <div className="no-print bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs flex items-center justify-between gap-3 flex-wrap">
               <span className="text-xs font-bold text-slate-600">معاينة الفاتورة قبل الطباعة والحفظ</span>
 
               <button
                 type="button"
-                onClick={() => scrollToSection('section-step-2')}
-                className="h-9 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                onClick={() => goToStep(2)}
+                className="h-9 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
               >
                 <ArrowRight className="w-3.5 h-3.5" />
-                <span>تعديل السلع بالأعلى ↑</span>
+                <span>رجوع لتعديل السلع (الخطوة 2)</span>
               </button>
             </div>
 
@@ -1315,6 +1378,16 @@ export function InvoiceBuilder({
               >
                 <RotateCcw className="w-4 h-4 shrink-0 text-slate-500" />
                 <span className="whitespace-nowrap">فاتورة جديدة (البدء من جديد)</span>
+              </button>
+
+              {/* Row 3: Return to Step 2 to edit products */}
+              <button
+                type="button"
+                onClick={() => goToStep(2)}
+                className="w-full h-11 px-4 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <ArrowRight className="w-4 h-4" />
+                <span>الرجوع لتعديل السلع والكميات (الخطوة 2)</span>
               </button>
             </div>
           </div>
