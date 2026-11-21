@@ -141,8 +141,8 @@ export function InvoiceBuilder({
             prev[p.id]?.price !== undefined && prev[p.id]?.price !== ''
               ? prev[p.id].price
               : customPrice !== undefined && customPrice !== null && customPrice !== ''
-              ? customPrice
-              : '',
+                ? customPrice
+                : '',
         };
       });
       return next;
@@ -508,16 +508,14 @@ export function InvoiceBuilder({
           <button
             type="button"
             onClick={() => goToStep(1)}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              activeStep === 1
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200'
-            }`}
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeStep === 1
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200'
+              }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                activeStep === 1 ? 'bg-white text-emerald-800' : 'bg-emerald-200 text-emerald-800'
-              }`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeStep === 1 ? 'bg-white text-emerald-800' : 'bg-emerald-200 text-emerald-800'
+                }`}
             >
               {activeStep > 1 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '1'}
             </span>
@@ -537,22 +535,20 @@ export function InvoiceBuilder({
               goToStep(2);
             }}
             disabled={activeStep === 1}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${
-              activeStep === 2
-                ? 'bg-emerald-600 text-white shadow-sm cursor-pointer'
-                : activeStep === 3
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${activeStep === 2
+              ? 'bg-emerald-600 text-white shadow-sm cursor-pointer'
+              : activeStep === 3
                 ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 cursor-pointer'
                 : 'bg-slate-100/60 text-slate-400 opacity-60 cursor-not-allowed'
-            }`}
+              }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                activeStep === 2
-                  ? 'bg-white text-emerald-800'
-                  : activeStep === 3 && activeItems.length > 0
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeStep === 2
+                ? 'bg-white text-emerald-800'
+                : activeStep === 3 && activeItems.length > 0
                   ? 'bg-emerald-200 text-emerald-800'
                   : 'bg-slate-300 text-slate-600'
-              }`}
+                }`}
             >
               {activeStep === 3 && activeItems.length > 0 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '2'}
             </span>
@@ -570,18 +566,16 @@ export function InvoiceBuilder({
               goToStep(3);
             }}
             disabled={activeStep < 2 || activeItems.length === 0}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${
-              activeStep === 3
-                ? 'bg-emerald-600 text-white shadow-sm cursor-pointer'
-                : activeItems.length > 0
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all ${activeStep === 3
+              ? 'bg-emerald-600 text-white shadow-sm cursor-pointer'
+              : activeItems.length > 0
                 ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer'
                 : 'bg-slate-100/60 text-slate-400 opacity-60 cursor-not-allowed'
-            }`}
+              }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                activeStep === 3 ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
-              }`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeStep === 3 ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
+                }`}
             >
               3
             </span>
@@ -661,343 +655,302 @@ export function InvoiceBuilder({
               )}
             </div>
 
-        {/* Card 1: Invoice Number & Date Box */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col gap-3.5">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-black">
-                <Calendar className="w-4 h-4" />
-              </span>
-              <div>
-                <h3 className="text-base font-black text-slate-900">رقم الفاتورة والتاريخ</h3>
-                <p className="text-[11px] text-slate-500">يتزايد رقم الفاتورة تلقائياً ويمكن تعديله يدوياً</p>
-              </div>
-            </div>
-
-            {editingInvoice && (
-              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                تعديل #{editingInvoice.id}
-              </span>
-            )}
-          </div>
-
-          {/* Inputs Grid: Invoice # and Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Invoice Number Input */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
-                <span>رقم الفاتورة</span>
-                <span className="text-[10px] text-slate-400 font-mono">تلقائي +1</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={invoiceNumber}
-                  onChange={(e) => handleInvoiceNumberChange(e.target.value)}
-                  onBlur={handleInvoiceNumberBlur}
-                  className="w-full h-12 px-3.5 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-lg font-black font-mono text-slate-900 outline-none tabular-nums transition-all"
-                  placeholder="000001"
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
-                  #
-                </span>
-              </div>
-            </div>
-
-            {/* Invoice Date Picker */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-slate-700">
-                <span>تاريخ الفاتورة</span>
-              </label>
-              <input
-                type="date"
-                value={invoiceDate}
-                onChange={(e) => setInvoiceDate(e.target.value)}
-                className="w-full h-12 px-3.5 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-base font-bold text-slate-900 outline-none transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Quick 1-Click Date Buttons: Today & Yesterday */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => {
-                playHapticSound('tap');
-                setInvoiceDate(new Date().toISOString().split('T')[0]);
-              }}
-              className={`h-11 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border cursor-pointer ${invoiceDate === new Date().toISOString().split('T')[0]
-                ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'
-                }`}
-            >
-              <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3] shrink-0" />
-              <span className="truncate">تاريخ اليوم ({new Date().toISOString().split('T')[0].split('-').reverse().join('/')})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                playHapticSound('tap');
-                const d = new Date();
-                d.setDate(d.getDate() - 1);
-                setInvoiceDate(d.toISOString().split('T')[0]);
-              }}
-              className={`h-11 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border cursor-pointer ${(() => {
-                const d = new Date();
-                d.setDate(d.getDate() - 1);
-                return invoiceDate === d.toISOString().split('T')[0];
-              })()
-                ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                }`}
-            >
-              <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              <span>تاريخ الأمس</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Card 2: Client Selection & Creation Box */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col gap-4">
-          {/* Card 2 Header */}
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-black">
-                <User className="w-4 h-4" />
-              </span>
-              <div>
-                <h3 className="text-base font-black text-slate-900">اختيار الزبون التجاري</h3>
-                <p className="text-[11px] text-slate-500">اختر من القائمة المنسدلة أو أضف زبوناً جديداً</p>
-              </div>
-            </div>
-
-            {selectedClient && (
-              <span className="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold text-xs shrink-0 flex items-center gap-1">
-                <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                <span className="truncate max-w-[120px] sm:max-w-none">{selectedClient.name}</span>
-              </span>
-            )}
-          </div>
-
-          {/* 1. CLEAR & FULL-WIDTH ADD NEW CLIENT BUTTON */}
-          <button
-            type="button"
-            onClick={() => {
-              playHapticSound('tap');
-              setIsClientModalOpen(true);
-            }}
-            className="w-full h-13 sm:h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer"
-          >
-            <UserPlus className="w-5 h-5 stroke-[2.5]" />
-            <span>+ إضافة زبون جديد</span>
-          </button>
-
-          {/* 2. SEARCH BAR & DROPDOWN COMBOBOX */}
-          <div className="relative flex flex-col gap-1.5" ref={clientDropdownRef}>
-            <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
-              <span>ابحث أو اختر من القائمة المنسدلة:</span>
-              <span className="text-[11px] text-slate-400 font-mono">({clients.length} زبائن مسجلين)</span>
-            </label>
-
-            <div className="relative">
-              <input
-                type="text"
-                value={clientSearch}
-                onFocus={() => setIsClientDropdownOpen(true)}
-                onClick={() => setIsClientDropdownOpen(true)}
-                onChange={(e) => {
-                  setClientSearch(e.target.value);
-                  setIsClientDropdownOpen(true);
-                }}
-                placeholder={selectedClient ? `الزبون الحالي: ${selectedClient.name} (انقر للبحث أو التغيير)` : "ابحث بالاسم، المحل، أو رقم الهاتف..."}
-                className="w-full h-15 sm:h-16 pr-13 pl-16 bg-white border-[2.5px] border-slate-300 hover:border-slate-400 focus:border-emerald-600 rounded-2xl text-base sm:text-lg font-black text-slate-900 outline-none transition-all shadow-sm focus:ring-4 focus:ring-emerald-500/15"
-              />
-              <Search className="w-6 h-6 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                {clientSearch && (
-                  <button
-                    type="button"
-                    onClick={() => setClientSearch('')}
-                    className="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center cursor-pointer transition-colors"
-                    title="مسح البحث"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setIsClientDropdownOpen((prev) => !prev)}
-                  className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center cursor-pointer transition-colors"
-                  title="فتح/إغلاق القائمة"
-                >
-                  <ChevronDown className={`w-6 h-6 transition-transform duration-200 ${isClientDropdownOpen ? 'rotate-180 text-emerald-700' : ''}`} />
-                </button>
-              </div>
-            </div>
-
-            {/* Dropdown Menu List */}
-            {isClientDropdownOpen && (
-              <div className="absolute z-40 top-full left-0 right-0 mt-1.5 bg-white rounded-2xl border-2 border-slate-200 shadow-2xl overflow-hidden max-h-72 overflow-y-auto divide-y divide-slate-100 animate-fadeIn">
-                <div className="p-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 font-bold">
-                  <span>اختر زبوناً من القائمة:</span>
-                  <span className="font-mono tabular-nums">{filteredClients.length} نتائج</span>
+            {/* Card 1: Invoice Number & Date Box */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col gap-3.5">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-black">
+                    <Calendar className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">رقم الفاتورة والتاريخ</h3>
+                    <p className="text-[11px] text-slate-500">يتزايد رقم الفاتورة تلقائياً ويمكن تعديله يدوياً</p>
+                  </div>
                 </div>
 
-                {filteredClients.length > 0 ? (
-                  filteredClients.map((client) => {
-                    const isSelected = selectedClientId === client.id;
-                    return (
-                      <button
-                        key={client.id}
-                        type="button"
-                        onClick={() => {
-                          playHapticSound('tap');
-                          setSelectedClientId(client.id);
-                          setClientSearch('');
-                          setIsClientDropdownOpen(false);
-                        }}
-                        className={`w-full p-3.5 text-right transition-all flex items-center justify-between gap-3 cursor-pointer ${
-                          isSelected
-                            ? 'bg-emerald-50 text-emerald-950 font-black'
-                            : 'hover:bg-slate-50 text-slate-800'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-                              isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {isSelected ? <Check className="w-4 h-4 stroke-[3]" /> : <User className="w-4 h-4" />}
-                          </span>
-
-                          <div className="min-w-0">
-                            <span className="text-sm font-black text-slate-900 block truncate">
-                              {client.name}
-                            </span>
-                            {(client.phone || client.address) && (
-                              <span className="text-xs text-slate-500 font-mono block truncate mt-0.5">
-                                {client.phone && <span>📞 {formatPhone(client.phone)}</span>}
-                                {client.phone && client.address && <span> • </span>}
-                                {client.address && <span>📍 {client.address}</span>}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {isSelected && (
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[11px] font-bold shrink-0">
-                            محدد حالياً
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })
-                ) : (
-                  <div className="p-6 text-center text-slate-500 text-xs font-bold flex flex-col items-center gap-2">
-                    <span>لا يوجد زبون يطابق "{clientSearch}"</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsClientDropdownOpen(false);
-                        setIsClientModalOpen(true);
-                      }}
-                      className="text-emerald-700 text-xs font-black underline cursor-pointer"
-                    >
-                      + إضافة "{clientSearch}" كزبون جديد الآن
-                    </button>
-                  </div>
+                {editingInvoice && (
+                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                    تعديل #{editingInvoice.id}
+                  </span>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* 3. SELECTED CLIENT DISPLAY CARD */}
-          {selectedClient && (
-            <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
-                  <User className="w-5 h-5" />
-                </span>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-slate-500 font-bold">الزبون المعتمد:</span>
-                    <span className="text-base font-black text-emerald-950 truncate">{selectedClient.name}</span>
+              {/* Inputs Grid: Invoice # and Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Invoice Number Input */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                    <span>رقم الفاتورة (N° de Facture)</span>
+                    <span className="text-[10px] text-slate-400 font-mono">تلقائي +1</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={invoiceNumber}
+                      onChange={(e) => handleInvoiceNumberChange(e.target.value)}
+                      onBlur={handleInvoiceNumberBlur}
+                      className="w-full h-12 px-3.5 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-lg font-black font-mono text-slate-900 outline-none tabular-nums transition-all"
+                      placeholder="000001"
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
+                      #NO
+                    </span>
                   </div>
-                  {(selectedClient.phone || selectedClient.address) && (
-                    <div className="text-xs text-slate-600 font-mono flex items-center gap-3 mt-1 flex-wrap">
-                      {selectedClient.phone && <span>📞 {formatPhone(selectedClient.phone)}</span>}
-                      {selectedClient.address && <span className="truncate">📍 {selectedClient.address}</span>}
-                    </div>
-                  )}
+                </div>
+
+                {/* Invoice Date Picker */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-slate-700">
+                    <span>تاريخ الفاتورة (Date)</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={invoiceDate}
+                    onChange={(e) => setInvoiceDate(e.target.value)}
+                    className="w-full h-12 px-3.5 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-base font-bold text-slate-900 outline-none transition-all"
+                  />
                 </div>
               </div>
+            </div>
 
+            {/* Card 2: Client Selection & Creation Box */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col gap-4">
+              {/* Card 2 Header */}
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-black">
+                    <User className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">اختيار الزبون التجاري</h3>
+                    <p className="text-[11px] text-slate-500">اختر من القائمة المنسدلة أو أضف زبوناً جديداً</p>
+                  </div>
+                </div>
+
+                {selectedClient && (
+                  <span className="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold text-xs shrink-0 flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                    <span className="truncate max-w-[120px] sm:max-w-none">{selectedClient.name}</span>
+                  </span>
+                )}
+              </div>
+
+              {/* 1. CLEAR & FULL-WIDTH ADD NEW CLIENT BUTTON */}
               <button
                 type="button"
-                onClick={() => setIsClientDropdownOpen(true)}
-                className="h-8 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
+                onClick={() => {
+                  playHapticSound('tap');
+                  setIsClientModalOpen(true);
+                }}
+                className="w-full h-13 sm:h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer"
               >
-                تغيير
+                <UserPlus className="w-5 h-5 stroke-[2.5]" />
+                <span>+ إضافة زبون جديد</span>
               </button>
-            </div>
-          )}
-        </div>
 
-        {/* CTA Button: Proceed to Step 2 */}
-        <button
-          type="button"
-          onClick={() => {
-            if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
-              setShowDuplicateAlert(true);
-              return;
-            }
-            goToStep(2);
-          }}
-          className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer"
-        >
-          <span>متابعة: اختيار السلع والكميات (الخطوة 2)</span>
-          <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
-        </button>
-      </>
-    ) : (
-      /* Step 1 is DISABLED (User is focusing on Step 2 or 3) */
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3 shadow-2xs">
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-xs shrink-0">
-            <Check className="w-4 h-4 stroke-[3]" />
-          </span>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-black text-slate-900 truncate">
-                الخطوة 1: {selectedClient.name}
-              </span>
-              <span className="text-xs font-mono font-bold text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                #{invoiceNumber}
-              </span>
-              <span className="text-xs font-mono text-slate-500">
-                {displayDate()}
-              </span>
+              {/* 2. SEARCH BAR & DROPDOWN COMBOBOX */}
+              <div className="relative flex flex-col gap-1.5" ref={clientDropdownRef}>
+                <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                  <span>ابحث أو اختر من القائمة المنسدلة:</span>
+                  <span className="text-[11px] text-slate-400 font-mono">({clients.length} زبائن مسجلين)</span>
+                </label>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={clientSearch}
+                    onFocus={() => setIsClientDropdownOpen(true)}
+                    onClick={() => setIsClientDropdownOpen(true)}
+                    onChange={(e) => {
+                      setClientSearch(e.target.value);
+                      setIsClientDropdownOpen(true);
+                    }}
+                    placeholder={selectedClient ? `الزبون الحالي: ${selectedClient.name} (انقر للبحث أو التغيير)` : "ابحث بالاسم، المحل، أو رقم الهاتف..."}
+                    className="w-full h-13 pr-11 pl-14 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-2xl text-sm font-bold text-slate-900 outline-none transition-all shadow-2xs"
+                  />
+                  <Search className="w-5 h-5 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+
+                  <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {clientSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setClientSearch('')}
+                        className="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center cursor-pointer transition-colors"
+                        title="مسح البحث"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setIsClientDropdownOpen((prev) => !prev)}
+                      className="w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-200/70 flex items-center justify-center cursor-pointer transition-colors"
+                      title="فتح/إغلاق القائمة"
+                    >
+                      <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isClientDropdownOpen ? 'rotate-180 text-emerald-700' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Dropdown Menu List */}
+                {isClientDropdownOpen && (
+                  <div className="absolute z-40 top-full left-0 right-0 mt-1.5 bg-white rounded-2xl border-2 border-slate-200 shadow-2xl overflow-hidden max-h-72 overflow-y-auto divide-y divide-slate-100 animate-fadeIn">
+                    <div className="p-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 font-bold">
+                      <span>اختر زبوناً من القائمة:</span>
+                      <span className="font-mono tabular-nums">{filteredClients.length} نتائج</span>
+                    </div>
+
+                    {filteredClients.length > 0 ? (
+                      filteredClients.map((client) => {
+                        const isSelected = selectedClientId === client.id;
+                        return (
+                          <button
+                            key={client.id}
+                            type="button"
+                            onClick={() => {
+                              playHapticSound('tap');
+                              setSelectedClientId(client.id);
+                              setClientSearch('');
+                              setIsClientDropdownOpen(false);
+                            }}
+                            className={`w-full p-3.5 text-right transition-all flex items-center justify-between gap-3 cursor-pointer ${isSelected
+                              ? 'bg-emerald-50 text-emerald-950 font-black'
+                              : 'hover:bg-slate-50 text-slate-800'
+                              }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span
+                                className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
+                                  }`}
+                              >
+                                {isSelected ? <Check className="w-4 h-4 stroke-[3]" /> : <User className="w-4 h-4" />}
+                              </span>
+
+                              <div className="min-w-0">
+                                <span className="text-sm font-black text-slate-900 block truncate">
+                                  {client.name}
+                                </span>
+                                {(client.phone || client.address) && (
+                                  <span className="text-xs text-slate-500 font-mono block truncate mt-0.5">
+                                    {client.phone && <span>📞 {formatPhone(client.phone)}</span>}
+                                    {client.phone && client.address && <span> • </span>}
+                                    {client.address && <span>📍 {client.address}</span>}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {isSelected && (
+                              <span className="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[11px] font-bold shrink-0">
+                                محدد حالياً
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="p-6 text-center text-slate-500 text-xs font-bold flex flex-col items-center gap-2">
+                        <span>لا يوجد زبون يطابق "{clientSearch}"</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsClientDropdownOpen(false);
+                            setIsClientModalOpen(true);
+                          }}
+                          className="text-emerald-700 text-xs font-black underline cursor-pointer"
+                        >
+                          + إضافة "{clientSearch}" كزبون جديد الآن
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 3. SELECTED CLIENT DISPLAY CARD */}
+              {selectedClient && (
+                <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                      <User className="w-5 h-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-slate-500 font-bold">الزبون المعتمد:</span>
+                        <span className="text-base font-black text-emerald-950 truncate">{selectedClient.name}</span>
+                      </div>
+                      {(selectedClient.phone || selectedClient.address) && (
+                        <div className="text-xs text-slate-600 font-mono flex items-center gap-3 mt-1 flex-wrap">
+                          {selectedClient.phone && <span>📞 {formatPhone(selectedClient.phone)}</span>}
+                          {selectedClient.address && <span className="truncate">📍 {selectedClient.address}</span>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsClientDropdownOpen(true)}
+                    className="h-8 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
+                  >
+                    تغيير
+                  </button>
+                </div>
+              )}
             </div>
-            <span className="text-[11px] text-slate-400 font-bold block mt-0.5">
-              الخطوة 1 مكتملة (معطلة للتركيز على الخطوة الحالية)
-            </span>
+
+            {/* CTA Button: Proceed to Step 2 */}
+            <button
+              type="button"
+              onClick={() => {
+                if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
+                  setShowDuplicateAlert(true);
+                  return;
+                }
+                goToStep(2);
+              }}
+              className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer"
+            >
+              <span>متابعة: اختيار السلع والكميات (الخطوة 2)</span>
+              <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          </>
+        ) : (
+          /* Step 1 is DISABLED (User is focusing on Step 2 or 3) */
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-xs shrink-0">
+                <Check className="w-4 h-4 stroke-[3]" />
+              </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-black text-slate-900 truncate">
+                    الخطوة 1: {selectedClient.name}
+                  </span>
+                  <span className="text-xs font-mono font-bold text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                    #{invoiceNumber}
+                  </span>
+                  <span className="text-xs font-mono text-slate-500">
+                    {displayDate()}
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-400 font-bold block mt-0.5">
+                  الخطوة 1 مكتملة (معطلة للتركيز على الخطوة الحالية)
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => goToStep(1)}
+              className="h-8 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0 flex items-center gap-1"
+            >
+              <span>تعديل</span>
+            </button>
           </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => goToStep(1)}
-          className="h-8 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0 flex items-center gap-1"
-        >
-          <span>تعديل</span>
-        </button>
-      </div>
-    )}
-  </section>
+        )}
+      </section>
 
       {/* ============================================================== */}
       {/* SECTION 2: PRODUCTS, WEIGHTS, AND PRICES (الخطوة 2)           */}
@@ -1182,11 +1135,10 @@ export function InvoiceBuilder({
                     }
                     goToStep(3);
                   }}
-                  className={`h-12 px-5 sm:px-6 rounded-xl font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${
-                    activeItems.length > 0
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-slate-200 text-slate-500'
-                  }`}
+                  className={`h-12 px-5 sm:px-6 rounded-xl font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${activeItems.length > 0
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : 'bg-slate-200 text-slate-500'
+                    }`}
                 >
                   <span>متابعة: معاينة الفاتورة (الخطوة 3)</span>
                   <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
