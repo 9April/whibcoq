@@ -812,28 +812,28 @@ export function InvoiceBuilder({
                   setIsClientDropdownOpen(true);
                 }}
                 placeholder={selectedClient ? `الزبون الحالي: ${selectedClient.name} (انقر للبحث أو التغيير)` : "ابحث بالاسم، المحل، أو رقم الهاتف..."}
-                className="w-full h-13 pr-11 pl-14 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-2xl text-sm font-bold text-slate-900 outline-none transition-all shadow-2xs"
+                className="w-full h-15 sm:h-16 pr-13 pl-16 bg-white border-[2.5px] border-slate-300 hover:border-slate-400 focus:border-emerald-600 rounded-2xl text-base sm:text-lg font-black text-slate-900 outline-none transition-all shadow-sm focus:ring-4 focus:ring-emerald-500/15"
               />
-              <Search className="w-5 h-5 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-6 h-6 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
 
-              <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                 {clientSearch && (
                   <button
                     type="button"
                     onClick={() => setClientSearch('')}
-                    className="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center cursor-pointer transition-colors"
+                    className="w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center cursor-pointer transition-colors"
                     title="مسح البحث"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => setIsClientDropdownOpen((prev) => !prev)}
-                  className="w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-200/70 flex items-center justify-center cursor-pointer transition-colors"
+                  className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center cursor-pointer transition-colors"
                   title="فتح/إغلاق القائمة"
                 >
-                  <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isClientDropdownOpen ? 'rotate-180 text-emerald-700' : ''}`} />
+                  <ChevronDown className={`w-6 h-6 transition-transform duration-200 ${isClientDropdownOpen ? 'rotate-180 text-emerald-700' : ''}`} />
                 </button>
               </div>
             </div>
