@@ -989,11 +989,11 @@ export function InvoiceBuilder({
                 <div>
                   {/* Header Row: WAHIB COQ + Subtitle & Invoice Number */}
                   <div className="flex items-start justify-between pb-3 border-b border-slate-200">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-2.5">
                       <img
                         src="/wahibcoq.jpeg"
                         alt="WAHIB COQ"
-                        className="w-13 h-13 sm:w-15 sm:h-15 object-contain rounded-xl border border-slate-200 p-0.5 bg-white flex-shrink-0"
+                        className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded-md border border-slate-200 p-0.5 bg-white flex-shrink-0"
                       />
                       <div>
                         <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
