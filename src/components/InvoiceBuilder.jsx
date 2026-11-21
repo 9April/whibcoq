@@ -97,6 +97,7 @@ export function InvoiceBuilder({
   const [newProdName, setNewProdName] = useState('');
   const [newProdPrice, setNewProdPrice] = useState('');
   const [isSavingPdf, setIsSavingPdf] = useState(false);
+  const [lastSavedSuccess, setLastSavedSuccess] = useState(null);
   const printAreaRef = useRef(null);
 
   // Set default client on load
@@ -341,13 +342,24 @@ export function InvoiceBuilder({
     playHapticSound('success');
     const invObj = buildCurrentInvoiceObject();
 
-    // 1. Download PDF directly to device
+    // 1. Download PDF directly to device using an isolated off-screen clone (NEVER alters visible DOM)
     try {
       if (printAreaRef.current) {
         const html2pdfModule = await import('html2pdf.js');
         const html2pdf = html2pdfModule.default || html2pdfModule;
 
-        const element = printAreaRef.current;
+        const original = printAreaRef.current;
+        const clone = original.cloneNode(true);
+        clone.id = 'printable-invoice-temp-pdf';
+        clone.style.width = '144mm';
+        clone.style.minHeight = '200mm';
+        clone.style.position = 'fixed';
+        clone.style.left = '-9999px';
+        clone.style.top = '0';
+        clone.style.background = '#ffffff';
+        clone.style.zIndex = '-9999';
+        document.body.appendChild(clone);
+
         const cleanClientName = (selectedClient.name || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
         const filename = `Facture_${invoiceNumber}_${cleanClientName || 'Client'}.pdf`;
 
@@ -358,14 +370,20 @@ export function InvoiceBuilder({
           html2canvas: {
             scale: 2,
             useCORS: true,
-            letterRendering: true,
+            letterRendering: false, // Critical: false prevents broken Arabic glyphs
             scrollX: 0,
             scrollY: 0,
           },
           jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' },
         };
 
-        await html2pdf().set(opt).from(element).save();
+        try {
+          await html2pdf().set(opt).from(clone).save();
+        } finally {
+          if (clone.parentNode) {
+            clone.parentNode.removeChild(clone);
+          }
+        }
       }
     } catch (err) {
       console.error('Error generating PDF during invoice save:', err);
@@ -373,10 +391,32 @@ export function InvoiceBuilder({
       setIsSavingPdf(false);
     }
 
-    // 2. Persist to storage / history
+    // 2. Persist to storage / database
     if (onSaveInvoice) {
       await onSaveInvoice(invObj);
     }
+
+    // 3. Set success notification
+    setLastSavedSuccess({
+      id: invObj.id,
+      clientName: invObj.clientName,
+      totalAmount: invObj.totalAmount,
+      invoice: invObj,
+    });
+
+    // 4. Auto-increment to the next free invoice number & reset builder to clean state
+    const updatedInvoices = [...invoices.filter((i) => i.id !== invObj.id), invObj];
+    setInvoiceNumber(getNextInvoiceNumber(updatedInvoices));
+
+    const reset = {};
+    products.forEach((p) => {
+      reset[p.id] = { weight: '', price: p.defaultPrice };
+    });
+    setItemsState(reset);
+    setFilterMode('all');
+
+    // Smoothly scroll back to top of Step 1
+    scrollToSection('section-step-1');
   };
 
   // Direct Print
@@ -510,6 +550,48 @@ export function InvoiceBuilder({
           </button>
         </div>
       </div>
+
+      {/* ============================================================== */}
+      {/* SUCCESS BANNER: Post-save Confirmation & Instant Preview      */}
+      {/* ============================================================== */}
+      {lastSavedSuccess && (
+        <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Check className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <div>
+              <p className="text-sm font-black text-emerald-950">
+                ✅ تم حفظ الفاتورة رقم #{lastSavedSuccess.id} بنجاح وتحميل ملف الـ PDF!
+              </p>
+              <p className="text-xs text-emerald-800 font-bold mt-0.5">
+                الزبون: {lastSavedSuccess.clientName} • المجموع: {formatDh(lastSavedSuccess.totalAmount)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenPrint) onOpenPrint(lastSavedSuccess.invoice);
+              }}
+              className="h-9 px-3.5 rounded-xl bg-white border border-emerald-300 text-emerald-900 font-black text-xs hover:bg-emerald-100/50 flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>معاينة / طباعة الفاتورة</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLastSavedSuccess(null)}
+              className="w-8 h-8 rounded-lg bg-emerald-100/80 text-emerald-800 hover:bg-emerald-200 flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+              title="إغلاق"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ============================================================== */}
       {/* SECTION 1: CLIENT, INVOICE #, AND DATE (الخطوة 1)             */}
