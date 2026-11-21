@@ -148,20 +148,6 @@ export function ProductRow({
               <Plus className="w-4 h-4 stroke-[2.5]" />
             </button>
           </div>
-
-          {/* Quick Add Chips: +1, +5, +10 */}
-          <div className="flex items-center gap-1 mt-1 justify-center">
-            {[1, 5, 10].map((step) => (
-              <button
-                key={step}
-                type="button"
-                onClick={() => handleWeightStep(step)}
-                className="flex-1 py-1 px-1 rounded-lg text-[10px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 active:scale-95 transition-all border border-slate-200 cursor-pointer tabular-nums"
-              >
-                +{step}kg
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* 2. Price Input (الثمن بالدرهم) */}
@@ -207,31 +193,6 @@ export function ProductRow({
               aria-label="زيادة درهم"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
-            </button>
-          </div>
-
-          {/* Quick Price Adjust Chips: -1, +1, +5 */}
-          <div className="flex items-center gap-1 mt-1 justify-center">
-            <button
-              type="button"
-              onClick={() => handlePriceStep(-1)}
-              className="flex-1 py-1 px-1 rounded-lg text-[10px] font-bold font-mono bg-slate-100 hover:bg-slate-200 text-slate-600 active:scale-95 transition-all border border-slate-200 cursor-pointer tabular-nums"
-            >
-              -1د.م
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePriceStep(1)}
-              className="flex-1 py-1 px-1 rounded-lg text-[10px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 active:scale-95 transition-all border border-slate-200 cursor-pointer tabular-nums"
-            >
-              +1د.م
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePriceStep(5)}
-              className="flex-1 py-1 px-1 rounded-lg text-[10px] font-bold font-mono bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 active:scale-95 transition-all border border-slate-200 cursor-pointer tabular-nums"
-            >
-              +5د.م
             </button>
           </div>
         </div>
