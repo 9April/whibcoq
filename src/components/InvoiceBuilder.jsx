@@ -378,31 +378,14 @@ export function InvoiceBuilder({
     playHapticSound('success');
     const invObj = buildCurrentInvoiceObject();
 
-    // 1. Download PDF directly to device
+    // 1. Download PDF directly to device (using exportInvoiceToPdf with native Arabic text shaping)
     try {
       if (printAreaRef.current) {
-        const html2pdfModule = await import('html2pdf.js');
-        const html2pdf = html2pdfModule.default || html2pdfModule;
-
-        const original = printAreaRef.current;
         const cleanClientName = (selectedClient.name || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
         const filename = `Facture_${invoiceNumber}_${cleanClientName || 'Client'}.pdf`;
 
-        const opt = {
-          margin: [4, 4, 4, 4],
-          filename: filename,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            letterRendering: false, // Critical: false prevents broken Arabic glyphs
-            backgroundColor: '#ffffff',
-            logging: false,
-          },
-          jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' },
-        };
-
-        await html2pdf().set(opt).from(original).save();
+        const { exportInvoiceToPdf } = await import('../utils/pdfExport');
+        await exportInvoiceToPdf(printAreaRef.current, filename);
       }
     } catch (err) {
       console.error('Error generating PDF during invoice save:', err);

@@ -32,28 +32,12 @@ export function InvoicePrintModal({
     playHapticSound('success');
 
     try {
-      const html2pdfModule = await import('html2pdf.js');
-      const html2pdf = html2pdfModule.default || html2pdfModule;
-
-      const original = printAreaRef.current;
       const cleanClientName = (invoice.clientName || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
       const filename = `Facture_${invoice.id}_${cleanClientName || 'Client'}.pdf`;
 
-      const opt = {
-        margin: [4, 4, 4, 4],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: false, // Critical: false prevents broken Arabic characters
-          backgroundColor: '#ffffff',
-          logging: false,
-        },
-        jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' },
-      };
+      const { exportInvoiceToPdf } = await import('../utils/pdfExport');
+      await exportInvoiceToPdf(printAreaRef.current, filename);
 
-      await html2pdf().set(opt).from(original).save();
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
