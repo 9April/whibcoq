@@ -170,9 +170,14 @@ export function ProductRow({
               ref={priceInputRef}
               type="text"
               inputMode="decimal"
-              value={price === 0 || price === '' ? '' : price}
-              placeholder="0.0"
+              value={price === undefined || price === null ? 0 : price}
+              placeholder="0"
               onFocus={(e) => e.target.select()}
+              onBlur={() => {
+                if (price === '' || price === undefined || price === null) {
+                  onPriceChange(product.id, 0);
+                }
+              }}
               onChange={(e) => {
                 const val = normalizeDecimalInput(e.target.value);
                 if (/^\d*\.?\d*$/.test(val)) {

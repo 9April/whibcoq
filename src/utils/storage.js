@@ -557,7 +557,7 @@ export const isInvoiceNumberTaken = (number, currentEditingId, invoices = getSto
 };
 
 // Remember custom price per client/product
-export const getClientProductPrice = (clientId, productId, defaultPrice = '') => {
+export const getClientProductPrice = (clientId, productId, defaultPrice = 0) => {
   try {
     const raw = localStorage.getItem(CLIENT_PRICES_KEY);
     if (!raw) return defaultPrice;
