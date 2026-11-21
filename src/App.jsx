@@ -207,7 +207,6 @@ export function App() {
     setEditingInvoice(null);
     setPreselectedClientId(null);
     handleSync(true);
-    alert('✅ تم حفظ وإصدار الفاتورة بنجاح!');
   };
 
   const handleDeleteInvoice = async (invoiceId) => {

@@ -324,7 +324,7 @@ export function InvoiceBuilder({
     };
   };
 
-  const handleSaveInvoiceAction = () => {
+  const handleSaveInvoiceAction = async () => {
     if (activeItems.length === 0) {
       playHapticSound('error');
       alert('⚠️ يرجى إدخال وزن منتوج واحد على الأقل لحفظ الفاتورة.');
@@ -337,9 +337,46 @@ export function InvoiceBuilder({
       return;
     }
 
+    setIsSavingPdf(true);
     playHapticSound('success');
     const invObj = buildCurrentInvoiceObject();
-    onSaveInvoice(invObj);
+
+    // 1. Download PDF directly to device
+    try {
+      if (printAreaRef.current) {
+        const html2pdfModule = await import('html2pdf.js');
+        const html2pdf = html2pdfModule.default || html2pdfModule;
+
+        const element = printAreaRef.current;
+        const cleanClientName = (selectedClient.name || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
+        const filename = `Facture_${invoiceNumber}_${cleanClientName || 'Client'}.pdf`;
+
+        const opt = {
+          margin: [4, 4, 4, 4],
+          filename: filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+            scrollX: 0,
+            scrollY: 0,
+          },
+          jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' },
+        };
+
+        await html2pdf().set(opt).from(element).save();
+      }
+    } catch (err) {
+      console.error('Error generating PDF during invoice save:', err);
+    } finally {
+      setIsSavingPdf(false);
+    }
+
+    // 2. Persist to storage / history
+    if (onSaveInvoice) {
+      await onSaveInvoice(invObj);
+    }
   };
 
   // Direct Print
@@ -1108,24 +1145,34 @@ export function InvoiceBuilder({
 
             {/* Action Buttons Below Invoice */}
             <div className="no-print grid grid-cols-1 sm:grid-cols-3 gap-2.5 max-w-[144mm] mx-auto w-full">
-              {/* 1. Print / Save PDF */}
+              {/* 1. Print */}
               <button
                 type="button"
                 onClick={handlePrint}
                 className="h-13 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
-                <span>طباعة / حفظ PDF</span>
+                <span>طباعة الفاتورة</span>
               </button>
 
-              {/* 2. Save Invoice */}
+              {/* 2. Save & Download PDF */}
               <button
                 type="button"
                 onClick={handleSaveInvoiceAction}
-                className="h-13 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
+                disabled={isSavingPdf}
+                className="h-13 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-60"
               >
-                <Check className="w-5 h-5 stroke-[2.5]" />
-                <span>حفظ وإصدار الفاتورة</span>
+                {isSavingPdf ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>جاري تحميل الفاتورة PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-5 h-5 stroke-[2.5]" />
+                    <span>حفظ وتحميل الفاتورة PDF</span>
+                  </>
+                )}
               </button>
 
               {/* 3. New Invoice */}
