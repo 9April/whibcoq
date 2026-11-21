@@ -19,6 +19,8 @@ import { HomeDashboard } from './components/HomeDashboard';
 import { ClientsManager } from './components/ClientsManager';
 import { AnalyticsReports } from './components/AnalyticsReports';
 import { InvoiceHistory } from './components/InvoiceHistory';
+import { HistoryDrawer } from './components/HistoryDrawer';
+import { ReportsDrawer } from './components/ReportsDrawer';
 import { ReportsHistoryDrawer } from './components/ReportsHistoryDrawer';
 import { BottomNav } from './components/BottomNav';
 import { InvoicePrintModal } from './components/InvoicePrintModal';
@@ -49,6 +51,7 @@ export function App() {
   const [settingsInitialTab, setSettingsInitialTab] = useState('company');
   const [businessInfo, setBusinessInfo] = useState(() => getBusinessInfo());
 
+  const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const [isReportsDrawerOpen, setIsReportsDrawerOpen] = useState(false);
 
   const [clients, setClients] = useState(() => getStoredClients());
@@ -217,6 +220,7 @@ export function App() {
 
   const handleEditInvoice = (invoice) => {
     setEditingInvoice(invoice);
+    setIsHistoryDrawerOpen(false);
     setIsReportsDrawerOpen(false);
   };
 
@@ -276,23 +280,37 @@ export function App() {
 
           {/* Action Tools in Header */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Prominent Reports & History Drawer Button */}
+            {/* 1. Invoice History Button */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsHistoryDrawerOpen(true);
+              }}
+              className="h-10 px-3 sm:px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
+              title="سجل الفواتير السابقة"
+            >
+              <Receipt className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+              <span>السجل</span>
+              {invoices.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono bg-emerald-500 text-slate-950 tabular-nums">
+                  {invoices.length}
+                </span>
+              )}
+            </button>
+
+            {/* 2. Analytics & Reports Button */}
             <button
               type="button"
               onClick={() => {
                 playHapticSound('tap');
                 setIsReportsDrawerOpen(true);
               }}
-              className="h-10 px-3.5 sm:px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer"
-              title="فتح التقارير وسجل الفواتير السابقة"
+              className="h-10 px-3 sm:px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
+              title="التقارير والإحصائيات"
             >
               <BarChart3 className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
-              <span>التقارير والسجل</span>
-              {invoices.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono bg-emerald-500 text-slate-950 tabular-nums">
-                  {invoices.length}
-                </span>
-              )}
+              <span>التقارير</span>
             </button>
 
             {/* Settings Button */}
@@ -343,16 +361,24 @@ export function App() {
         />
       </main>
 
-      {/* Reports & Invoice History Drawer */}
-      <ReportsHistoryDrawer
+      {/* 1. Invoice History Drawer */}
+      <HistoryDrawer
+        isOpen={isHistoryDrawerOpen}
+        onClose={() => setIsHistoryDrawerOpen(false)}
+        invoices={invoices}
+        clients={clients}
+        onDeleteInvoice={handleDeleteInvoice}
+        onEditInvoice={handleEditInvoice}
+        onOpenPrint={(inv) => setInvoiceToPrint(inv)}
+      />
+
+      {/* 2. Analytics & Reports Drawer */}
+      <ReportsDrawer
         isOpen={isReportsDrawerOpen}
         onClose={() => setIsReportsDrawerOpen(false)}
         invoices={invoices}
         clients={clients}
         products={products}
-        onDeleteInvoice={handleDeleteInvoice}
-        onEditInvoice={handleEditInvoice}
-        onOpenPrint={(inv) => setInvoiceToPrint(inv)}
       />
 
       {/* Official Print Modal (Isolated for @media print) */}
