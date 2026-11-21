@@ -1003,9 +1003,6 @@ export function InvoiceBuilder({
                         <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
                           {businessInfo.name || 'WAHIB COQ'}
                         </h1>
-                        <p className="text-xs font-semibold text-slate-500 mt-1">
-                          {businessInfo.frenchSubtitle || 'Vente de poulets vivants et découpes'}
-                        </p>
                       </div>
                     </div>
 
@@ -1059,9 +1056,6 @@ export function InvoiceBuilder({
                       </span>
                       <span className="text-sm font-black text-slate-900">
                         {businessInfo.name || 'WAHIB COQ'}
-                      </span>
-                      <span className="text-slate-600 text-[11px]">
-                        {businessInfo.frenchSubtitle || 'Vente de poulets vivants et découpes'}
                       </span>
                       <span className="text-slate-500 text-[11px]">
                         {businessInfo.address}

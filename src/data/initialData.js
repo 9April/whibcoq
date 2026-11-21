@@ -153,7 +153,7 @@ export const INITIAL_CLIENTS = [
 // Official Commercial Business Information
 export const BUSINESS_INFO = {
   name: 'WAHIB COQ',
-  frenchSubtitle: 'Vente de poulets vivants et découpes',
+  frenchSubtitle: '',
   arabicTitle: 'وهيب كوك - تجارة الدواجن بالجملة والتفصيل',
   address: 'سوق الجملة للدواجن، الدار البيضاء',
   phone: '06 61 88 99 22 / 05 22 40 50 60',
