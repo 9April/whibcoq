@@ -18,6 +18,7 @@ import {
   Sparkles,
   X,
   Plus,
+  PlusCircle,
   AlertTriangle,
   Download,
   Loader2,
@@ -915,24 +916,11 @@ export function InvoiceBuilder({
               </div>
 
               <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    playHapticSound('tap');
-                    setIsAddProductModalOpen(true);
-                  }}
-                  className="h-8 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1 active:scale-95 transition-all shadow-xs cursor-pointer"
-                  title="إضافة منتوج جديد"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ منتوج جديد</span>
-                </button>
-
                 {activeItems.length > 0 && (
                   <button
                     type="button"
                     onClick={handleClearAll}
-                    className="text-xs text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                    className="text-xs text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>مسح الكل</span>
@@ -940,6 +928,19 @@ export function InvoiceBuilder({
                 )}
               </div>
             </div>
+
+            {/* BIG & NOTICEABLE BUTTON ABOVE PRODUCTS (FULL WIDTH) */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsAddProductModalOpen(true);
+              }}
+              className="w-full h-13 sm:h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer"
+            >
+              <PlusCircle className="w-5 h-5 stroke-[2.5]" />
+              <span>+ إضافة منتوج جديد</span>
+            </button>
 
             {/* 12 Poultry Products List: 1 product per line taking full width */}
             <div className="flex flex-col gap-3 sm:gap-3.5 w-full">
@@ -970,6 +971,19 @@ export function InvoiceBuilder({
                 </div>
               )}
             </div>
+
+            {/* BIG & NOTICEABLE BUTTON UNDER PRODUCTS (FULL WIDTH) */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsAddProductModalOpen(true);
+              }}
+              className="w-full h-13 sm:h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer"
+            >
+              <PlusCircle className="w-5 h-5 stroke-[2.5]" />
+              <span>+ إضافة منتوج جديد</span>
+            </button>
 
             {/* Step 2 Summary & Scroll Down to Step 3 CTA Button */}
             <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm flex items-center justify-between gap-3 mt-2">
