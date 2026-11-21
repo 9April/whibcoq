@@ -931,29 +931,9 @@ export function InvoiceBuilder({
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {/* Top Control Bar: Payment Method */}
+            {/* Top Control Bar */}
             <div className="no-print bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-bold text-slate-500">طريقة الدفع:</span>
-                <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1">
-                  {['نقداً', 'شيك', 'تحويل', 'كريدي'].map((method) => (
-                    <button
-                      key={method}
-                      type="button"
-                      onClick={() => {
-                        playHapticSound('tap');
-                        setPaymentMethod(method);
-                      }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${paymentMethod === method
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                    >
-                      {method}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <span className="text-xs font-bold text-slate-600">معاينة الفاتورة قبل الطباعة والحفظ</span>
 
               <button
                 type="button"
@@ -1101,14 +1081,8 @@ export function InvoiceBuilder({
                     </tfoot>
                   </table>
 
-                  {/* Footer Notes: Payment Method & Thank you */}
-                  <div className="py-2 flex items-center justify-between text-xs text-slate-600 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-400">طريقة الدفع :</span>
-                      <span className="font-black text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
-                        {paymentMethod}
-                      </span>
-                    </div>
+                  {/* Footer Notes: Thank you */}
+                  <div className="py-2.5 flex items-center justify-center text-xs text-slate-600 border-b border-slate-100">
                     <div className="font-bold text-slate-600">
                       <span className="text-slate-400 ml-1">ملاحظة :</span>
                       <span>شكراً لتعاملكم معنا!</span>

@@ -349,14 +349,8 @@ export function InvoicePrintModal({
                 </tfoot>
               </table>
 
-              {/* Footer Notes: Payment Method & Thank you */}
-              <div className="py-2 flex items-center justify-between text-xs text-slate-600 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-400">طريقة الدفع :</span>
-                  <span className="font-black text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
-                    {invoice.paymentMethod || 'نقداً'}
-                  </span>
-                </div>
+              {/* Footer Notes: Thank you */}
+              <div className="py-2.5 flex items-center justify-center text-xs text-slate-600 border-b border-slate-100">
                 <div className="font-bold text-slate-600">
                   <span className="text-slate-400 ml-1">ملاحظة :</span>
                   <span>شكراً لتعاملكم معنا!</span>
