@@ -29,6 +29,7 @@ import {
   RotateCcw,
   Lock,
   Unlock,
+  Edit3,
 } from 'lucide-react';
 import { INITIAL_PRODUCTS, BUSINESS_INFO } from '../data/initialData';
 import { ProductRow } from './ProductRow';
@@ -55,6 +56,8 @@ export function InvoiceBuilder({
   onAddProduct,
   initialClientId,
   onAddClient,
+  onUpdateClient,
+  onDeleteClient,
   onSaveInvoice,
   onOpenPrint,
   editingInvoice,
@@ -113,6 +116,8 @@ export function InvoiceBuilder({
 
   // Modals & PDF export state
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [clientToEdit, setClientToEdit] = useState(null);
+  const [clientToDelete, setClientToDelete] = useState(null);
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
   const clientDropdownRef = useRef(null);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
@@ -826,11 +831,11 @@ export function InvoiceBuilder({
                       setIsClientDropdownOpen(true);
                     }}
                     placeholder={selectedClient ? `الزبون الحالي: ${selectedClient.name} (انقر للبحث أو التغيير)` : "ابحث بالاسم، المحل، أو رقم الهاتف..."}
-                    className="w-full h-13 pr-11 pl-14 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-2xl text-sm font-bold text-slate-900 outline-none transition-all shadow-2xs"
+                    className="w-full h-13 pr-11 pl-32 sm:pl-36 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-2xl text-sm font-bold text-slate-900 outline-none transition-all shadow-2xs"
                   />
                   <Search className="w-5 h-5 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
 
-                  <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                     {clientSearch && (
                       <button
                         type="button"
@@ -841,10 +846,45 @@ export function InvoiceBuilder({
                         <X className="w-3.5 h-3.5" />
                       </button>
                     )}
+
+                    {/* Manage Client Icon 1: EDIT */}
+                    {selectedClient && selectedClient.id && selectedClient.id !== 'default' && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          playHapticSound('tap');
+                          setClientToEdit(selectedClient);
+                          setIsClientModalOpen(true);
+                        }}
+                        className="w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-2xs"
+                        title={`تعديل بيانات ${selectedClient.name}`}
+                      >
+                        <Edit3 className="w-4 h-4 stroke-[2.2]" />
+                      </button>
+                    )}
+
+                    {/* Manage Client Icon 2: DELETE */}
+                    {selectedClient && selectedClient.id && selectedClient.id !== 'default' && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          playHapticSound('warning');
+                          setClientToDelete(selectedClient);
+                        }}
+                        className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-2xs"
+                        title={`حذف الزبون ${selectedClient.name}`}
+                      >
+                        <Trash2 className="w-4 h-4 stroke-[2.2]" />
+                      </button>
+                    )}
+
+                    {/* Dropdown Toggle */}
                     <button
                       type="button"
                       onClick={() => setIsClientDropdownOpen((prev) => !prev)}
-                      className="w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-200/70 flex items-center justify-center cursor-pointer transition-colors"
+                      className="w-8 h-8 rounded-xl text-slate-500 hover:bg-slate-200/70 flex items-center justify-center cursor-pointer transition-colors"
                       title="فتح/إغلاق القائمة"
                     >
                       <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isClientDropdownOpen ? 'rotate-180 text-emerald-700' : ''}`} />
@@ -864,9 +904,8 @@ export function InvoiceBuilder({
                       filteredClients.map((client) => {
                         const isSelected = selectedClientId === client.id;
                         return (
-                          <button
+                          <div
                             key={client.id}
-                            type="button"
                             onClick={() => {
                               playHapticSound('tap');
                               setSelectedClientId(client.id);
@@ -878,7 +917,7 @@ export function InvoiceBuilder({
                               : 'hover:bg-slate-50 text-slate-800'
                               }`}
                           >
-                            <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
                               <span
                                 className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
                                   }`}
@@ -900,12 +939,44 @@ export function InvoiceBuilder({
                               </div>
                             </div>
 
-                            {isSelected && (
-                              <span className="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[11px] font-bold shrink-0">
-                                محدد حالياً
-                              </span>
-                            )}
-                          </button>
+                            <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                              {client.id !== 'default' && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      playHapticSound('tap');
+                                      setClientToEdit(client);
+                                      setIsClientModalOpen(true);
+                                      setIsClientDropdownOpen(false);
+                                    }}
+                                    className="w-7 h-7 rounded-lg hover:bg-amber-100 text-slate-400 hover:text-amber-700 flex items-center justify-center transition-colors cursor-pointer"
+                                    title={`تعديل بيانات ${client.name}`}
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      playHapticSound('warning');
+                                      setClientToDelete(client);
+                                      setIsClientDropdownOpen(false);
+                                    }}
+                                    className="w-7 h-7 rounded-lg hover:bg-rose-100 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
+                                    title={`حذف الزبون ${client.name}`}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
+                              )}
+
+                              {isSelected && (
+                                <span className="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[11px] font-bold shrink-0">
+                                  محدد
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         );
                       })
                     ) : (
@@ -1559,17 +1630,86 @@ export function InvoiceBuilder({
       )}
 
       {/* ============================================================== */}
-      {/* ADD NEW CLIENT MODAL                                            */}
+      {/* ADD / EDIT CLIENT MODAL                                         */}
       {/* ============================================================== */}
       <ClientModal
         isOpen={isClientModalOpen}
-        onClose={() => setIsClientModalOpen(false)}
+        clientToEdit={clientToEdit}
+        onClose={() => {
+          setIsClientModalOpen(false);
+          setClientToEdit(null);
+        }}
         onAddClient={(newClient) => {
           if (onAddClient) onAddClient(newClient);
           setSelectedClientId(newClient.id);
-          setStep2Unlocked(true);
+        }}
+        onUpdateClient={(updatedClient) => {
+          if (onUpdateClient) onUpdateClient(updatedClient);
+          if (selectedClientId === updatedClient.id) {
+            setSelectedClientId(updatedClient.id);
+          }
         }}
       />
+
+      {/* ============================================================== */}
+      {/* DELETE CLIENT CONFIRMATION MODAL                                */}
+      {/* ============================================================== */}
+      {clientToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="w-full max-w-sm bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-4 text-slate-900" dir="rtl">
+            <div className="flex items-center gap-3">
+              <span className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 stroke-[2.5]" />
+              </span>
+              <div>
+                <h3 className="text-base font-black text-slate-900">تأكيد حذف الزبون</h3>
+                <p className="text-xs text-slate-500 mt-0.5">هل أنت متأكد من حذف هذا الزبون نهائياً؟</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex flex-col gap-1">
+              <span className="text-sm font-black text-slate-900">{clientToDelete.name}</span>
+              {clientToDelete.phone && (
+                <span className="text-xs text-slate-500 font-mono">📞 {formatPhone(clientToDelete.phone)}</span>
+              )}
+              {clientToDelete.address && (
+                <span className="text-xs text-slate-500">📍 {clientToDelete.address}</span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setClientToDelete(null)}
+                className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center transition-colors cursor-pointer"
+              >
+                إلغاء
+              </button>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  playHapticSound('tap');
+                  const idToDelete = clientToDelete.id;
+                  if (onDeleteClient) {
+                    await onDeleteClient(idToDelete);
+                  }
+                  if (selectedClientId === idToDelete) {
+                    const remaining = clients.filter((c) => c.id !== idToDelete);
+                    setSelectedClientId(remaining[0]?.id || '');
+                  }
+                  setClientToDelete(null);
+                  playHapticSound('success');
+                }}
+                className="h-11 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>حذف نهائي</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ============================================================== */}
       {/* ADD NEW PRODUCT MODAL                                           */}

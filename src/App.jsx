@@ -334,6 +334,8 @@ export function App() {
           onAddProduct={handleAddProduct}
           initialClientId={preselectedClientId}
           onAddClient={handleAddClient}
+          onUpdateClient={handleUpdateClient}
+          onDeleteClient={handleDeleteClient}
           onSaveInvoice={handleSaveInvoice}
           onOpenPrint={(inv) => setInvoiceToPrint(inv)}
           editingInvoice={editingInvoice}

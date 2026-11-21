@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
-import { X, UserPlus, Phone, User, Check, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, UserPlus, Phone, User, Check, MapPin, Edit3 } from 'lucide-react';
 import { playHapticSound } from '../utils/storage';
 
-export function ClientModal({ isOpen, onClose, onAddClient }) {
+export function ClientModal({ isOpen, onClose, onAddClient, clientToEdit = null, onUpdateClient }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+
+  useEffect(() => {
+    if (clientToEdit) {
+      setName(clientToEdit.name || '');
+      setPhone(clientToEdit.phone || '');
+      setAddress(clientToEdit.address || '');
+    } else {
+      setName('');
+      setPhone('');
+      setAddress('');
+    }
+  }, [clientToEdit, isOpen]);
 
   if (!isOpen) return null;
 
@@ -15,14 +27,28 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
 
     playHapticSound('success');
 
-    const newClient = {
-      id: 'c_' + Date.now(),
-      name: name.trim(),
-      phone: phone.trim(),
-      address: address.trim(),
-    };
+    if (clientToEdit) {
+      const updated = {
+        ...clientToEdit,
+        name: name.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+      };
+      if (onUpdateClient) {
+        onUpdateClient(updated);
+      }
+    } else {
+      const newClient = {
+        id: 'c_' + Date.now(),
+        name: name.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+      };
+      if (onAddClient) {
+        onAddClient(newClient);
+      }
+    }
 
-    onAddClient(newClient);
     setName('');
     setPhone('');
     setAddress('');
@@ -38,12 +64,16 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
-              <UserPlus className="w-5 h-5" />
+            <span className={`w-10 h-10 rounded-xl flex items-center justify-center border ${clientToEdit ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+              {clientToEdit ? <Edit3 className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
             </span>
             <div>
-              <h2 className="text-xl font-black text-slate-900">إضافة زبون جديد</h2>
-              <p className="text-xs text-slate-500">تسجيل بيانات الزبون لطباعتها في الفاتورة</p>
+              <h2 className="text-xl font-black text-slate-900">
+                {clientToEdit ? 'تعديل بيانات الزبون' : 'إضافة زبون جديد'}
+              </h2>
+              <p className="text-xs text-slate-500">
+                {clientToEdit ? `تعديل معلومات ${clientToEdit.name}` : 'تسجيل بيانات الزبون لطباعتها في الفاتورة'}
+              </p>
             </div>
           </div>
 
@@ -116,7 +146,7 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
             className="w-full h-13 mt-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
           >
             <Check className="w-5 h-5 stroke-[2.5]" />
-            <span>حفظ الزبون والمتابعة</span>
+            <span>{clientToEdit ? 'حفظ التعديلات' : 'حفظ الزبون والمتابعة'}</span>
           </button>
         </form>
       </div>
