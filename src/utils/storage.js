@@ -468,10 +468,7 @@ export const getStoredInvoices = () => {
     const raw = localStorage.getItem(INVOICES_STORAGE_KEY);
     let list;
     if (!raw) {
-      const sample = generateSampleInvoices();
-      const normalizedSample = sample.map(normalizeInvoiceData).filter(Boolean);
-      localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(normalizedSample));
-      return normalizedSample;
+      return [];
     }
     list = JSON.parse(raw);
     if (!Array.isArray(list)) return [];
@@ -523,21 +520,30 @@ export const deleteInvoiceWithDb = async (invoiceId) => {
   return invoices;
 };
 
-// Calculate next auto-incrementing invoice number formatted as 6 digits (000001, 000002...)
+// Calculate next auto-incrementing invoice number starting from 1, filling any gaps/deleted slots
 export const getNextInvoiceNumber = (invoices = getStoredInvoices()) => {
-  if (!Array.isArray(invoices) || invoices.length === 0) {
-    return '000001';
+  const existingSet = new Set();
+  if (Array.isArray(invoices)) {
+    invoices.forEach((inv) => {
+      if (!inv || inv.id === undefined || inv.id === null) return;
+      const clean = String(inv.id).trim();
+      const match = clean.match(/^\d+$/) || clean.match(/\d+/);
+      if (match) {
+        const num = parseInt(match[0], 10);
+        if (!isNaN(num) && num > 0) {
+          existingSet.add(num);
+        }
+      }
+    });
   }
-  const numbers = invoices
-    .map((inv) => {
-      const match = String(inv.id).match(/\d+/);
-      return match ? parseInt(match[0], 10) : 0;
-    })
-    .filter((n) => !isNaN(n) && n > 0);
 
-  const maxNum = numbers.length > 0 ? Math.max(...numbers) : 0;
-  const nextNum = maxNum + 1;
-  return String(nextNum).padStart(6, '0');
+  // Start from num 1 and find the first available (unfilled/deleted) positive integer
+  let candidate = 1;
+  while (existingSet.has(candidate)) {
+    candidate++;
+  }
+
+  return String(candidate);
 };
 
 // Validate if an invoice number is already used in history

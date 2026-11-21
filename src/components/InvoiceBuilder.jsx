@@ -77,6 +77,23 @@ export function InvoiceBuilder({
     return new Date().toISOString().split('T')[0];
   });
 
+  // Synchronize invoiceNumber with the lowest available free integer starting from 1 (reusing deleted gaps)
+  useEffect(() => {
+    if (editingInvoice) return;
+    const nextFree = getNextInvoiceNumber(invoices);
+    setInvoiceNumber((prev) => {
+      if (!prev || isInvoiceNumberTaken(prev, null, invoices)) {
+        return nextFree;
+      }
+      const prevNum = parseInt(String(prev).trim(), 10);
+      const nextFreeNum = parseInt(String(nextFree).trim(), 10);
+      if (!isNaN(prevNum) && !isNaN(nextFreeNum) && prevNum > nextFreeNum) {
+        return nextFree;
+      }
+      return prev;
+    });
+  }, [invoices, editingInvoice]);
+
   // Payment Method: 'نقداً' | 'شيك' | 'تحويل' | 'كريدي'
   const [paymentMethod, setPaymentMethod] = useState('نقداً');
 
@@ -447,9 +464,51 @@ export function InvoiceBuilder({
     goToStep(1);
   };
 
-  // Direct Print
-  const handlePrint = () => {
+  // Direct Print & Persist Invoice (so number is immediately recorded and taken)
+  const handlePrint = async () => {
+    if (activeItems.length === 0) {
+      playHapticSound('error');
+      alert('⚠️ يرجى إدخال وزن منتوج واحد على الأقل لطباعة الفاتورة.');
+      return;
+    }
+
+    if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
+      setShowDuplicateAlert(true);
+      playHapticSound('error');
+      return;
+    }
+
     playHapticSound('success');
+    const invObj = buildCurrentInvoiceObject();
+
+    // 1. Persist to storage / database immediately so the invoice number is recorded and taken
+    if (onSaveInvoice) {
+      await onSaveInvoice(invObj);
+    }
+
+    // 2. Set success notification
+    setLastSavedSuccess({
+      id: invObj.id,
+      clientName: invObj.clientName,
+      totalAmount: invObj.totalAmount,
+      invoice: invObj,
+    });
+
+    // 3. Save all active item prices so they are remembered for next times
+    activeItems.forEach((it) => {
+      if (it.price && Number(it.price) > 0) {
+        if (selectedClientId) {
+          saveClientProductPrice(selectedClientId, it.productId, Number(it.price));
+        }
+        saveClientProductPrice('default', it.productId, Number(it.price));
+      }
+    });
+
+    // 4. Update next free invoice number
+    const updatedInvoices = [...invoices.filter((i) => i.id !== invObj.id), invObj];
+    setInvoiceNumber(getNextInvoiceNumber(updatedInvoices));
+
+    // 5. Trigger print dialog
     if (document.activeElement && typeof document.activeElement.blur === 'function') {
       document.activeElement.blur();
     }
@@ -680,7 +739,7 @@ export function InvoiceBuilder({
                 {/* Invoice Number Input */}
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
-                    <span>رقم الفاتورة (N° de Facture)</span>
+                    <span>رقم الفاتورة</span>
                     <span className="text-[10px] text-slate-400 font-mono">تلقائي +1</span>
                   </label>
                   <div className="relative">
@@ -691,7 +750,7 @@ export function InvoiceBuilder({
                       onChange={(e) => handleInvoiceNumberChange(e.target.value)}
                       onBlur={handleInvoiceNumberBlur}
                       className="w-full h-12 px-3.5 bg-slate-50 border-2 border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-lg font-black font-mono text-slate-900 outline-none tabular-nums transition-all"
-                      placeholder="000001"
+                      placeholder="1"
                     />
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400">
                       #NO
@@ -702,7 +761,7 @@ export function InvoiceBuilder({
                 {/* Invoice Date Picker */}
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-bold text-slate-700">
-                    <span>تاريخ الفاتورة (Date)</span>
+                    <span>تاريخ الفاتورة</span>
                   </label>
                   <input
                     type="date"
