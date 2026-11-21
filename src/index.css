@@ -141,13 +141,13 @@
 
   #printable-invoice .print-table th {
     border: none !important;
-    border-top: 1px solid #e2e8f0 !important;
-    border-bottom: 1.5px solid #cbd5e1 !important;
+    border-top: 1px solid #d1d5db !important;
+    border-bottom: 1.5px solid #9ca3af !important;
     padding: 6px 8px !important;
-    color: #475569 !important;
+    color: #1f2937 !important;
     font-size: 8.5pt !important;
     font-weight: 800 !important;
-    background-color: #f8fafc !important;
+    background-color: #E5E7EB !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -159,6 +159,13 @@
     color: #0f172a !important;
     line-height: 1.35 !important;
     font-size: 9pt !important;
+  }
+
+  #printable-invoice .invoice-bottom-wave,
+  #printable-invoice .invoice-bottom-wave svg,
+  #printable-invoice .invoice-bottom-wave svg path {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Prevent page breaks across elements */

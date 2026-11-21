@@ -19,6 +19,7 @@ import { HomeDashboard } from './components/HomeDashboard';
 import { ClientsManager } from './components/ClientsManager';
 import { AnalyticsReports } from './components/AnalyticsReports';
 import { InvoiceHistory } from './components/InvoiceHistory';
+import { ReportsHistoryDrawer } from './components/ReportsHistoryDrawer';
 import { BottomNav } from './components/BottomNav';
 import { InvoicePrintModal } from './components/InvoicePrintModal';
 import { AdminLogin } from './components/AdminLogin';
@@ -48,8 +49,7 @@ export function App() {
   const [settingsInitialTab, setSettingsInitialTab] = useState('company');
   const [businessInfo, setBusinessInfo] = useState(() => getBusinessInfo());
 
-  const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'clients' | 'history' | 'reports'
-  const [isBuildingInvoice, setIsBuildingInvoice] = useState(false); // Controls hiding steps until user clicks Add Invoice
+  const [isReportsDrawerOpen, setIsReportsDrawerOpen] = useState(false);
 
   const [clients, setClients] = useState(() => getStoredClients());
   const [invoices, setInvoices] = useState(() => getStoredInvoices());
@@ -205,10 +205,9 @@ export function App() {
     const updated = await persistInvoiceWithDb(newInvoice);
     setInvoices(updated);
     setEditingInvoice(null);
-    setIsBuildingInvoice(false);
+    setPreselectedClientId(null);
     handleSync(true);
-    setIsBuildingInvoice(false);
-    handleSync(true);
+    alert('✅ تم حفظ وإصدار الفاتورة بنجاح!');
   };
 
   const handleDeleteInvoice = async (invoiceId) => {
@@ -219,22 +218,18 @@ export function App() {
 
   const handleEditInvoice = (invoice) => {
     setEditingInvoice(invoice);
-    setIsBuildingInvoice(true);
-    setActiveTab('builder');
+    setIsReportsDrawerOpen(false);
   };
 
   const handleCancelEdit = () => {
     setEditingInvoice(null);
     setPreselectedClientId(null);
-    setIsBuildingInvoice(false);
   };
 
   const handleGoHome = () => {
     playHapticSound('tap');
     setPreselectedClientId(null);
     setEditingInvoice(null);
-    setIsBuildingInvoice(false);
-    setActiveTab('builder');
   };
 
   const handleOpenProductsManage = () => {
@@ -252,132 +247,53 @@ export function App() {
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col selection:bg-emerald-600 selection:text-white" dir="rtl">
       {/* Top Admin Header Bar (Hidden during print) */}
       <header className="no-print bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3">
           {/* Logo & Company Title (Brand Header - Button leading to Home) */}
           <button
             type="button"
             onClick={handleGoHome}
             className="flex items-center gap-2.5 p-1 -mr-1 text-right shrink-0 select-none hover:opacity-85 active:scale-95 transition-all cursor-pointer group bg-transparent border-0"
-            title="الرئيسية - لوحة التحكم"
+            title="الرئيسية - إعداد الفاتورة"
           >
             <div className="relative">
               <img
                 src="/wahibcoq.jpeg"
                 alt={businessInfo.name || BUSINESS_INFO.name}
-                className="w-8 h-8 rounded-lg object-cover border border-slate-200 shadow-xs group-hover:border-emerald-400 transition-colors"
+                className="w-9 h-9 rounded-xl object-cover border border-slate-200 shadow-xs group-hover:border-emerald-400 transition-colors"
               />
-              <span className="w-2 h-2 bg-emerald-500 border border-white rounded-full absolute -top-0.5 -left-0.5" />
+              <span className={`w-2.5 h-2.5 border border-white rounded-full absolute -top-0.5 -left-0.5 ${
+                dbStatus.connected ? 'bg-emerald-500' : 'bg-amber-400'
+              }`} />
             </div>
             <div className="flex flex-col text-right">
-              <span className="text-sm font-black text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors">
+              <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight group-hover:text-emerald-700 transition-colors">
                 {businessInfo.name || BUSINESS_INFO.name}
               </span>
               <span className="text-[10px] text-slate-400 font-bold hidden sm:inline">
-                منصة الفوترة والتوزيع
+                {businessInfo.frenchSubtitle || 'Vente de poulets vivants et découpes'}
               </span>
             </div>
           </button>
 
-          {/* Desktop Navigation Tabs (Visible on tablet/desktop, hidden on mobile) */}
-          <nav className="hidden md:flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-2xl border border-slate-200/80 shadow-xs">
+          {/* Action Tools in Header */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Prominent Reports & History Drawer Button */}
             <button
               type="button"
               onClick={() => {
                 playHapticSound('tap');
-                if (activeTab === 'builder' && !isBuildingInvoice) {
-                  setIsBuildingInvoice(true);
-                } else if (activeTab !== 'builder') {
-                  setPreselectedClientId(null);
-                  setEditingInvoice(null);
-                  setIsBuildingInvoice(true);
-                }
-                setActiveTab('builder');
+                setIsReportsDrawerOpen(true);
               }}
-              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${activeTab === 'builder'
-                ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
+              className="h-10 px-3.5 sm:px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer"
+              title="فتح التقارير وسجل الفواتير السابقة"
             >
-              {isBuildingInvoice ? (
-                <Layers className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-              ) : (
-                <PlusCircle className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-              )}
-              <span>{isBuildingInvoice ? 'إعداد الفاتورة' : 'فاتورة جديدة'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                playHapticSound('tap');
-                setIsBuildingInvoice(false);
-                setActiveTab('clients');
-              }}
-              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${activeTab === 'clients'
-                ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-            >
-              <Users className={`w-4 h-4 ${activeTab === 'clients' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
-              <span>الزبائن</span>
-              {clients.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono bg-slate-900 text-white tabular-nums">
-                  {clients.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                playHapticSound('tap');
-                setIsBuildingInvoice(false);
-                setActiveTab('history');
-              }}
-              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${activeTab === 'history'
-                ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-            >
-              <Receipt className={`w-4 h-4 ${activeTab === 'history' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
-              <span>السجل</span>
+              <BarChart3 className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+              <span>التقارير والسجل</span>
               {invoices.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono bg-slate-900 text-white tabular-nums">
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono bg-emerald-500 text-slate-950 tabular-nums">
                   {invoices.length}
                 </span>
               )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                playHapticSound('tap');
-                setIsBuildingInvoice(false);
-                setActiveTab('reports');
-              }}
-              className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer ${activeTab === 'reports'
-                ? 'bg-white text-emerald-800 shadow-xs font-black border border-slate-200/60'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-            >
-              <BarChart3 className={`w-4 h-4 ${activeTab === 'reports' ? 'text-emerald-600 stroke-[2.5]' : 'stroke-[1.8]'}`} />
-              <span>التقارير</span>
-            </button>
-          </nav>
-
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* Home Icon Only Button */}
-            <button
-              type="button"
-              onClick={handleGoHome}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95 cursor-pointer ${activeTab === 'builder' && !isBuildingInvoice
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
-                }`}
-              title="الصفحة الرئيسية"
-              aria-label="الرئيسية"
-            >
-              <Home className="w-4 h-4" />
             </button>
 
             {/* Settings Button */}
@@ -388,7 +304,7 @@ export function App() {
                 setSettingsInitialTab('company');
                 setIsCompanySettingsOpen(true);
               }}
-              className="h-8 px-2 sm:px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold flex items-center gap-1.5 transition-colors active:scale-95 cursor-pointer"
+              className="h-10 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold flex items-center gap-1.5 transition-colors active:scale-95 cursor-pointer"
               title="إعدادات وهيب كوك (المستخدم، كلمة المرور، وبيانات الشركة)"
             >
               <Settings className="w-4 h-4 text-slate-600" />
@@ -399,106 +315,46 @@ export function App() {
             <button
               type="button"
               onClick={handleLogout}
-              className="h-8 px-2 sm:px-2.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95 cursor-pointer"
+              className="h-10 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95 cursor-pointer"
               title="قفل التطبيق وتسجيل الخروج"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>قفل</span>
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">قفل</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Responsive Main Container (Full-fit on desktop, mobile-first column on phone) - Hidden during print */}
-      <main className="no-print flex-1 max-w-lg md:max-w-5xl lg:max-w-6xl xl:max-w-7xl w-full mx-auto p-3 sm:p-5 lg:p-6 pb-24 md:pb-12">
-        {activeTab === 'builder' && (
-          isBuildingInvoice ? (
-            <InvoiceBuilder
-              key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
-              clients={clients}
-              products={products}
-              onAddProduct={handleAddProduct}
-              initialClientId={preselectedClientId}
-              onAddClient={handleAddClient}
-              onSaveInvoice={handleSaveInvoice}
-              onOpenPrint={(inv) => setInvoiceToPrint(inv)}
-              editingInvoice={editingInvoice}
-              onCancelEdit={handleCancelEdit}
-            />
-          ) : (
-            <HomeDashboard
-              clients={clients}
-              invoices={invoices}
-              products={products}
-              onStartNewInvoice={() => {
-                setPreselectedClientId(null);
-                setEditingInvoice(null);
-                setIsBuildingInvoice(true);
-              }}
-              onViewClients={() => setActiveTab('clients')}
-              onViewHistory={() => setActiveTab('history')}
-              onManageProducts={handleOpenProductsManage}
-            />
-          )
-        )}
-
-        {activeTab === 'clients' && (
-          <ClientsManager
-            clients={clients}
-            invoices={invoices}
-            onAddClient={handleAddClient}
-            onUpdateClient={handleUpdateClient}
-            onDeleteClient={handleDeleteClient}
-            onStartInvoiceForClient={handleStartInvoiceForClient}
-          />
-        )}
-
-        {activeTab === 'history' && (
-          <InvoiceHistory
-            invoices={invoices}
-            clients={clients}
-            onDeleteInvoice={handleDeleteInvoice}
-            onEditInvoice={handleEditInvoice}
-            onOpenPrint={(inv) => setInvoiceToPrint(inv)}
-          />
-        )}
-
-        {activeTab === 'reports' && (
-          <AnalyticsReports
-            invoices={invoices}
-            clients={clients}
-            products={products}
-          />
-        )}
+      {/* Responsive Main Container: Unified Guided Single-Page Flow */}
+      <main className="no-print flex-1 max-w-lg md:max-w-4xl lg:max-w-5xl xl:max-w-6xl w-full mx-auto p-3 sm:p-5 lg:p-6 pb-20 md:pb-12">
+        <InvoiceBuilder
+          key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
+          clients={clients}
+          invoices={invoices}
+          products={products}
+          onAddProduct={handleAddProduct}
+          initialClientId={preselectedClientId}
+          onAddClient={handleAddClient}
+          onSaveInvoice={handleSaveInvoice}
+          onOpenPrint={(inv) => setInvoiceToPrint(inv)}
+          editingInvoice={editingInvoice}
+          onCancelEdit={handleCancelEdit}
+        />
       </main>
 
-      {/* Fixed Bottom Navigation (4 Large Thumb-Accessible Tabs) - Hidden during print and during invoice wizard */}
-      {!isBuildingInvoice && (
-        <BottomNav
-          activeTab={activeTab}
-          isBuildingInvoice={isBuildingInvoice}
-          setActiveTab={(tab) => {
-            if (tab === 'builder') {
-              if (activeTab === 'builder' && !isBuildingInvoice) {
-                // Clicking "فاتورة جديدة" from dashboard opens the steps!
-                setIsBuildingInvoice(true);
-              } else if (activeTab !== 'builder') {
-                // Clicking from another tab opens the steps!
-                setPreselectedClientId(null);
-                setEditingInvoice(null);
-                setIsBuildingInvoice(true);
-              }
-            } else {
-              setIsBuildingInvoice(false);
-            }
-            setActiveTab(tab);
-          }}
-          invoicesCount={invoices.length}
-          clientsCount={clients.length}
-        />
-      )}
+      {/* Reports & Invoice History Drawer */}
+      <ReportsHistoryDrawer
+        isOpen={isReportsDrawerOpen}
+        onClose={() => setIsReportsDrawerOpen(false)}
+        invoices={invoices}
+        clients={clients}
+        products={products}
+        onDeleteInvoice={handleDeleteInvoice}
+        onEditInvoice={handleEditInvoice}
+        onOpenPrint={(inv) => setInvoiceToPrint(inv)}
+      />
 
-      {/* Official A4 / Receipt Print Modal - Rendered outside main so print isolates this exactly */}
+      {/* Official Print Modal (Isolated for @media print) */}
       {invoiceToPrint && (
         <InvoicePrintModal
           isOpen={!!invoiceToPrint}
@@ -507,13 +363,11 @@ export function App() {
           onNewInvoice={() => {
             setInvoiceToPrint(null);
             setEditingInvoice(null);
-            setIsBuildingInvoice(true);
-            setActiveTab('builder');
           }}
         />
       )}
 
-      {/* Wahib Coq Info & Company Settings Modal (Opened by clicking Settings gear or logo) */}
+      {/* Wahib Coq Info & Company Settings Modal */}
       <CompanySettingsModal
         isOpen={isCompanySettingsOpen}
         initialTab={settingsInitialTab}

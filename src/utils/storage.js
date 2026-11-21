@@ -523,6 +523,39 @@ export const deleteInvoiceWithDb = async (invoiceId) => {
   return invoices;
 };
 
+// Calculate next auto-incrementing invoice number formatted as 6 digits (000001, 000002...)
+export const getNextInvoiceNumber = (invoices = getStoredInvoices()) => {
+  if (!Array.isArray(invoices) || invoices.length === 0) {
+    return '000001';
+  }
+  const numbers = invoices
+    .map((inv) => {
+      const match = String(inv.id).match(/\d+/);
+      return match ? parseInt(match[0], 10) : 0;
+    })
+    .filter((n) => !isNaN(n) && n > 0);
+
+  const maxNum = numbers.length > 0 ? Math.max(...numbers) : 0;
+  const nextNum = maxNum + 1;
+  return String(nextNum).padStart(6, '0');
+};
+
+// Validate if an invoice number is already used in history
+export const isInvoiceNumberTaken = (number, currentEditingId, invoices = getStoredInvoices()) => {
+  if (!number) return false;
+  const clean = String(number).trim();
+  const cleanNum = parseInt(clean, 10);
+  return (invoices || []).some((inv) => {
+    if (currentEditingId && String(inv.id).trim() === String(currentEditingId).trim()) {
+      return false;
+    }
+    const invId = String(inv.id).trim();
+    if (invId === clean) return true;
+    const invNum = parseInt(invId, 10);
+    return !isNaN(cleanNum) && !isNaN(invNum) && cleanNum === invNum;
+  });
+};
+
 // Remember custom price per client/product
 export const getClientProductPrice = (clientId, productId, defaultPrice) => {
   try {

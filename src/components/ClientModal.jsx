@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, UserPlus, Phone, User, Check, Tag, Sparkles } from 'lucide-react';
+import { X, UserPlus, Phone, User, Check, Tag, Sparkles, MapPin } from 'lucide-react';
 import { playHapticSound, getStoredClientCategories, saveCustomClientCategory } from '../utils/storage';
 
 export function ClientModal({ isOpen, onClose, onAddClient }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [category, setCategory] = useState('مطعم');
   const [categoriesList, setCategoriesList] = useState(() => getStoredClientCategories());
   const customInputRef = useRef(null);
@@ -34,12 +35,14 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
       id: 'c_' + Date.now(),
       name: name.trim(),
       phone: phone.trim(),
+      address: address.trim(),
       category: cleanCategory,
     };
 
     onAddClient(newClient);
     setName('');
     setPhone('');
+    setAddress('');
     setCategory('مطعم');
     onClose();
   };
@@ -70,8 +73,8 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
               <UserPlus className="w-5 h-5" />
             </span>
             <div>
-              <h2 className="text-xl font-black text-slate-900">إضافة زبون تجاري</h2>
-              <p className="text-xs text-slate-500">تسجيل زبون في قاعدة البيانات المحلية</p>
+              <h2 className="text-xl font-black text-slate-900">إضافة زبون جديد</h2>
+              <p className="text-xs text-slate-500">تسجيل بيانات الزبون لطباعتها في الفاتورة</p>
             </div>
           </div>
 
@@ -81,19 +84,19 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
               playHapticSound('tap');
               onClose();
             }}
-            className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Client Name */}
-          <div className="flex flex-col gap-1.5">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+          {/* 1. Client Name (Required) */}
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-slate-500" />
-              <span>اسم الزبون أو المحل التجاري *</span>
+              <span>الاسم أو اسم المحل (ضروري) *</span>
             </label>
             <input
               type="text"
@@ -102,12 +105,12 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="مثال: مطعم الأطلس، سناك السعادة، المعلم كريم..."
-              className="w-full h-[52px] px-4 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-lg font-bold text-slate-900 outline-none transition-all"
+              className="w-full h-12 px-4 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-base font-bold text-slate-900 outline-none transition-all"
             />
           </div>
 
-          {/* Phone */}
-          <div className="flex flex-col gap-1.5">
+          {/* 2. Phone (Optional) */}
+          <div className="flex flex-col gap-1">
             <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <Phone className="w-3.5 h-3.5 text-slate-500" />
               <span>رقم الهاتف (اختياري)</span>
@@ -118,55 +121,49 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
               onChange={(e) => setPhone(e.target.value.replace(/\s+/g, ''))}
               placeholder="06XXXXXXXX"
               dir="ltr"
-              className="w-full h-[52px] px-4 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-lg font-bold font-mono text-slate-900 outline-none text-left transition-all tabular-nums"
+              className="w-full h-12 px-4 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-base font-bold font-mono text-slate-900 outline-none text-left transition-all tabular-nums"
               style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
             />
           </div>
 
-          {/* Activity Type with Blank Input to Add Another Manually */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-slate-500" />
-                <span>نوع النشاط التجاري:</span>
+          {/* 3. Address (Optional) */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-slate-500" />
+              <span>العنوان (اختياري)</span>
+            </label>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="مثال: حي السلام، شارع محمد الخامس..."
+              className="w-full h-12 px-4 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all"
+            />
+          </div>
+
+          {/* Activity Category */}
+          <div className="flex flex-col gap-1.5 pt-1">
+            <label className="text-xs font-bold text-slate-600 flex items-center justify-between">
+              <span className="flex items-center gap-1">
+                <Tag className="w-3.5 h-3.5 text-slate-400" />
+                <span>النشاط:</span>
               </span>
-              <span className="text-[11px] font-normal text-slate-400">
-                (اختر أو اكتب نشاطاً يدوياً)
+              <span className="text-[10px] text-slate-400">
+                (اختياري)
               </span>
             </label>
 
-            {/* Blank/Editable Input for Activity Type */}
-            <div className="relative">
-              <input
-                ref={customInputRef}
-                type="text"
-                list="client-categories-suggestions"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="اكتب نوع النشاط هنا (مثال: فندق، مقهى، جزار، مخبزة...)"
-                className="w-full h-12 pr-10 pl-3 bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl text-sm font-bold text-slate-900 outline-none transition-all"
-              />
-              <Tag className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-
-              <datalist id="client-categories-suggestions">
-                {categoriesList.map((cat) => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
-            </div>
-
-            {/* Quick preset & dynamic custom suggestions pills */}
-            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-              {categoriesList.map((cat) => {
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {categoriesList.slice(0, 5).map((cat) => {
                 const isSelected = category.trim() === cat;
                 return (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => handleSelectPreset(cat)}
-                    className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
                       isSelected
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
                         : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
                     }`}
                   >
@@ -174,37 +171,16 @@ export function ClientModal({ isOpen, onClose, onAddClient }) {
                   </button>
                 );
               })}
-
-              <button
-                type="button"
-                onClick={handleSelectOther}
-                className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
-                  !categoriesList.includes(category.trim()) && category.trim() !== ''
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                    : 'bg-slate-100 text-emerald-800 border-dashed border-emerald-300 hover:bg-emerald-50'
-                }`}
-              >
-                + نشاط يدوي جديد
-              </button>
             </div>
-
-            {/* Notification when entering a new category */}
-            {category.trim() && !categoriesList.includes(category.trim()) && category.trim() !== 'عام' && (
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-lg animate-fadeIn">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>سيتم حفظ نشاط "{category.trim()}" تلقائياً كاقتراح للزبائن القادمين</span>
-              </div>
-            )}
           </div>
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             type="submit"
-            disabled={!name.trim()}
-            className="w-full h-[52px] mt-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-lg flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+            className="w-full h-13 mt-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
           >
             <Check className="w-5 h-5 stroke-[2.5]" />
-            <span>حفظ الزبون</span>
+            <span>حفظ الزبون والمتابعة</span>
           </button>
         </form>
       </div>
