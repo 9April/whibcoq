@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Printer, PlusCircle, X, Share2, Copy, FileText, Check, Download, FileDown, Loader2 } from 'lucide-react';
+import { Printer, PlusCircle, X, Share2, FileText, Check, Download, FileDown, Loader2 } from 'lucide-react';
 import { formatDh, formatKg, formatPhone, playHapticSound, getBusinessInfo } from '../utils/storage';
 
 export function InvoicePrintModal({
@@ -79,41 +79,6 @@ export function InvoicePrintModal({
     return invoice.date;
   };
 
-  const copySummaryText = () => {
-    playHapticSound('tap');
-
-    const formatAmountArabic = (num) => {
-      if (num === null || num === undefined || isNaN(num)) return '0,00 درهم';
-      const val = Number(num);
-      const parts = val.toFixed(2).split('.');
-      const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-      return `${integerPart},${parts[1]} درهم`;
-    };
-
-    const formatWeightArabic = (num) => {
-      if (num === null || num === undefined || isNaN(num)) return '\u200E0.0 kg\u200E';
-      const val = Number(num);
-      const parts = val.toFixed(1).split('.');
-      const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-      return `\u200E${integerPart}.${parts[1]} kg\u200E`;
-    };
-
-    let text = `*فاتورة وهيب كوك*\n`;
-    text += `رقم الفاتورة: ${invoice.id}\n`;
-    text += `الزبون: ${invoice.clientName}\n`;
-    text += `التاريخ: ${displayDate()}\n`;
-    text += `------------------------\n`;
-    invoice.items.forEach((item, idx) => {
-      text += `${idx + 1}. ${item.productName}: ${item.weight} kg × ${item.price} درهم = ${formatAmountArabic(item.total)}\n`;
-    });
-    text += `------------------------\n`;
-    text += `*الوزن الإجمالي: ${formatWeightArabic(invoice.totalWeight)}*\n`;
-    text += `*المجموع الصافي: ${formatAmountArabic(invoice.totalAmount)}*\n`;
-
-    navigator.clipboard.writeText(text);
-    alert('تم نسخ تفاصيل الفاتورة بنجاح!');
-  };
-
   return (
     <div className="printable-invoice-modal-overlay fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/70 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto animate-fadeIn">
       <div
@@ -170,17 +135,6 @@ export function InvoicePrintModal({
             >
               <Printer className="w-4 h-4" />
               <span>طباعة</span>
-            </button>
-
-            {/* Copy / Share Button */}
-            <button
-              type="button"
-              onClick={copySummaryText}
-              className="h-10 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 border border-slate-700 active:scale-95"
-              title="نسخ للواتساب"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">نسخ</span>
             </button>
 
             {/* New Invoice Button */}
