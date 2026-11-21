@@ -1220,45 +1220,48 @@ export function InvoiceBuilder({
             </div>
 
             {/* Action Buttons Below Invoice */}
-            <div className="no-print grid grid-cols-1 sm:grid-cols-3 gap-2.5 max-w-[144mm] mx-auto w-full">
-              {/* 1. Print */}
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="h-13 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
-              >
-                <Printer className="w-4 h-4" />
-                <span>طباعة الفاتورة</span>
-              </button>
+            <div className="no-print flex flex-col gap-3 max-w-[144mm] mx-auto w-full pt-2">
+              {/* Row 1: Two Main Action Buttons side-by-side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                {/* 1. Print */}
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="h-13 px-5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                >
+                  <Printer className="w-5 h-5 shrink-0" />
+                  <span className="whitespace-nowrap">طباعة الفاتورة</span>
+                </button>
 
-              {/* 2. Save & Download PDF */}
-              <button
-                type="button"
-                onClick={handleSaveInvoiceAction}
-                disabled={isSavingPdf}
-                className="h-13 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-60"
-              >
-                {isSavingPdf ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>جاري تحميل الفاتورة PDF...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-5 h-5 stroke-[2.5]" />
-                    <span>حفظ وتحميل الفاتورة PDF</span>
-                  </>
-                )}
-              </button>
+                {/* 2. Save & Download PDF */}
+                <button
+                  type="button"
+                  onClick={handleSaveInvoiceAction}
+                  disabled={isSavingPdf}
+                  className="h-13 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-60"
+                >
+                  {isSavingPdf ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0" />
+                      <span className="whitespace-nowrap">جاري تحميل الفاتورة PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5 stroke-[2.5] shrink-0" />
+                      <span className="whitespace-nowrap">حفظ وتحميل الفاتورة PDF</span>
+                    </>
+                  )}
+                </button>
+              </div>
 
-              {/* 3. New Invoice */}
+              {/* Row 2: Remake / Restart New Invoice from 0 (placed neatly under the two buttons) */}
               <button
                 type="button"
                 onClick={handleStartNewInvoice}
-                className="h-13 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-sm flex items-center justify-center gap-2 border border-slate-200 active:scale-95 transition-all cursor-pointer"
+                className="w-full h-12 px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center gap-2 border border-slate-200 shadow-xs active:scale-95 transition-all cursor-pointer"
               >
-                <RotateCcw className="w-4 h-4" />
-                <span>فاتورة جديدة (البدء من جديد)</span>
+                <RotateCcw className="w-4 h-4 shrink-0 text-slate-500" />
+                <span className="whitespace-nowrap">فاتورة جديدة (البدء من جديد)</span>
               </button>
             </div>
           </div>
