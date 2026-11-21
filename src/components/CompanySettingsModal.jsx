@@ -694,11 +694,6 @@ export function CompanySettingsModal({
                               </span>
                             )}
                           </div>
-                          {p.subname && (
-                            <span className="text-[10px] text-slate-400 block truncate" dir="ltr">
-                              {p.subname}
-                            </span>
-                          )}
                         </div>
                       </div>
 

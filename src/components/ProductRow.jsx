@@ -62,9 +62,6 @@ export function ProductRow({
             <h3 className="text-xl sm:text-2xl font-black text-slate-900 truncate">
               {product.name}
             </h3>
-            <span className="text-xs font-semibold text-slate-400 hidden sm:inline truncate">
-              {product.subname}
-            </span>
           </div>
         </div>
 
