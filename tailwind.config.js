@@ -7,6 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
+        softgreen: {
+          50: '#F0FDF4',
+          100: '#DCFCE7',
+          200: '#BBF7D0',
+          300: '#86EFAC',
+          400: '#34D399',
+          500: '#10B981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065F46',
+          900: '#064E3B',
+        },
         emerald: {
           50: '#FDF2F2',
           100: '#FCE7E7',

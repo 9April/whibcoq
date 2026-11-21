@@ -910,7 +910,7 @@ export function InvoiceBuilder({
                 }
                 goToStep(2);
               }}
-              className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer"
+              className="w-full h-14 rounded-2xl bg-softgreen-600 hover:bg-softgreen-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-softgreen-600/20 active:scale-95 transition-all cursor-pointer"
             >
               <span>متابعة: اختيار السلع والكميات (الخطوة 2)</span>
               <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
@@ -1136,7 +1136,7 @@ export function InvoiceBuilder({
                     goToStep(3);
                   }}
                   className={`h-12 px-5 sm:px-6 rounded-xl font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${activeItems.length > 0
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    ? 'bg-softgreen-600 hover:bg-softgreen-700 text-white shadow-softgreen-600/20'
                     : 'bg-slate-200 text-slate-500'
                     }`}
                 >
@@ -1417,7 +1417,7 @@ export function InvoiceBuilder({
                   type="button"
                   onClick={handleSaveInvoiceAction}
                   disabled={isSavingPdf}
-                  className="h-13 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-60"
+                  className="h-13 px-5 rounded-2xl bg-softgreen-600 hover:bg-softgreen-700 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-60"
                 >
                   {isSavingPdf ? (
                     <>
