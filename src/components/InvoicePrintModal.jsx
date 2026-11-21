@@ -36,17 +36,6 @@ export function InvoicePrintModal({
       const html2pdf = html2pdfModule.default || html2pdfModule;
 
       const original = printAreaRef.current;
-      const clone = original.cloneNode(true);
-      clone.id = 'printable-invoice-modal-temp-pdf';
-      clone.style.width = '144mm';
-      clone.style.minHeight = '200mm';
-      clone.style.position = 'fixed';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      clone.style.background = '#ffffff';
-      clone.style.zIndex = '-9999';
-      document.body.appendChild(clone);
-
       const cleanClientName = (invoice.clientName || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
       const filename = `Facture_${invoice.id}_${cleanClientName || 'Client'}.pdf`;
 
@@ -58,21 +47,15 @@ export function InvoicePrintModal({
           scale: 2,
           useCORS: true,
           letterRendering: false, // Critical: false prevents broken Arabic characters
-          scrollX: 0,
-          scrollY: 0,
+          backgroundColor: '#ffffff',
+          logging: false,
         },
         jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' },
       };
 
-      try {
-        await html2pdf().set(opt).from(clone).save();
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-      } finally {
-        if (clone.parentNode) {
-          clone.parentNode.removeChild(clone);
-        }
-      }
+      await html2pdf().set(opt).from(original).save();
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error('Error saving PDF:', err);
       alert('حدث خطأ أثناء حفظ الفاتورة، يرجى المحاولة ثانية');

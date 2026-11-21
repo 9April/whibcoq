@@ -378,24 +378,13 @@ export function InvoiceBuilder({
     playHapticSound('success');
     const invObj = buildCurrentInvoiceObject();
 
-    // 1. Download PDF directly to device using an isolated off-screen clone (NEVER alters visible DOM)
+    // 1. Download PDF directly to device
     try {
       if (printAreaRef.current) {
         const html2pdfModule = await import('html2pdf.js');
         const html2pdf = html2pdfModule.default || html2pdfModule;
 
         const original = printAreaRef.current;
-        const clone = original.cloneNode(true);
-        clone.id = 'printable-invoice-temp-pdf';
-        clone.style.width = '144mm';
-        clone.style.minHeight = '200mm';
-        clone.style.position = 'fixed';
-        clone.style.left = '-9999px';
-        clone.style.top = '0';
-        clone.style.background = '#ffffff';
-        clone.style.zIndex = '-9999';
-        document.body.appendChild(clone);
-
         const cleanClientName = (selectedClient.name || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
         const filename = `Facture_${invoiceNumber}_${cleanClientName || 'Client'}.pdf`;
 
@@ -407,19 +396,13 @@ export function InvoiceBuilder({
             scale: 2,
             useCORS: true,
             letterRendering: false, // Critical: false prevents broken Arabic glyphs
-            scrollX: 0,
-            scrollY: 0,
+            backgroundColor: '#ffffff',
+            logging: false,
           },
           jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' },
         };
 
-        try {
-          await html2pdf().set(opt).from(clone).save();
-        } finally {
-          if (clone.parentNode) {
-            clone.parentNode.removeChild(clone);
-          }
-        }
+        await html2pdf().set(opt).from(original).save();
       }
     } catch (err) {
       console.error('Error generating PDF during invoice save:', err);
@@ -450,23 +433,9 @@ export function InvoiceBuilder({
       }
     });
 
-    // 4. Auto-increment to the next free invoice number & reset builder to clean state
+    // 4. Auto-increment to the next free invoice number in state
     const updatedInvoices = [...invoices.filter((i) => i.id !== invObj.id), invObj];
     setInvoiceNumber(getNextInvoiceNumber(updatedInvoices));
-
-    const reset = {};
-    products.forEach((p) => {
-      const savedPrice = getClientProductPrice(selectedClientId, p.id, 0);
-      reset[p.id] = {
-        weight: '',
-        price: savedPrice !== undefined && savedPrice !== null && savedPrice !== '' ? savedPrice : 0,
-      };
-    });
-    setItemsState(reset);
-    setFilterMode('all');
-
-    // Return to Step 1 in clean state
-    goToStep(1);
   };
 
   // Direct Print & Persist Invoice (so number is immediately recorded and taken)
