@@ -859,8 +859,8 @@ export function InvoiceBuilder({
               </div>
             </div>
 
-            {/* 12 Poultry Products List (1 col on mobile, 2 cols on desktop) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
+            {/* 12 Poultry Products List: 1 product per line taking full width */}
+            <div className="flex flex-col gap-3 sm:gap-3.5 w-full">
               {displayedProducts.length > 0 ? (
                 displayedProducts.map((product) => {
                   const currentItem = itemsState[product.id] || { weight: '', price: product.defaultPrice };

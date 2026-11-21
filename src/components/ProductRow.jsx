@@ -45,7 +45,7 @@ export function ProductRow({
 
   return (
     <div
-      className={`bg-white rounded-2xl border transition-all duration-150 p-3 sm:p-4 shadow-sm flex flex-col gap-2.5 ${
+      className={`w-full bg-white rounded-2xl border transition-all duration-150 p-3.5 sm:p-4 shadow-xs flex flex-col gap-2.5 ${
         isActive
           ? 'border-emerald-600 ring-2 ring-emerald-600/20 bg-emerald-50/20'
           : 'border-slate-200 hover:border-slate-300'
