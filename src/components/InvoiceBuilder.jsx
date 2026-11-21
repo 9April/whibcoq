@@ -399,18 +399,16 @@ export function InvoiceBuilder({
           <button
             type="button"
             onClick={() => scrollToSection('section-step-1')}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              activeSection === 'step1'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : selectedClientId
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeSection === 'step1'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : selectedClientId
                 ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
                 : 'bg-slate-100 text-slate-700'
-            }`}
+              }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                activeSection === 'step1' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
-              }`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeSection === 'step1' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
+                }`}
             >
               {selectedClientId ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '1'}
             </span>
@@ -429,20 +427,18 @@ export function InvoiceBuilder({
               scrollToSection('section-step-2');
             }}
             disabled={!step2Unlocked && !selectedClientId}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              activeSection === 'step2'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : activeItems.length > 0
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeSection === 'step2'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : activeItems.length > 0
                 ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
                 : step2Unlocked || selectedClientId
-                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                : 'bg-slate-100/50 text-slate-400 cursor-not-allowed opacity-60'
-            }`}
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  : 'bg-slate-100/50 text-slate-400 cursor-not-allowed opacity-60'
+              }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                activeSection === 'step2' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
-              }`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeSection === 'step2' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
+                }`}
             >
               {activeItems.length > 0 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : '2'}
             </span>
@@ -460,18 +456,16 @@ export function InvoiceBuilder({
               scrollToSection('section-step-3');
             }}
             disabled={activeItems.length === 0}
-            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              activeSection === 'step3'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : activeItems.length > 0
+            className={`h-11 sm:h-12 px-2 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeSection === 'step3'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : activeItems.length > 0
                 ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                 : 'bg-slate-100/50 text-slate-400 cursor-not-allowed opacity-60'
-            }`}
+              }`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                activeSection === 'step3' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
-              }`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${activeSection === 'step3' ? 'bg-white text-emerald-800' : 'bg-slate-300 text-slate-700'
+                }`}
             >
               3
             </span>
@@ -573,11 +567,10 @@ export function InvoiceBuilder({
                 playHapticSound('tap');
                 setInvoiceDate(new Date().toISOString().split('T')[0]);
               }}
-              className={`h-11 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border cursor-pointer ${
-                invoiceDate === new Date().toISOString().split('T')[0]
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'
-              }`}
+              className={`h-11 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border cursor-pointer ${invoiceDate === new Date().toISOString().split('T')[0]
+                ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'
+                }`}
             >
               <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3] shrink-0" />
               <span className="truncate">تاريخ اليوم ({new Date().toISOString().split('T')[0].split('-').reverse().join('/')})</span>
@@ -591,15 +584,14 @@ export function InvoiceBuilder({
                 d.setDate(d.getDate() - 1);
                 setInvoiceDate(d.toISOString().split('T')[0]);
               }}
-              className={`h-11 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border cursor-pointer ${
-                (() => {
-                  const d = new Date();
-                  d.setDate(d.getDate() - 1);
-                  return invoiceDate === d.toISOString().split('T')[0];
-                })()
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-              }`}
+              className={`h-11 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border cursor-pointer ${(() => {
+                const d = new Date();
+                d.setDate(d.getDate() - 1);
+                return invoiceDate === d.toISOString().split('T')[0];
+              })()
+                ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                }`}
             >
               <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
               <span>تاريخ الأمس</span>
@@ -668,11 +660,10 @@ export function InvoiceBuilder({
                     setSelectedClientId(client.id);
                     setStep2Unlocked(true);
                   }}
-                  className={`p-3 rounded-2xl border-2 text-right transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-98 ${
-                    isSelected
-                      ? 'border-emerald-600 bg-emerald-50/40 shadow-xs ring-2 ring-emerald-500/20'
-                      : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-                  }`}
+                  className={`p-3 rounded-2xl border-2 text-right transition-all flex flex-col justify-between gap-2 cursor-pointer active:scale-98 ${isSelected
+                    ? 'border-emerald-600 bg-emerald-50/40 shadow-xs ring-2 ring-emerald-500/20'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -776,11 +767,10 @@ export function InvoiceBuilder({
                     playHapticSound('tap');
                     setFilterMode('all');
                   }}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    filterMode === 'all'
-                      ? 'bg-white text-slate-900 shadow-sm font-black'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${filterMode === 'all'
+                    ? 'bg-white text-slate-900 shadow-sm font-black'
+                    : 'text-slate-600 hover:text-slate-900'
+                    }`}
                 >
                   الكل ({products.length})
                 </button>
@@ -791,11 +781,10 @@ export function InvoiceBuilder({
                     playHapticSound('tap');
                     setFilterMode('active');
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                    filterMode === 'active'
-                      ? 'bg-white text-emerald-800 shadow-sm font-black'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${filterMode === 'active'
+                    ? 'bg-white text-emerald-800 shadow-sm font-black'
+                    : 'text-slate-600 hover:text-slate-900'
+                    }`}
                 >
                   <span>المختارة فقط</span>
                   {activeItems.length > 0 && (
@@ -886,11 +875,10 @@ export function InvoiceBuilder({
                   }
                   scrollToSection('section-step-3');
                 }}
-                className={`h-12 px-5 sm:px-6 rounded-xl font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${
-                  activeItems.length > 0
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    : 'bg-slate-200 text-slate-500'
-                }`}
+                className={`h-12 px-5 sm:px-6 rounded-xl font-black text-sm flex items-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${activeItems.length > 0
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  : 'bg-slate-200 text-slate-500'
+                  }`}
               >
                 <span>معاينة الفاتورة بالأسفل (الخطوة 3)</span>
                 <ArrowDown className="w-4 h-4 stroke-[2.5]" />
@@ -956,11 +944,10 @@ export function InvoiceBuilder({
                         playHapticSound('tap');
                         setPaymentMethod(method);
                       }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                        paymentMethod === method
-                          ? 'bg-slate-900 text-white shadow-xs'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${paymentMethod === method
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                        }`}
                     >
                       {method}
                     </button>

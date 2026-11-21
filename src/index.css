@@ -15,12 +15,15 @@
   }
 
   input, textarea, select {
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums lining-nums;
   }
 }
 
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
+.tabular-nums,
+.font-mono {
+  font-family: 'Inter', 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 /* Custom crisp scrollbar */
@@ -175,5 +178,13 @@
   #printable-invoice div {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+
+  /* Crisp modern tabular numbers in print */
+  #printable-invoice .font-mono,
+  #printable-invoice .tabular-nums {
+    font-family: 'Inter', 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-variant-numeric: tabular-nums lining-nums !important;
+    font-feature-settings: "tnum" 1, "lnum" 1 !important;
   }
 }
