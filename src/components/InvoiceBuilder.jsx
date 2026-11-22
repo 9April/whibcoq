@@ -1415,9 +1415,9 @@ export function InvoiceBuilder({
                     <thead>
                       <tr className="bg-[#E5E7EB] text-slate-800 text-xs font-black">
                         <th className="py-2 px-2.5 text-right">المنتوج</th>
-                        <th className="py-2 px-2.5 text-center w-24">الوزن (كلغ)</th>
-                        <th className="py-2 px-2.5 text-center w-24">الثمن</th>
-                        <th className="py-2 px-2.5 text-left w-28">المجموع</th>
+                        <th className="py-2 px-2.5 text-right w-24">الوزن (كلغ)</th>
+                        <th className="py-2 px-2.5 text-right w-24">الثمن</th>
+                        <th className="py-2 px-2.5 text-right w-28">المجموع</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
@@ -1427,13 +1427,13 @@ export function InvoiceBuilder({
                             <td className="py-2.5 px-2.5 font-bold text-slate-900">
                               {item.productName}
                             </td>
-                            <td className="py-2.5 px-2.5 text-center font-mono font-bold text-slate-800 tabular-nums">
+                            <td className="py-2.5 px-2.5 text-right font-mono font-bold text-slate-800 tabular-nums">
                               {item.weight}
                             </td>
-                            <td className="py-2.5 px-2.5 text-center font-mono font-bold text-slate-800 tabular-nums" dir="ltr">
+                            <td className="py-2.5 px-2.5 text-right font-mono font-bold text-slate-800 tabular-nums">
                               {Number(item.price).toFixed(2)}
                             </td>
-                            <td className="py-2.5 px-2.5 text-left font-mono font-black text-slate-900 tabular-nums" dir="ltr">
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-slate-900 tabular-nums">
                               {formatNumberOnly(item.total)}
                             </td>
                           </tr>
@@ -1445,11 +1445,11 @@ export function InvoiceBuilder({
                         <td className="py-2.5 px-2.5 text-slate-900">
                           المجموع الكلي
                         </td>
-                        <td className="py-2.5 px-2.5 text-center font-mono font-black text-slate-900 tabular-nums" dir="ltr">
+                        <td className="py-2.5 px-2.5 text-right font-mono font-black text-slate-900 tabular-nums">
                           {formatKg(totalWeight)}
                         </td>
                         <td className="py-2.5 px-2.5"></td>
-                        <td className="py-2.5 px-2.5 text-left font-mono font-black text-base text-emerald-700 tabular-nums" dir="ltr">
+                        <td className="py-2.5 px-2.5 text-right font-mono font-black text-base text-emerald-700 tabular-nums">
                           {formatDh(grandTotal)}
                         </td>
                       </tr>
