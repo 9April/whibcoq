@@ -36,6 +36,7 @@ import { ProductRow } from './ProductRow';
 import { ClientModal } from './ClientModal';
 import {
   formatDh,
+  formatNumberOnly,
   formatKg,
   formatArabicDate,
   formatPhone,
@@ -1415,7 +1416,7 @@ export function InvoiceBuilder({
                       <tr className="bg-[#E5E7EB] text-slate-800 text-xs font-black">
                         <th className="py-2 px-2.5 text-right">المنتوج</th>
                         <th className="py-2 px-2.5 text-center w-24">الوزن (كلغ)</th>
-                        <th className="py-2 px-2.5 text-center w-24">الثمن (درهم)</th>
+                        <th className="py-2 px-2.5 text-center w-24">الثمن</th>
                         <th className="py-2 px-2.5 text-left w-28">المجموع</th>
                       </tr>
                     </thead>
@@ -1433,7 +1434,7 @@ export function InvoiceBuilder({
                               {Number(item.price).toFixed(2)}
                             </td>
                             <td className="py-2.5 px-2.5 text-left font-mono font-black text-slate-900 tabular-nums" dir="ltr">
-                              {formatDh(item.total)}
+                              {formatNumberOnly(item.total)}
                             </td>
                           </tr>
                         ))

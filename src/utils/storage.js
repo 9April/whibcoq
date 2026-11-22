@@ -123,6 +123,16 @@ export const saveCustomClientCategory = (newCat) => {
   return getStoredClientCategories();
 };
 
+// Format number without currency symbol (e.g., "1 240,00")
+export const formatNumberOnly = (num) => {
+  if (num === null || num === undefined) return '0,00';
+  const val = Number(num);
+  if (isNaN(val)) return '0,00';
+  const parts = val.toFixed(2).split('.');
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
+  return `\u200E${integerPart},${parts[1]}\u200E`;
+};
+
 // Format Moroccan Dirham (Strict Left-to-Right numeric protection with non-breaking space: e.g., "1 240,00 درهم")
 export const formatDh = (num) => {
   if (num === null || num === undefined) return '\u200E0,00\u200E درهم';
