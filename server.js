@@ -149,6 +149,21 @@ app.post(['/api/invoices', '/api/invoices.php'], async (req, res) => {
     const { id, clientId, clientName, clientPhone, date, totalWeight, totalAmount, items, timestamp } = req.body;
     if (!id) return res.status(400).json({ ok: false, error: 'Invoice ID is required' });
 
+    // Untrack from deleted_invoices if present
+    try {
+      const [rows] = await pool.query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_invoices'");
+      const stored = rows[0]?.setting_value ? JSON.parse(rows[0].setting_value) : [];
+      const idStr = String(id).trim();
+      if (stored.map((x) => String(x).trim()).includes(idStr)) {
+        const cleaned = stored.filter((x) => String(x).trim() !== idStr);
+        await pool.query(
+          `INSERT INTO settings (setting_key, setting_value) VALUES ('deleted_invoices', ?)
+           ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+          [JSON.stringify(cleaned)]
+        );
+      }
+    } catch {}
+
     const itemsStr = typeof items === 'string' ? items : JSON.stringify(items || []);
     const ts = timestamp || Date.now();
 
@@ -291,12 +306,19 @@ app.post(['/api/sync', '/api/sync.php'], async (req, res) => {
       storedDeletedInvoices = delInvRows[0]?.setting_value ? JSON.parse(delInvRows[0].setting_value) : [];
     } catch {}
 
+    const activeInvoiceIds = Array.isArray(invoices) ? invoices.map((inv) => String(inv.id).trim()) : [];
+
     if (Array.isArray(deletedInvoiceIds)) {
       for (const id of deletedInvoiceIds) {
-        if (id && !storedDeletedInvoices.includes(id)) {
-          storedDeletedInvoices.push(id);
+        const idStr = String(id).trim();
+        if (idStr && !storedDeletedInvoices.map((x) => String(x).trim()).includes(idStr) && !activeInvoiceIds.includes(idStr)) {
+          storedDeletedInvoices.push(idStr);
         }
       }
+    }
+
+    if (activeInvoiceIds.length > 0) {
+      storedDeletedInvoices = storedDeletedInvoices.filter((x) => !activeInvoiceIds.includes(String(x).trim()));
     }
 
     if (storedDeletedInvoices.length > 0) {

@@ -259,12 +259,19 @@ export function mysqlApiPlugin() {
               storedDeletedInvoices = delInvRows[0]?.setting_value ? JSON.parse(delInvRows[0].setting_value) : [];
             } catch {}
 
+            const activeInvoiceIds = Array.isArray(invoices) ? invoices.map((inv) => String(inv.id).trim()) : [];
+
             if (Array.isArray(deletedInvoiceIds)) {
               for (const id of deletedInvoiceIds) {
-                if (id && !storedDeletedInvoices.includes(id)) {
-                  storedDeletedInvoices.push(id);
+                const idStr = String(id).trim();
+                if (idStr && !storedDeletedInvoices.map((x) => String(x).trim()).includes(idStr) && !activeInvoiceIds.includes(idStr)) {
+                  storedDeletedInvoices.push(idStr);
                 }
               }
+            }
+
+            if (activeInvoiceIds.length > 0) {
+              storedDeletedInvoices = storedDeletedInvoices.filter((x) => !activeInvoiceIds.includes(String(x).trim()));
             }
 
             if (storedDeletedInvoices.length > 0) {

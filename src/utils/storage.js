@@ -57,11 +57,23 @@ export const getStoredDeletedInvoices = () => {
 export const trackDeletedInvoiceId = (id) => {
   if (!id) return;
   try {
-    const list = getStoredDeletedInvoices();
-    if (!list.includes(id)) {
-      list.push(id);
+    const strId = String(id).trim();
+    const list = getStoredDeletedInvoices().map((x) => String(x).trim());
+    if (!list.includes(strId)) {
+      list.push(strId);
       localStorage.setItem(DELETED_INVOICES_KEY, JSON.stringify(list));
     }
+  } catch {}
+};
+
+export const untrackDeletedInvoiceId = (id) => {
+  if (!id) return;
+  try {
+    const strId = String(id).trim();
+    const list = getStoredDeletedInvoices()
+      .map((x) => String(x).trim())
+      .filter((x) => x && x !== strId);
+    localStorage.setItem(DELETED_INVOICES_KEY, JSON.stringify(list));
   } catch {}
 };
 
@@ -496,8 +508,13 @@ export const saveStoredInvoices = (invoices) => {
 
 // Save a single invoice with background MySQL sync
 export const persistInvoiceWithDb = async (invoice) => {
+  if (!invoice) return getStoredInvoices();
+
+  // If this invoice number was previously tombstoned as deleted, untrack it now because it is active
+  untrackDeletedInvoiceId(invoice.id);
+
   const invoices = getStoredInvoices();
-  const index = invoices.findIndex((inv) => inv.id === invoice.id);
+  const index = invoices.findIndex((inv) => String(inv.id).trim() === String(invoice.id).trim());
   let updated;
   if (index >= 0) {
     updated = [...invoices];
@@ -518,7 +535,8 @@ export const persistInvoiceWithDb = async (invoice) => {
 
 export const deleteInvoiceWithDb = async (invoiceId) => {
   trackDeletedInvoiceId(invoiceId);
-  const invoices = getStoredInvoices().filter((inv) => inv.id !== invoiceId);
+  const targetId = String(invoiceId).trim();
+  const invoices = getStoredInvoices().filter((inv) => String(inv.id).trim() !== targetId);
   saveStoredInvoices(invoices);
 
   // MySQL delete
@@ -721,10 +739,18 @@ export const saveBusinessInfo = (newInfo) => {
 // Full Bidirectional Database Synchronization
 export const performDatabaseSync = async () => {
   try {
+    const allStoredInvoices = getStoredInvoices();
+    const existingInvIds = new Set(allStoredInvoices.map((inv) => String(inv.id).trim()));
+
+    // Clean any tombstone that matches an existing active local invoice
+    const localDeletedInvoices = getStoredDeletedInvoices()
+      .map((id) => String(id).trim())
+      .filter((id) => id && !existingInvIds.has(id));
+    localStorage.setItem(DELETED_INVOICES_KEY, JSON.stringify(localDeletedInvoices));
+
     const localDeletedClients = getStoredDeletedClients();
-    const localDeletedInvoices = getStoredDeletedInvoices();
     const localClients = getStoredClients().filter((c) => !localDeletedClients.includes(c.id));
-    const localInvoices = getStoredInvoices().filter((inv) => !localDeletedInvoices.includes(inv.id));
+    const localInvoices = allStoredInvoices.filter((inv) => !localDeletedInvoices.includes(String(inv.id).trim()));
     const localPricesRaw = localStorage.getItem(CLIENT_PRICES_KEY);
     const localPrices = localPricesRaw ? JSON.parse(localPricesRaw) : {};
     const localUser = getAdminUser();
@@ -746,11 +772,16 @@ export const performDatabaseSync = async () => {
         result.deletedClientIds.forEach((id) => trackDeletedClientId(id));
       }
       if (Array.isArray(result.deletedInvoiceIds)) {
-        result.deletedInvoiceIds.forEach((id) => trackDeletedInvoiceId(id));
+        result.deletedInvoiceIds.forEach((id) => {
+          // Only tombstone if it does NOT match an active local invoice
+          if (!existingInvIds.has(String(id).trim())) {
+            trackDeletedInvoiceId(id);
+          }
+        });
       }
 
       const allDeletedClients = getStoredDeletedClients();
-      const allDeletedInvoices = getStoredDeletedInvoices();
+      const allDeletedInvoices = getStoredDeletedInvoices().map((x) => String(x).trim());
 
       if (Array.isArray(result.clients)) {
         const enriched = result.clients
@@ -777,11 +808,27 @@ export const performDatabaseSync = async () => {
       }
 
       if (Array.isArray(result.invoices)) {
-        const normalizedInvoices = result.invoices
-          .filter((inv) => !allDeletedInvoices.includes(inv.id))
+        const serverInvoices = result.invoices
+          .filter((inv) => !allDeletedInvoices.includes(String(inv.id).trim()))
           .map(normalizeInvoiceData)
           .filter(Boolean);
-        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(normalizedInvoices));
+
+        // Merge server invoices with local invoices without wiping out local unsynced ones
+        const invoiceMap = new Map();
+        serverInvoices.forEach((inv) => invoiceMap.set(String(inv.id).trim(), inv));
+        allStoredInvoices.forEach((inv) => {
+          const invIdStr = String(inv.id).trim();
+          if (!allDeletedInvoices.includes(invIdStr)) {
+            if (!invoiceMap.has(invIdStr)) {
+              invoiceMap.set(invIdStr, inv);
+            }
+          }
+        });
+
+        const mergedInvoices = Array.from(invoiceMap.values()).sort(
+          (a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0)
+        );
+        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(mergedInvoices));
       }
       if (result.prices && typeof result.prices === 'object') {
         localStorage.setItem(CLIENT_PRICES_KEY, JSON.stringify(result.prices));

@@ -47,6 +47,25 @@ if ($method === 'POST') {
     }
 
     $id = trim($input['id']);
+
+    // Untrack from deleted_invoices if it was ever tombstoned
+    try {
+        $delStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_invoices'");
+        $storedDeletedInvoices = json_decode($delStmt->fetchColumn() ?: '[]', true) ?: [];
+        $idStr = (string)$id;
+        if (in_array($idStr, array_map('strval', $storedDeletedInvoices), true)) {
+            $storedDeletedInvoices = array_values(array_filter($storedDeletedInvoices, function($x) use ($idStr) {
+                return (string)$x !== $idStr;
+            }));
+            $stmtUpd = $pdo->prepare("
+                INSERT INTO settings (setting_key, setting_value)
+                VALUES ('deleted_invoices', :val)
+                ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+            ");
+            $stmtUpd->execute([':val' => json_encode($storedDeletedInvoices, JSON_UNESCAPED_UNICODE)]);
+        }
+    } catch (Exception $e) {}
+
     $clientId = $input['clientId'] ?? 'c_default';
     $clientName = $input['clientName'] ?? 'زبون عام';
     $clientPhone = $input['clientPhone'] ?? '';

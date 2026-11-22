@@ -34,13 +34,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 0b. Process deleted invoice tombstones
     $delInvStmt = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'deleted_invoices'");
     $storedDeletedInvoices = json_decode($delInvStmt->fetchColumn() ?: '[]', true) ?: [];
-    if (!empty($input['deletedInvoiceIds']) && is_array($input['deletedInvoiceIds'])) {
-        foreach ($input['deletedInvoiceIds'] as $delInvId) {
-            if (!empty($delInvId) && !in_array($delInvId, $storedDeletedInvoices, true)) {
-                $storedDeletedInvoices[] = $delInvId;
+
+    // Any active invoice sent must NEVER be considered deleted
+    $activeInvoiceIds = [];
+    if (!empty($input['invoices']) && is_array($input['invoices'])) {
+        foreach ($input['invoices'] as $inv) {
+            if (!empty($inv['id'])) {
+                $activeInvoiceIds[] = (string)$inv['id'];
             }
         }
     }
+
+    if (!empty($input['deletedInvoiceIds']) && is_array($input['deletedInvoiceIds'])) {
+        foreach ($input['deletedInvoiceIds'] as $delInvId) {
+            $strDelId = (string)$delInvId;
+            if (!empty($strDelId) && !in_array($strDelId, $storedDeletedInvoices, true) && !in_array($strDelId, $activeInvoiceIds, true)) {
+                $storedDeletedInvoices[] = $strDelId;
+            }
+        }
+    }
+
+    // Filter out any active invoice IDs from storedDeletedInvoices
+    if (!empty($activeInvoiceIds)) {
+        $storedDeletedInvoices = array_values(array_filter($storedDeletedInvoices, function($id) use ($activeInvoiceIds) {
+            return !in_array((string)$id, $activeInvoiceIds, true);
+        }));
+    }
+
     $stmtUpdDelInvoices = $pdo->prepare("
         INSERT INTO settings (setting_key, setting_value)
         VALUES ('deleted_invoices', :val)

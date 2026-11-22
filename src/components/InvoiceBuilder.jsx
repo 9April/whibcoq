@@ -375,31 +375,15 @@ export function InvoiceBuilder({
       return;
     }
 
-    setIsSavingPdf(true);
     playHapticSound('success');
     const invObj = buildCurrentInvoiceObject();
 
-    // 1. Download PDF directly to device (using exportInvoiceToPdf with native Arabic text shaping)
-    try {
-      if (printAreaRef.current) {
-        const cleanClientName = (selectedClient.name || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
-        const filename = `Facture_${invoiceNumber}_${cleanClientName || 'Client'}.pdf`;
-
-        const { exportInvoiceToPdf } = await import('../utils/pdfExport');
-        await exportInvoiceToPdf(printAreaRef.current, filename);
-      }
-    } catch (err) {
-      console.error('Error generating PDF during invoice save:', err);
-    } finally {
-      setIsSavingPdf(false);
-    }
-
-    // 2. Persist to storage / database
+    // 1. Persist to storage / database immediately so it is recorded in history without waiting
     if (onSaveInvoice) {
       await onSaveInvoice(invObj);
     }
 
-    // 3. Set success notification
+    // 2. Set success notification
     setLastSavedSuccess({
       id: invObj.id,
       clientName: invObj.clientName,
@@ -417,9 +401,25 @@ export function InvoiceBuilder({
       }
     });
 
-    // 4. Auto-increment to the next free invoice number in state
+    // Auto-increment to the next free invoice number in state
     const updatedInvoices = [...invoices.filter((i) => i.id !== invObj.id), invObj];
     setInvoiceNumber(getNextInvoiceNumber(updatedInvoices));
+
+    // 3. Download PDF directly to device (using exportInvoiceToPdf with native Arabic text shaping)
+    setIsSavingPdf(true);
+    try {
+      if (printAreaRef.current) {
+        const cleanClientName = (selectedClient.name || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
+        const filename = `Facture_${invoiceNumber}_${cleanClientName || 'Client'}.pdf`;
+
+        const { exportInvoiceToPdf } = await import('../utils/pdfExport');
+        await exportInvoiceToPdf(printAreaRef.current, filename);
+      }
+    } catch (err) {
+      console.error('Error generating PDF during invoice save:', err);
+    } finally {
+      setIsSavingPdf(false);
+    }
   };
 
   // Direct Print & Persist Invoice (so number is immediately recorded and taken)
