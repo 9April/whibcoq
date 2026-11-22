@@ -69,7 +69,7 @@ export function ProductRow({
         <div className="flex items-center gap-2 flex-shrink-0">
           {isActive ? (
             <div className="flex items-center gap-2">
-              <span className="text-base sm:text-lg font-black font-mono text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-lg border border-emerald-300/60 tabular-nums">
+              <span className="text-base sm:text-lg font-black font-mono text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-lg border border-emerald-300/60 tabular-nums" dir="ltr">
                 {formatDh(rowTotal)}
               </span>
 

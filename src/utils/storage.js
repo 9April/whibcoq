@@ -123,14 +123,14 @@ export const saveCustomClientCategory = (newCat) => {
   return getStoredClientCategories();
 };
 
-// Format Moroccan Dirham (e.g., "1 240,00 درهم")
+// Format Moroccan Dirham (Strict Left-to-Right numeric protection with non-breaking space: e.g., "1 240,00 درهم")
 export const formatDh = (num) => {
-  if (num === null || num === undefined) return '0,00 درهم';
+  if (num === null || num === undefined) return '\u200E0,00\u200E درهم';
   const val = Number(num);
-  if (isNaN(val)) return '0,00 درهم';
+  if (isNaN(val)) return '\u200E0,00\u200E درهم';
   const parts = val.toFixed(2).split('.');
-  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return `${integerPart},${parts[1]} درهم`;
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
+  return `\u200E${integerPart},${parts[1]}\u200E درهم`;
 };
 
 // Format Weight in Kg (Strict Left-to-Right protection: e.g., "45.5 kg")
@@ -139,7 +139,7 @@ export const formatKg = (num) => {
   const val = Number(num);
   if (isNaN(val)) return '\u200E0.0 kg\u200E';
   const parts = val.toFixed(1).split('.');
-  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
   return `\u200E${integerPart}.${parts[1]} kg\u200E`;
 };
 

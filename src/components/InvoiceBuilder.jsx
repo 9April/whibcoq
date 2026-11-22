@@ -1334,8 +1334,8 @@ export function InvoiceBuilder({
               >
                 {/* Top Section */}
                 <div>
-                  {/* Header Row: WAHIB COQ + Subtitle & Invoice Number */}
-                  <div className="flex items-start justify-between pb-3 border-b border-slate-200">
+                  {/* Header Row: WAHIB COQ + Logo */}
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                     <div className="flex items-center gap-3">
                       <img
                         src="/wahibcoq.jpeg"
@@ -1346,24 +1346,24 @@ export function InvoiceBuilder({
                         <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
                           {businessInfo.name || 'WAHIB COQ'}
                         </h1>
+                        <span className="text-[11px] font-bold text-slate-500 mt-1 block">
+                          {businessInfo.frenchSubtitle || 'Vente de poulets vivants et découpes'}
+                        </span>
                       </div>
-                    </div>
-
-                    <div className="text-left font-mono" dir="ltr">
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                        رقم الفاتورة
-                      </span>
-                      <span className="text-base sm:text-lg font-black text-slate-900 tabular-nums">
-                        NO. {String(invoiceNumber).padStart(6, '0')}
-                      </span>
                     </div>
                   </div>
 
-                  {/* Main Title & Date Line */}
-                  <div className="pt-3 pb-2 flex items-baseline justify-between border-b border-slate-100">
-                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-wide">
-                      فاتورة
-                    </h2>
+                  {/* Main Title & Invoice Number & Date Line (IN LINE) */}
+                  <div className="pt-3 pb-2 flex items-baseline justify-between border-b border-slate-100 flex-wrap gap-2">
+                    <div className="flex items-baseline gap-3">
+                      <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-wide">
+                        فاتورة
+                      </h2>
+                      <span className="text-base sm:text-lg font-black text-slate-700 font-mono tracking-wider tabular-nums" dir="ltr">
+                        NO. {String(invoiceNumber).padStart(6, '0')}
+                      </span>
+                    </div>
+
                     <div className="text-xs sm:text-sm font-bold text-slate-600">
                       <span className="text-slate-400 ml-1">التاريخ :</span>
                       <span className="font-mono font-black text-slate-800 tabular-nums">{displayDate()}</span>
@@ -1429,10 +1429,10 @@ export function InvoiceBuilder({
                             <td className="py-2.5 px-2.5 text-center font-mono font-bold text-slate-800 tabular-nums">
                               {item.weight}
                             </td>
-                            <td className="py-2.5 px-2.5 text-center font-mono font-bold text-slate-800 tabular-nums">
+                            <td className="py-2.5 px-2.5 text-center font-mono font-bold text-slate-800 tabular-nums" dir="ltr">
                               {Number(item.price).toFixed(2)}
                             </td>
-                            <td className="py-2.5 px-2.5 text-left font-mono font-black text-slate-900 tabular-nums">
+                            <td className="py-2.5 px-2.5 text-left font-mono font-black text-slate-900 tabular-nums" dir="ltr">
                               {formatDh(item.total)}
                             </td>
                           </tr>
@@ -1444,11 +1444,11 @@ export function InvoiceBuilder({
                         <td className="py-2.5 px-2.5 text-slate-900">
                           المجموع الكلي
                         </td>
-                        <td className="py-2.5 px-2.5 text-center font-mono font-black text-slate-900 tabular-nums">
+                        <td className="py-2.5 px-2.5 text-center font-mono font-black text-slate-900 tabular-nums" dir="ltr">
                           {formatKg(totalWeight)}
                         </td>
                         <td className="py-2.5 px-2.5"></td>
-                        <td className="py-2.5 px-2.5 text-left font-mono font-black text-base text-emerald-700 tabular-nums">
+                        <td className="py-2.5 px-2.5 text-left font-mono font-black text-base text-emerald-700 tabular-nums" dir="ltr">
                           {formatDh(grandTotal)}
                         </td>
                       </tr>

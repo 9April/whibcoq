@@ -24,6 +24,7 @@
   font-family: 'Inter', 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
+  unicode-bidi: isolate;
 }
 
 /* Custom crisp scrollbar */
