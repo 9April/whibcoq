@@ -1375,7 +1375,7 @@ export function InvoiceBuilder({
                     {/* Billed to */}
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">
-                        فاتورة إلى:
+                        الزبون:
                       </span>
                       <span className="text-sm font-black text-slate-900">
                         {selectedClient.name}
