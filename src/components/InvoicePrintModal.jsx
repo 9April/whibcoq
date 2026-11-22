@@ -190,8 +190,8 @@ export function InvoicePrintModal({
                 </div>
               </div>
 
-              {/* Two-Column Address Block */}
-              <div className="grid grid-cols-2 gap-4 py-3 border-b border-slate-200 text-xs">
+              {/* Client Info Block */}
+              <div className="py-3 border-b border-slate-200 text-xs">
                 {/* Billed to */}
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">
@@ -210,22 +210,6 @@ export function InvoicePrintModal({
                       {invoice.clientAddress}
                     </span>
                   )}
-                </div>
-
-                {/* From */}
-                <div className="flex flex-col gap-0.5 text-left" dir="ltr">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    من طرف:
-                  </span>
-                  <span className="text-sm font-black text-slate-900">
-                    {businessInfo.name || 'WAHIB COQ'}
-                  </span>
-                  <span className="text-slate-500 text-[11px]">
-                    {businessInfo.address}
-                  </span>
-                  <span className="text-slate-400 font-mono text-[10px]">
-                    {businessInfo.taxInfo}
-                  </span>
                 </div>
               </div>
 
