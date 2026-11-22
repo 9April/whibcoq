@@ -60,6 +60,7 @@ export function App() {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [invoiceToPrint, setInvoiceToPrint] = useState(null);
   const [preselectedClientId, setPreselectedClientId] = useState(null);
+  const [isBuildingInvoice, setIsBuildingInvoice] = useState(false);
 
   // Database Connection & Sync States
   const [dbStatus, setDbStatus] = useState({ connected: false, checking: true, name: 'u895506237_wahib' });
@@ -201,7 +202,6 @@ export function App() {
     setPreselectedClientId(client.id);
     setEditingInvoice(null);
     setIsBuildingInvoice(true);
-    setActiveTab('builder');
   };
 
   const handleSaveInvoice = async (newInvoice) => {
@@ -220,6 +220,7 @@ export function App() {
 
   const handleEditInvoice = (invoice) => {
     setEditingInvoice(invoice);
+    setIsBuildingInvoice(true);
     setIsHistoryDrawerOpen(false);
     setIsReportsDrawerOpen(false);
   };
@@ -227,12 +228,14 @@ export function App() {
   const handleCancelEdit = () => {
     setEditingInvoice(null);
     setPreselectedClientId(null);
+    setIsBuildingInvoice(false);
   };
 
   const handleGoHome = () => {
     playHapticSound('tap');
     setPreselectedClientId(null);
     setEditingInvoice(null);
+    setIsBuildingInvoice(false);
   };
 
   const handleOpenProductsManage = () => {
@@ -279,7 +282,23 @@ export function App() {
           </button>
 
           {/* Action Tools in Header */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* 0. Home Screen Button */}
+            <button
+              type="button"
+              onClick={handleGoHome}
+              className={`h-10 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-black flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer ${
+                !isBuildingInvoice
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900'
+              }`}
+              title="الصفحة الرئيسية (لوحة التحكم)"
+              aria-label="الرئيسية"
+            >
+              <Home className="w-4 h-4 stroke-[2.5]" />
+              <span className="hidden sm:inline">الرئيسية</span>
+            </button>
+
             {/* 1. Invoice History Button */}
             <button
               type="button"
@@ -287,7 +306,7 @@ export function App() {
                 playHapticSound('tap');
                 setIsHistoryDrawerOpen(true);
               }}
-              className="h-10 px-3 sm:px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
+              className="h-10 px-2.5 sm:px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
               title="سجل الفواتير السابقة"
             >
               <Receipt className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
@@ -306,7 +325,7 @@ export function App() {
                 playHapticSound('tap');
                 setIsReportsDrawerOpen(true);
               }}
-              className="h-10 px-3 sm:px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
+              className="h-10 px-2.5 sm:px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
               title="التقارير والإحصائيات"
             >
               <BarChart3 className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
@@ -321,7 +340,7 @@ export function App() {
                 setSettingsInitialTab('company');
                 setIsCompanySettingsOpen(true);
               }}
-              className="h-10 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold flex items-center gap-1.5 transition-colors active:scale-95 cursor-pointer"
+              className="h-10 px-2 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold flex items-center gap-1.5 transition-colors active:scale-95 cursor-pointer"
               title="إعدادات وهيب كوك (المستخدم، كلمة المرور، وبيانات الشركة)"
             >
               <Settings className="w-4 h-4 text-slate-600" />
@@ -332,7 +351,7 @@ export function App() {
             <button
               type="button"
               onClick={handleLogout}
-              className="h-10 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95 cursor-pointer"
+              className="h-10 px-2 sm:px-3 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold flex items-center gap-1 transition-colors active:scale-95 cursor-pointer"
               title="قفل التطبيق وتسجيل الخروج"
             >
               <LogOut className="w-4 h-4" />
@@ -342,23 +361,42 @@ export function App() {
         </div>
       </header>
 
-      {/* Responsive Main Container: Unified Guided Single-Page Flow */}
+      {/* Responsive Main Container */}
       <main className="no-print flex-1 max-w-lg md:max-w-4xl lg:max-w-5xl xl:max-w-6xl w-full mx-auto p-3 sm:p-5 lg:p-6 pb-20 md:pb-12">
-        <InvoiceBuilder
-          key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
-          clients={clients}
-          invoices={invoices}
-          products={products}
-          onAddProduct={handleAddProduct}
-          initialClientId={preselectedClientId}
-          onAddClient={handleAddClient}
-          onUpdateClient={handleUpdateClient}
-          onDeleteClient={handleDeleteClient}
-          onSaveInvoice={handleSaveInvoice}
-          onOpenPrint={(inv) => setInvoiceToPrint(inv)}
-          editingInvoice={editingInvoice}
-          onCancelEdit={handleCancelEdit}
-        />
+        {!isBuildingInvoice ? (
+          <HomeDashboard
+            clients={clients}
+            invoices={invoices}
+            products={products}
+            onStartNewInvoice={() => {
+              setPreselectedClientId(null);
+              setEditingInvoice(null);
+              setIsBuildingInvoice(true);
+            }}
+            onViewClients={() => {
+              setSettingsInitialTab('clients');
+              setIsCompanySettingsOpen(true);
+            }}
+            onViewHistory={() => setIsHistoryDrawerOpen(true)}
+            onManageProducts={handleOpenProductsManage}
+          />
+        ) : (
+          <InvoiceBuilder
+            key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
+            clients={clients}
+            invoices={invoices}
+            products={products}
+            onAddProduct={handleAddProduct}
+            initialClientId={preselectedClientId}
+            onAddClient={handleAddClient}
+            onUpdateClient={handleUpdateClient}
+            onDeleteClient={handleDeleteClient}
+            onSaveInvoice={handleSaveInvoice}
+            onOpenPrint={(inv) => setInvoiceToPrint(inv)}
+            editingInvoice={editingInvoice}
+            onCancelEdit={handleCancelEdit}
+          />
+        )}
       </main>
 
       {/* 1. Invoice History Drawer */}
