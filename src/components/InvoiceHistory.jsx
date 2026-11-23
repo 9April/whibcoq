@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Printer, Edit3, ChevronLeft, Calendar, FileText, X, Trash2, AlertTriangle } from 'lucide-react';
-import { formatDh, formatKg, playHapticSound } from '../utils/storage';
+import { formatDh, formatG, playHapticSound } from '../utils/storage';
 import { INITIAL_CLIENTS } from '../data/initialData';
 import { InvoicePrintModal } from './InvoicePrintModal';
 
@@ -165,7 +165,7 @@ export function InvoiceHistory({
                   <div className="flex items-center gap-2 text-[10px] sm:text-xs text-slate-400 font-medium font-mono tabular-nums mt-1 truncate">
                     <span>{inv.date}</span>
                     <span>•</span>
-                    <bdi dir="ltr">{formatKg(inv.totalWeight)}</bdi>
+                    <bdi dir="ltr">{formatG(inv.totalWeight)}</bdi>
                   </div>
                 </div>
 
@@ -281,7 +281,7 @@ export function InvoiceHistory({
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-500 font-medium">الوزن الإجمالي:</span>
                   <bdi dir="ltr" className="font-mono font-bold text-slate-700">
-                    {formatKg(invoiceToDelete.totalWeight)}
+                    {formatG(invoiceToDelete.totalWeight)}
                   </bdi>
                 </div>
               )}

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Printer, PlusCircle, X, Share2, FileText, Check, Download, FileDown, Loader2 } from 'lucide-react';
-import { formatDh, formatNumberOnly, formatKg, formatWeightOnly, formatPhone, playHapticSound, getBusinessInfo } from '../utils/storage';
+import { formatDh, formatNumberOnly, formatG, formatWeightOnly, formatPhone, playHapticSound, getBusinessInfo } from '../utils/storage';
 
 export function InvoicePrintModal({
   isOpen,
@@ -262,7 +262,7 @@ export function InvoicePrintModal({
                       المجموع الكلي
                     </td>
                     <td className="py-2.5 px-2.5 text-right font-mono font-black text-slate-900 tabular-nums">
-                      {formatKg(invoice.totalWeight)}
+                      {formatG(invoice.totalWeight)}
                     </td>
                     <td className="py-2.5 px-2.5"></td>
                     <td className="py-2.5 px-2.5 text-right font-mono font-black text-base text-emerald-700 tabular-nums">

@@ -37,7 +37,7 @@ import { ClientModal } from './ClientModal';
 import {
   formatDh,
   formatNumberOnly,
-  formatKg,
+  formatG,
   formatWeightOnly,
   formatArabicDate,
   formatPhone,
@@ -1164,7 +1164,7 @@ export function InvoiceBuilder({
                 </span>
                 {activeItems.length > 0 && (
                   <span className="text-xs font-mono font-bold text-slate-400 block tabular-nums">
-                    الوزن الإجمالي: {formatKg(totalWeight)}
+                    الوزن الإجمالي: {formatG(totalWeight)}
                   </span>
                 )}
               </div>
@@ -1215,7 +1215,7 @@ export function InvoiceBuilder({
                     {formatDh(grandTotal)}
                   </span>
                   <span className="text-xs font-mono text-slate-500">
-                    {formatKg(totalWeight)}
+                    {formatG(totalWeight)}
                   </span>
                 </div>
                 <span className="text-[11px] text-slate-400 font-bold block mt-0.5">
@@ -1407,7 +1407,7 @@ export function InvoiceBuilder({
                           المجموع الكلي
                         </td>
                         <td className="py-2.5 px-2.5 text-right font-mono font-black text-slate-900 tabular-nums">
-                          {formatKg(totalWeight)}
+                          {formatG(totalWeight)}
                         </td>
                         <td className="py-2.5 px-2.5"></td>
                         <td className="py-2.5 px-2.5 text-right font-mono font-black text-base text-emerald-700 tabular-nums">
