@@ -72,7 +72,7 @@ export function InvoiceBuilder({
   // Step 1: Client, Auto-Incremented Invoice #, and Date
   const [selectedClientId, setSelectedClientId] = useState(initialClientId || '');
   const [invoiceNumber, setInvoiceNumber] = useState(() => {
-    if (editingInvoice?.id) return editingInvoice.id;
+    if (editingInvoice?.id) return String(editingInvoice.id).trim();
     return getNextInvoiceNumber(invoices);
   });
   const [showDuplicateAlert, setShowDuplicateAlert] = useState(false);
@@ -80,23 +80,6 @@ export function InvoiceBuilder({
   const [invoiceDate, setInvoiceDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
   });
-
-  // Synchronize invoiceNumber with the lowest available free integer starting from 1 (reusing deleted gaps)
-  useEffect(() => {
-    if (editingInvoice) return;
-    const nextFree = getNextInvoiceNumber(invoices);
-    setInvoiceNumber((prev) => {
-      if (!prev || isInvoiceNumberTaken(prev, null, invoices)) {
-        return nextFree;
-      }
-      const prevNum = parseInt(String(prev).trim(), 10);
-      const nextFreeNum = parseInt(String(nextFree).trim(), 10);
-      if (!isNaN(prevNum) && !isNaN(nextFreeNum) && prevNum > nextFreeNum) {
-        return nextFree;
-      }
-      return prev;
-    });
-  }, [invoices, editingInvoice]);
 
   // Payment Method: 'نقداً' | 'شيك' | 'تحويل' | 'كريدي'
   const [paymentMethod, setPaymentMethod] = useState('نقداً');
@@ -211,10 +194,7 @@ export function InvoiceBuilder({
   };
 
   const handleInvoiceNumberBlur = () => {
-    if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
-      setShowDuplicateAlert(true);
-      playHapticSound('error');
-    }
+    // Keep number as entered
   };
 
   const handleWeightChange = (productId, newWeight) => {
@@ -345,10 +325,12 @@ export function InvoiceBuilder({
     if (onCancelEdit) onCancelEdit();
   };
 
-  // Build the invoice object
+  // Build the invoice object taking the invoice number as the primary ID
   const buildCurrentInvoiceObject = () => {
+    const cleanId = String(invoiceNumber || getNextInvoiceNumber(invoices)).trim();
+    const existing = (invoices || []).find((inv) => String(inv.id).trim() === cleanId);
     return {
-      id: invoiceNumber || getNextInvoiceNumber(invoices),
+      id: cleanId,
       clientId: selectedClientId,
       clientName: selectedClient.name,
       clientPhone: selectedClient.phone,
@@ -358,7 +340,7 @@ export function InvoiceBuilder({
       totalWeight: totalWeight,
       totalAmount: grandTotal,
       paymentMethod: paymentMethod,
-      timestamp: editingInvoice ? editingInvoice.timestamp : Date.now(),
+      timestamp: existing?.timestamp || (editingInvoice ? editingInvoice.timestamp : Date.now()),
     };
   };
 
@@ -366,12 +348,6 @@ export function InvoiceBuilder({
     if (activeItems.length === 0) {
       playHapticSound('error');
       alert('⚠️ يرجى إدخال وزن منتوج واحد على الأقل لحفظ الفاتورة.');
-      return;
-    }
-
-    if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
-      setShowDuplicateAlert(true);
-      playHapticSound('error');
       return;
     }
 
@@ -401,16 +377,12 @@ export function InvoiceBuilder({
       }
     });
 
-    // Auto-increment to the next free invoice number in state
-    const updatedInvoices = [...invoices.filter((i) => i.id !== invObj.id), invObj];
-    setInvoiceNumber(getNextInvoiceNumber(updatedInvoices));
-
     // 3. Download PDF directly to device (using exportInvoiceToPdf with native Arabic text shaping)
     setIsSavingPdf(true);
     try {
       if (printAreaRef.current) {
         const cleanClientName = (selectedClient.name || 'Client').replace(/[^\w\u0600-\u06FF\s-]/gi, '').trim();
-        const filename = `Facture_${invoiceNumber}_${cleanClientName || 'Client'}.pdf`;
+        const filename = `Facture_${invObj.id}_${cleanClientName || 'Client'}.pdf`;
 
         const { exportInvoiceToPdf } = await import('../utils/pdfExport');
         await exportInvoiceToPdf(printAreaRef.current, filename);
@@ -422,7 +394,7 @@ export function InvoiceBuilder({
     }
   };
 
-  // Direct Print & Persist Invoice (so number is immediately recorded and taken)
+  // Direct Print & Persist Invoice (in-place update, keeping the same invoice number)
   const handlePrint = async () => {
     if (activeItems.length === 0) {
       playHapticSound('error');
@@ -430,16 +402,10 @@ export function InvoiceBuilder({
       return;
     }
 
-    if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
-      setShowDuplicateAlert(true);
-      playHapticSound('error');
-      return;
-    }
-
     playHapticSound('success');
     const invObj = buildCurrentInvoiceObject();
 
-    // 1. Persist to storage / database immediately so the invoice number is recorded and taken
+    // 1. Persist to storage / database immediately so the invoice is recorded/updated in history
     if (onSaveInvoice) {
       await onSaveInvoice(invObj);
     }
@@ -462,11 +428,7 @@ export function InvoiceBuilder({
       }
     });
 
-    // 4. Update next free invoice number
-    const updatedInvoices = [...invoices.filter((i) => i.id !== invObj.id), invObj];
-    setInvoiceNumber(getNextInvoiceNumber(updatedInvoices));
-
-    // 5. Trigger print dialog
+    // 4. Trigger print dialog (stays on current invoice without auto-incrementing)
     if (document.activeElement && typeof document.activeElement.blur === 'function') {
       document.activeElement.blur();
     }
@@ -487,6 +449,7 @@ export function InvoiceBuilder({
     });
     setItemsState(reset);
     setFilterMode('all');
+    setLastSavedSuccess(null);
     setInvoiceNumber(getNextInvoiceNumber(invoices));
     setPaymentMethod('نقداً');
     setInvoiceDate(new Date().toISOString().split('T')[0]);
@@ -543,12 +506,6 @@ export function InvoiceBuilder({
           <button
             type="button"
             onClick={() => {
-              if (activeStep === 1) {
-                if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
-                  setShowDuplicateAlert(true);
-                  return;
-                }
-              }
               goToStep(2);
             }}
             disabled={activeStep === 1}
@@ -620,7 +577,15 @@ export function InvoiceBuilder({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleStartNewInvoice}
+              className="h-9 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>فاتورة جديدة #{getNextInvoiceNumber(invoices)}</span>
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -714,6 +679,11 @@ export function InvoiceBuilder({
                       #NO
                     </span>
                   </div>
+                  {isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices) && (
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 mt-1 inline-block">
+                      ℹ️ تعديل الفاتورة رقم #{invoiceNumber} المسجلة في السجل
+                    </span>
+                  )}
                 </div>
 
                 {/* Invoice Date Picker */}
@@ -987,10 +957,6 @@ export function InvoiceBuilder({
             <button
               type="button"
               onClick={() => {
-                if (isInvoiceNumberTaken(invoiceNumber, editingInvoice?.id, invoices)) {
-                  setShowDuplicateAlert(true);
-                  return;
-                }
                 goToStep(2);
               }}
               className="w-full h-14 rounded-2xl bg-softgreen-600 hover:bg-softgreen-700 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-softgreen-600/20 active:scale-95 transition-all cursor-pointer"
@@ -1523,48 +1489,6 @@ export function InvoiceBuilder({
           </div>
         )}
       </section>
-
-      {/* ============================================================== */}
-      {/* DUPLICATE INVOICE NUMBER WARNING POPUP MODAL                   */}
-      {/* ============================================================== */}
-      {showDuplicateAlert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 animate-fadeIn" dir="rtl">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border-2 border-rose-500 shadow-2xl text-center flex flex-col items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
-              <AlertTriangle className="w-8 h-8 stroke-[2.5]" />
-            </div>
-
-            <div>
-              <h3 className="text-lg font-black text-slate-900">تنبيه: رقم الفاتورة مستعمل!</h3>
-              <p className="text-xs sm:text-sm font-bold text-slate-600 mt-1">
-                رقم الفاتورة <span className="font-mono text-rose-600 font-black">#{invoiceNumber}</span> مستعمل من قبل! المرجو اختيار رقم آخر.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                const nextFree = getNextInvoiceNumber(invoices);
-                setInvoiceNumber(nextFree);
-                setShowDuplicateAlert(false);
-                playHapticSound('success');
-              }}
-              className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>تعيين الرقم التالي المتاح ({getNextInvoiceNumber(invoices)})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowDuplicateAlert(false)}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 underline cursor-pointer"
-            >
-              تعديل الرقم يدوياً
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ============================================================== */}
       {/* ADD / EDIT CLIENT MODAL                                         */}

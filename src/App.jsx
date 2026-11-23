@@ -207,8 +207,7 @@ export function App() {
   const handleSaveInvoice = async (newInvoice) => {
     const updated = await persistInvoiceWithDb(newInvoice);
     setInvoices(updated);
-    setEditingInvoice(null);
-    setPreselectedClientId(null);
+    setEditingInvoice(newInvoice);
     handleSync(true);
   };
 
@@ -382,7 +381,7 @@ export function App() {
           />
         ) : (
           <InvoiceBuilder
-            key={editingInvoice ? editingInvoice.id : (preselectedClientId ? `client-${preselectedClientId}` : 'new-invoice-builder')}
+            key={preselectedClientId ? `client-${preselectedClientId}` : 'invoice-builder-main'}
             clients={clients}
             invoices={invoices}
             products={products}
