@@ -154,8 +154,8 @@ export function InvoicePrintModal({
           >
             {/* Top Section */}
             <div>
-              {/* Top Header Row: WAHIB COQ + Logo */}
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              {/* Top Header Row: WAHIB COQ + Logo & ONSSA Authorization Facing Logo */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200 gap-2">
                 <div className="flex items-center gap-3">
                   <img
                     src="/wahibcoq.jpeg"
@@ -170,6 +170,13 @@ export function InvoicePrintModal({
                       {businessInfo.frenchSubtitle || 'Vente de poulets vivants et découpes'}
                     </span>
                   </div>
+                </div>
+
+                {/* Autorisation ONSSA facing the logo */}
+                <div className="text-left font-mono" dir="ltr">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg inline-block whitespace-nowrap">
+                    Autorisation ONSSA: ADVL 34.12.26
+                  </span>
                 </div>
               </div>
 
@@ -269,7 +276,6 @@ export function InvoicePrintModal({
 
             {/* Official Legal Footer */}
             <div className="w-full pt-4 mt-auto border-t border-slate-200 flex flex-col items-center justify-center text-center gap-0.5 text-[10px] text-slate-600 font-mono tracking-tight" dir="ltr">
-              <span className="font-bold text-slate-700">Autorisation ONSSA: ADVL 34.12.26</span>
               <span>IF: 71818964 - TP: 57236439 - ICE: 003882710000065 - RC: 172271</span>
               <span className="font-sans text-[9.5px] text-slate-500">Adresse: Lotissement Al Assil Lot 259 Local N3 Tanger</span>
             </div>
