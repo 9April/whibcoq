@@ -566,7 +566,7 @@ export function InvoiceBuilder({
       {/* SUCCESS BANNER: Post-save Confirmation & Instant Preview      */}
       {/* ============================================================== */}
       {lastSavedSuccess && (
-        <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap animate-fadeIn">
+        <div className="no-print bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap animate-fadeIn">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
               <Check className="w-6 h-6 stroke-[2.5]" />
@@ -1300,7 +1300,7 @@ export function InvoiceBuilder({
             <div className="printable-invoice-area-wrapper overflow-y-auto p-1 sm:p-4 flex justify-center">
               <div
                 ref={printAreaRef}
-                id="printable-invoice"
+                id="printable-builder-invoice"
                 className="printable-invoice-area w-full max-w-[144mm] min-h-[200mm] bg-white text-slate-900 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between"
               >
                 {/* Top Section */}

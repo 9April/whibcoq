@@ -360,7 +360,7 @@ export function App() {
       </header>
 
       {/* Responsive Main Container */}
-      <main className="no-print flex-1 max-w-lg md:max-w-4xl lg:max-w-5xl xl:max-w-6xl w-full mx-auto p-3 sm:p-5 lg:p-6 pb-20 md:pb-12">
+      <main className={`flex-1 max-w-lg md:max-w-4xl lg:max-w-5xl xl:max-w-6xl w-full mx-auto p-3 sm:p-5 lg:p-6 pb-20 md:pb-12 ${invoiceToPrint ? 'no-print' : ''}`}>
         {!isBuildingInvoice ? (
           <HomeDashboard
             clients={clients}

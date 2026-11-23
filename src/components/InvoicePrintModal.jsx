@@ -149,7 +149,7 @@ export function InvoicePrintModal({
         <div className="printable-invoice-area-wrapper overflow-y-auto p-2 sm:p-6 bg-slate-100/60 flex justify-center">
           <div
             ref={printAreaRef}
-            id="printable-invoice"
+            id="printable-modal-invoice"
             className="printable-invoice-area w-full max-w-[144mm] min-h-[200mm] bg-white text-slate-900 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between"
           >
             {/* Top Section */}
