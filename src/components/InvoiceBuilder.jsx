@@ -38,6 +38,7 @@ import {
   formatDh,
   formatNumberOnly,
   formatKg,
+  formatWeightOnly,
   formatArabicDate,
   formatPhone,
   getClientProductPrice,
@@ -1381,7 +1382,7 @@ export function InvoiceBuilder({
                               {item.productName}
                             </td>
                             <td className="py-2.5 px-2.5 text-right font-mono font-bold text-slate-800 tabular-nums">
-                              {item.weight}
+                              {formatWeightOnly(item.weight)}
                             </td>
                             <td className="py-2.5 px-2.5 text-right font-mono font-bold text-slate-800 tabular-nums">
                               {Number(item.price).toFixed(2)}

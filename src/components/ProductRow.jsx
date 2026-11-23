@@ -28,8 +28,8 @@ export function ProductRow({
 
   const handleWeightStep = (delta) => {
     playHapticSound('tap');
-    const next = Math.max(0, Math.round((numWeight + delta) * 10) / 10);
-    onWeightChange(product.id, next === 0 ? '' : next);
+    const next = Math.max(0, Math.round((numWeight + delta) * 1000) / 1000);
+    onWeightChange(product.id, next === 0 ? '' : next.toFixed(3));
   };
 
   const handlePriceStep = (delta) => {
@@ -98,7 +98,7 @@ export function ProductRow({
             <span>الوزن (kg)</span>
             {numWeight > 0 && (
               <span className="text-emerald-700 text-[11px] font-mono font-bold tabular-nums" dir="ltr">
-                {numWeight} kg
+                {numWeight.toFixed(3)} kg
               </span>
             )}
           </div>
@@ -120,8 +120,13 @@ export function ProductRow({
               type="text"
               inputMode="decimal"
               value={weight === 0 || weight === '' ? '' : weight}
-              placeholder="0.0"
+              placeholder="0.000"
               onFocus={(e) => e.target.select()}
+              onBlur={() => {
+                if (weight !== '' && !isNaN(numWeight) && numWeight > 0) {
+                  onWeightChange(product.id, numWeight.toFixed(3));
+                }
+              }}
               onChange={(e) => {
                 const val = normalizeDecimalInput(e.target.value);
                 if (/^\d*\.?\d*$/.test(val)) {

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Printer, PlusCircle, X, Share2, FileText, Check, Download, FileDown, Loader2 } from 'lucide-react';
-import { formatDh, formatNumberOnly, formatKg, formatPhone, playHapticSound, getBusinessInfo } from '../utils/storage';
+import { formatDh, formatNumberOnly, formatKg, formatWeightOnly, formatPhone, playHapticSound, getBusinessInfo } from '../utils/storage';
 
 export function InvoicePrintModal({
   isOpen,
@@ -231,7 +231,7 @@ export function InvoicePrintModal({
                           {item.productName}
                         </td>
                         <td className="py-2.5 px-2.5 text-right font-mono font-bold text-slate-800 tabular-nums">
-                          {item.weight}
+                          {formatWeightOnly(item.weight)}
                         </td>
                         <td className="py-2.5 px-2.5 text-right font-mono font-bold text-slate-800 tabular-nums">
                           {Number(item.price).toFixed(2)}
