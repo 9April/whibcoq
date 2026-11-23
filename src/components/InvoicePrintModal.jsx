@@ -265,27 +265,13 @@ export function InvoicePrintModal({
                 </tfoot>
               </table>
 
-              {/* Footer Notes: Thank you */}
-              <div className="py-2.5 flex items-center justify-center text-xs text-slate-600 border-b border-slate-100">
-                <div className="font-bold text-slate-600">
-                  <span className="text-slate-400 ml-1">ملاحظة :</span>
-                  <span>شكراً لتعاملكم معنا!</span>
-                </div>
-              </div>
             </div>
 
-            {/* Bottom Decorative Modern Wave (Two-tone charcoal #374151 and light gray #D1D5DB) */}
-            <div className="invoice-bottom-wave w-full overflow-hidden leading-none mt-auto pt-4">
-              <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-10 sm:h-14">
-                <path
-                  d="M0,0 C150,90 350,-40 500,60 C650,160 900,10 1200,40 L1200,120 L0,120 Z"
-                  fill="#D1D5DB"
-                />
-                <path
-                  d="M0,35 C200,110 400,-10 600,70 C800,150 1000,30 1200,60 L1200,120 L0,120 Z"
-                  fill="#374151"
-                />
-              </svg>
+            {/* Official Legal Footer */}
+            <div className="w-full pt-4 mt-auto border-t border-slate-200 flex flex-col items-center justify-center text-center gap-0.5 text-[10px] text-slate-600 font-mono tracking-tight" dir="ltr">
+              <span className="font-bold text-slate-700">Autorisation ONSSA: ADVL 34.12.26</span>
+              <span>IF: 71818964 - TP: 57236439 - ICE: 003882710000065 - RC: 172271</span>
+              <span className="font-sans text-[9.5px] text-slate-500">Adresse: Lotissement Al Assil Lot 259 Local N3 Tanger</span>
             </div>
           </div>
         </div>
