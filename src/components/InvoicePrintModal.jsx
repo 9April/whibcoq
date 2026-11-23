@@ -225,7 +225,7 @@ export function InvoicePrintModal({
                 <thead>
                   <tr className="bg-[#E5E7EB] text-slate-800 text-xs font-black">
                     <th className="py-2 px-2.5 text-right">المنتوج</th>
-                    <th className="py-2 px-2.5 text-right w-24">الوزن (كلغ)</th>
+                    <th className="py-2 px-2.5 text-right w-24">الوزن (غ)</th>
                     <th className="py-2 px-2.5 text-right w-24">الثمن</th>
                     <th className="py-2 px-2.5 text-right w-28">المجموع</th>
                   </tr>
