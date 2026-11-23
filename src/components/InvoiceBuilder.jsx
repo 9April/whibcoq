@@ -89,10 +89,9 @@ export function InvoiceBuilder({
   const [itemsState, setItemsState] = useState(() => {
     const init = {};
     (products || []).forEach((p) => {
-      const customPrice = getClientProductPrice(initialClientId, p.id, 0);
       init[p.id] = {
         weight: '',
-        price: customPrice !== undefined && customPrice !== null && customPrice !== '' ? customPrice : 0,
+        price: 0,
       };
     });
     return init;
@@ -133,29 +132,25 @@ export function InvoiceBuilder({
     }
   }, [clients, selectedClientId]);
 
-  // Load custom prices when client or products change
+  // Keep products state in sync when products change (always 0 kg and 0 price for new items)
   useEffect(() => {
-    if (!selectedClientId) return;
-
     setItemsState((prev) => {
       const next = { ...prev };
-      products.forEach((p) => {
-        const customPrice = getClientProductPrice(selectedClientId, p.id, 0);
-        next[p.id] = {
-          weight: prev[p.id]?.weight || '',
-          price:
-            prev[p.id]?.price !== undefined && prev[p.id]?.price !== ''
-              ? prev[p.id].price
-              : customPrice !== undefined && customPrice !== null && customPrice !== ''
-                ? customPrice
-                : 0,
-        };
+      let changed = false;
+      (products || []).forEach((p) => {
+        if (!next[p.id]) {
+          next[p.id] = {
+            weight: '',
+            price: 0,
+          };
+          changed = true;
+        }
       });
-      return next;
+      return changed ? next : prev;
     });
-  }, [selectedClientId, products]);
+  }, [products]);
 
-  // Handle Editing if an invoice is passed -> unlock all steps & populate
+  // Handle Editing if an invoice is passed -> unlock all steps & populate; otherwise reset for new invoice
   useEffect(() => {
     if (editingInvoice) {
       setSelectedClientId(editingInvoice.clientId || clients[0]?.id || '');
@@ -168,15 +163,25 @@ export function InvoiceBuilder({
       const newState = {};
       products.forEach((p) => {
         const found = editingInvoice.items?.find((i) => i.productId === p.id);
-        const savedPrice = getClientProductPrice(editingInvoice.clientId, p.id, 0);
         newState[p.id] = {
           weight: found ? found.weight : '',
-          price: found && found.price !== undefined && found.price !== '' ? found.price : (savedPrice !== undefined && savedPrice !== null && savedPrice !== '' ? savedPrice : 0),
+          price: found && found.price !== undefined && found.price !== '' ? found.price : 0,
         };
       });
       setItemsState(newState);
       setFilterMode('active');
       setActiveStep(2);
+    } else {
+      // New Invoice: ALWAYS set kg and prices to 0
+      const reset = {};
+      (products || []).forEach((p) => {
+        reset[p.id] = {
+          weight: '',
+          price: 0,
+        };
+      });
+      setItemsState(reset);
+      setFilterMode('all');
     }
   }, [editingInvoice, clients, products]);
 
@@ -202,7 +207,7 @@ export function InvoiceBuilder({
       const currentPrice =
         prev[productId]?.price !== undefined && prev[productId]?.price !== ''
           ? prev[productId].price
-          : (getClientProductPrice(selectedClientId, productId, 0) ?? 0);
+          : 0;
 
       return {
         ...prev,
@@ -314,10 +319,9 @@ export function InvoiceBuilder({
     playHapticSound('tap');
     const reset = {};
     products.forEach((p) => {
-      const savedPrice = getClientProductPrice(selectedClientId, p.id, 0);
       reset[p.id] = {
         weight: '',
-        price: savedPrice !== undefined && savedPrice !== null && savedPrice !== '' ? savedPrice : 0,
+        price: 0,
       };
     });
     setItemsState(reset);
@@ -441,10 +445,9 @@ export function InvoiceBuilder({
     playHapticSound('tap');
     const reset = {};
     products.forEach((p) => {
-      const savedPrice = getClientProductPrice(selectedClientId, p.id, 0);
       reset[p.id] = {
         weight: '',
-        price: savedPrice !== undefined && savedPrice !== null && savedPrice !== '' ? savedPrice : 0,
+        price: 0,
       };
     });
     setItemsState(reset);

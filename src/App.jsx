@@ -227,7 +227,6 @@ export function App() {
   const handleCancelEdit = () => {
     setEditingInvoice(null);
     setPreselectedClientId(null);
-    setIsBuildingInvoice(false);
   };
 
   const handleGoHome = () => {
@@ -381,7 +380,7 @@ export function App() {
           />
         ) : (
           <InvoiceBuilder
-            key={preselectedClientId ? `client-${preselectedClientId}` : 'invoice-builder-main'}
+            key={editingInvoice ? `edit-${editingInvoice.id}` : `new-invoice-${preselectedClientId || 'default'}`}
             clients={clients}
             invoices={invoices}
             products={products}
