@@ -1034,10 +1034,10 @@ export function InvoiceBuilder({
                 </span>
                 <div>
                   <h2 className="text-sm sm:text-base font-black text-white">
-                    الخطوة 2: تحديد السلع والكميات بالكيلوغرام (kg)
+                    الخطوة 2: تحديد السلع والكميات (g)
                   </h2>
                   <p className="text-[11px] text-slate-400">
-                    استعمل أزرار (+1kg / +5kg) أو اكتب الوزن مباشرة في خانة كل سلعة
+                    استعمل أزرار (+1g / +5g) أو اكتب الوزن مباشرة في خانة كل سلعة
                   </p>
                 </div>
               </div>

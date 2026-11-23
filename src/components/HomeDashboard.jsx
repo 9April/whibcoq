@@ -178,7 +178,7 @@ export function HomeDashboard({
                   <span className="font-mono text-2xl font-black text-emerald-700 tabular-nums">
                     {mostSoldProduct.totalWeight.toFixed(1)}
                   </span>
-                  <span className="text-xs font-black text-slate-600">kg</span>
+                  <span className="text-xs font-black text-slate-600">g</span>
                 </div>
                 <span className="text-xs font-mono font-bold text-slate-500 tabular-nums">
                   {formatDh(mostSoldProduct.totalAmount)}
@@ -295,7 +295,7 @@ export function HomeDashboard({
                 </span>
                 <h2 className="text-sm font-black text-slate-900">أعلى سلع الدواجن طلباً</h2>
               </div>
-              <span className="text-xs font-bold text-slate-500 font-mono">بالوزن (kg)</span>
+              <span className="text-xs font-bold text-slate-500 font-mono">بالوزن (g)</span>
             </div>
 
             <div className="flex flex-col gap-2.5">
@@ -333,7 +333,7 @@ export function HomeDashboard({
                         <span className="font-mono text-xs font-black text-slate-900 tabular-nums">
                           {prod.totalWeight.toFixed(1)}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-500">kg</span>
+                        <span className="text-[10px] font-bold text-slate-500">g</span>
                         <span className="text-slate-300 mr-1 ml-1">•</span>
                         <span className="font-mono text-[11px] font-bold text-emerald-700 tabular-nums">
                           {formatDh(prod.totalAmount)}

@@ -155,14 +155,14 @@ export const formatDh = (num) => {
   return `\u200E${integerPart},${parts[1]}\u200E درهم`;
 };
 
-// Format Weight in Kg (Strict Left-to-Right protection: e.g., "45.500 kg")
+// Format Weight in g (Strict Left-to-Right protection: e.g., "45.500 g")
 export const formatKg = (num) => {
-  if (num === null || num === undefined) return '\u200E0.000 kg\u200E';
+  if (num === null || num === undefined) return '\u200E0.000 g\u200E';
   const val = Number(num);
-  if (isNaN(val)) return '\u200E0.000 kg\u200E';
+  if (isNaN(val)) return '\u200E0.000 g\u200E';
   const parts = val.toFixed(3).split('.');
   const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
-  return `\u200E${integerPart}.${parts[1]} kg\u200E`;
+  return `\u200E${integerPart}.${parts[1]} g\u200E`;
 };
 
 // Format Weight Number Only (e.g., "1.300")
