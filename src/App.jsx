@@ -17,6 +17,7 @@ import {
 import { InvoiceBuilder } from './components/InvoiceBuilder';
 import { HomeDashboard } from './components/HomeDashboard';
 import { ClientsManager } from './components/ClientsManager';
+import { ClientsDrawer } from './components/ClientsDrawer';
 import { AnalyticsReports } from './components/AnalyticsReports';
 import { InvoiceHistory } from './components/InvoiceHistory';
 import { HistoryDrawer } from './components/HistoryDrawer';
@@ -53,6 +54,7 @@ export function App() {
 
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const [isReportsDrawerOpen, setIsReportsDrawerOpen] = useState(false);
+  const [isClientsDrawerOpen, setIsClientsDrawerOpen] = useState(false);
 
   const [clients, setClients] = useState(() => getStoredClients());
   const [invoices, setInvoices] = useState(() => getStoredInvoices());
@@ -199,6 +201,7 @@ export function App() {
   };
 
   const handleStartInvoiceForClient = (client) => {
+    setIsClientsDrawerOpen(false);
     setPreselectedClientId(client.id);
     setEditingInvoice(null);
     setIsBuildingInvoice(true);
@@ -316,6 +319,25 @@ export function App() {
               )}
             </button>
 
+            {/* 1.5 Clients Button */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsClientsDrawerOpen(true);
+              }}
+              className="h-10 px-2.5 sm:px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-black flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
+              title="إدارة وتعديل الزبائن"
+            >
+              <Users className="w-4 h-4 text-indigo-400 stroke-[2.5]" />
+              <span className="hidden sm:inline">الزبائن</span>
+              {clients.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono bg-indigo-500 text-white tabular-nums">
+                  {clients.length}
+                </span>
+              )}
+            </button>
+
             {/* 2. Analytics & Reports Button */}
             <button
               type="button"
@@ -372,8 +394,8 @@ export function App() {
               setIsBuildingInvoice(true);
             }}
             onViewClients={() => {
-              setSettingsInitialTab('clients');
-              setIsCompanySettingsOpen(true);
+              playHapticSound('tap');
+              setIsClientsDrawerOpen(true);
             }}
             onViewHistory={() => setIsHistoryDrawerOpen(true)}
             onManageProducts={handleOpenProductsManage}
@@ -415,6 +437,18 @@ export function App() {
         invoices={invoices}
         clients={clients}
         products={products}
+      />
+
+      {/* 3. Clients Management Drawer */}
+      <ClientsDrawer
+        isOpen={isClientsDrawerOpen}
+        onClose={() => setIsClientsDrawerOpen(false)}
+        clients={clients}
+        invoices={invoices}
+        onAddClient={handleAddClient}
+        onUpdateClient={handleUpdateClient}
+        onDeleteClient={handleDeleteClient}
+        onStartInvoiceForClient={handleStartInvoiceForClient}
       />
 
       {/* Official Print Modal (Isolated for @media print) */}

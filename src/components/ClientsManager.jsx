@@ -50,6 +50,7 @@ export function ClientsManager({
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editAddress, setEditAddress] = useState('');
+  const [editCategory, setEditCategory] = useState('');
 
   // Calculate purchases per client from invoices
   const clientStats = React.useMemo(() => {
@@ -106,6 +107,7 @@ export function ClientsManager({
     setEditName(client.name);
     setEditPhone(client.phone || '');
     setEditAddress(client.address || '');
+    setEditCategory(client.category || 'زبون تجاري');
   };
 
   const handleSaveEdit = (e) => {
@@ -119,6 +121,7 @@ export function ClientsManager({
       name: editName.trim(),
       phone: editPhone.trim(),
       address: editAddress.trim(),
+      category: editCategory.trim() || editingClient.category || 'زبون تجاري',
     };
 
     onUpdateClient(updated);
@@ -494,6 +497,22 @@ export function ClientsManager({
                   className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-sm text-left outline-none focus:border-emerald-600 tabular-nums"
                   style={{ unicodeBidi: 'isolate', direction: 'ltr' }}
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">النشاط التجاري / الفئة</label>
+                <select
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
+                  className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 outline-none focus:border-emerald-600 cursor-pointer"
+                >
+                  <option value="زبون تجاري">زبون تجاري</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
