@@ -84,8 +84,12 @@ export function App() {
       if (conn.connected) {
         const syncRes = await performDatabaseSync();
         if (syncRes && syncRes.success) {
-          setClients(getStoredClients());
-          setInvoices(getStoredInvoices());
+          const freshClients = getStoredClients();
+          const freshInvoices = getStoredInvoices();
+          const freshProducts = getStoredProducts();
+          setClients((prev) => (JSON.stringify(prev) !== JSON.stringify(freshClients) ? freshClients : prev));
+          setInvoices((prev) => (JSON.stringify(prev) !== JSON.stringify(freshInvoices) ? freshInvoices : prev));
+          setProducts((prev) => (JSON.stringify(prev) !== JSON.stringify(freshProducts) ? freshProducts : prev));
           setLastSyncTime(new Date().toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' }));
           if (!isSilent) playHapticSound('success');
         }
@@ -130,16 +134,19 @@ export function App() {
 
     // 6. Listen for custom sync events
     const onSynced = (e) => {
-      setClients(getStoredClients());
-      setInvoices(getStoredInvoices());
-      setProducts(getStoredProducts());
+      const freshClients = getStoredClients();
+      const freshInvoices = getStoredInvoices();
+      const freshProducts = getStoredProducts();
+      setClients((prev) => (JSON.stringify(prev) !== JSON.stringify(freshClients) ? freshClients : prev));
+      setInvoices((prev) => (JSON.stringify(prev) !== JSON.stringify(freshInvoices) ? freshInvoices : prev));
+      setProducts((prev) => (JSON.stringify(prev) !== JSON.stringify(freshProducts) ? freshProducts : prev));
       if (e.detail?.timestamp) {
         setLastSyncTime(new Date().toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' }));
       }
     };
     const onProductsSynced = (e) => {
-      if (e.detail) setProducts(e.detail);
-      else setProducts(getStoredProducts());
+      const fresh = e.detail || getStoredProducts();
+      setProducts((prev) => (JSON.stringify(prev) !== JSON.stringify(fresh) ? fresh : prev));
     };
     window.addEventListener('wahib_db_synced', onSynced);
     window.addEventListener('wahib_products_synced', onProductsSynced);

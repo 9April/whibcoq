@@ -152,39 +152,34 @@ export function InvoiceBuilder({
   }, [products]);
 
   // Handle Editing if an invoice is passed -> unlock all steps & populate; otherwise reset for new invoice
-  useEffect(() => {
-    if (editingInvoice) {
-      setSelectedClientId(editingInvoice.clientId || clients[0]?.id || '');
-      setInvoiceNumber(editingInvoice.id);
-      setInvoiceDate(editingInvoice.date || new Date().toISOString().split('T')[0]);
-      if (editingInvoice.paymentMethod) {
-        setPaymentMethod(editingInvoice.paymentMethod);
-      }
+  const prevInvoiceIdRef = useRef(editingInvoice?.id || null);
 
-      const newState = {};
-      products.forEach((p) => {
-        const found = editingInvoice.items?.find((i) => i.productId === p.id);
-        newState[p.id] = {
-          weight: found ? found.weight : '',
-          price: found && found.price !== undefined && found.price !== '' ? found.price : 0,
-        };
-      });
-      setItemsState(newState);
-      setFilterMode('active');
-      setActiveStep(2);
-    } else {
-      // New Invoice: ALWAYS set kg and prices to 0
-      const reset = {};
-      (products || []).forEach((p) => {
-        reset[p.id] = {
-          weight: '',
-          price: 0,
-        };
-      });
-      setItemsState(reset);
-      setFilterMode('all');
+  useEffect(() => {
+    // Only run if editingInvoice identity actually changed
+    if (editingInvoice?.id !== prevInvoiceIdRef.current) {
+      prevInvoiceIdRef.current = editingInvoice?.id || null;
+      if (editingInvoice) {
+        setSelectedClientId(editingInvoice.clientId || clients[0]?.id || '');
+        setInvoiceNumber(editingInvoice.id);
+        setInvoiceDate(editingInvoice.date || new Date().toISOString().split('T')[0]);
+        if (editingInvoice.paymentMethod) {
+          setPaymentMethod(editingInvoice.paymentMethod);
+        }
+
+        const newState = {};
+        products.forEach((p) => {
+          const found = editingInvoice.items?.find((i) => i.productId === p.id);
+          newState[p.id] = {
+            weight: found ? found.weight : '',
+            price: found && found.price !== undefined && found.price !== '' ? found.price : 0,
+          };
+        });
+        setItemsState(newState);
+        setFilterMode('active');
+        setActiveStep(2);
+      }
     }
-  }, [editingInvoice, clients, products]);
+  }, [editingInvoice]);
 
   // Navigate to a specific step and scroll to top smoothly
   const goToStep = (stepNumber) => {
